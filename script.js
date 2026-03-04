@@ -26,12 +26,15 @@ function initApp() {
 const API_ARABIC = 'https://api.alquran.cloud/v1/quran/quran-uthmani';
 const API_ENGLISH = 'https://api.alquran.cloud/v1/quran/en.sahih';
 const API_QURAN_DATA = '/api/quran-data';
+const API_SURAH_INFO = '/api/surah-info';
 
 // --- State ---
 let quranArabic = null;
 let quranEnglish = null;
 let currentSurahIndex = getInitialSurahIndex(); // 0-based index
 let hasFullQuranData = false;
+let surahIntroByNumber = {};
+let chapterMetaByNumber = {};
 
 function getInitialSurahIndex() {
     if (typeof window !== 'undefined' && Number.isInteger(window.__INITIAL_SURAH_INDEX)) {
@@ -39,6 +42,14 @@ function getInitialSurahIndex() {
     }
 
     if (typeof window !== 'undefined') {
+        const slugMatch = window.location.pathname.match(/\/quran\/[^/]+\/(\d+)/i);
+        if (slugMatch) {
+            const parsed = Number(slugMatch[1]) - 1;
+            if (Number.isInteger(parsed) && parsed >= 0 && parsed < 114) {
+                return parsed;
+            }
+        }
+
         const match = window.location.pathname.match(/\/quran\/surah\/(\d+)/i);
         if (match) {
             const parsed = Number(match[1]) - 1;
@@ -54,6 +65,113 @@ function getInitialSurahIndex() {
     }
 
     return 0;
+}
+
+function slugifySurahName(name) {
+    const slug = String(name || '')
+        .toLowerCase()
+        .replace(/['’`]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+    return slug || 'surah';
+}
+
+function buildSurahPath(surah) {
+    if (!surah || !surah.number) return '/quran';
+    return `/quran/${slugifySurahName(surah.englishName || surah.englishNameTranslation || '')}/${surah.number}`;
+}
+
+function truncateForMeta(text, maxLength = 160) {
+    const clean = String(text || '').replace(/\s+/g, ' ').trim();
+    if (clean.length <= maxLength) return clean;
+    return `${clean.slice(0, maxLength - 3).trimEnd()}...`;
+}
+
+function normalizeRevelationPlace(placeRaw) {
+    const place = String(placeRaw || '').toLowerCase();
+    if (place.includes('makk') || place.includes('mecc')) return 'Makkah';
+    if (place.includes('med') || place.includes('madin')) return 'Madinah';
+    return '';
+}
+
+function buildRevelationContext(revelationPlaceRaw, revelationOrder, versesCount) {
+    const place = normalizeRevelationPlace(revelationPlaceRaw);
+    const order = Number.isInteger(Number(revelationOrder)) && Number(revelationOrder) > 0
+        ? Number(revelationOrder)
+        : null;
+    const verses = Number.isInteger(Number(versesCount)) && Number(versesCount) > 0
+        ? Number(versesCount)
+        : null;
+
+    const parts = [];
+    if (place) {
+        parts.push(`Revealed in ${place}.`);
+    } else {
+        parts.push('Classical sources differ on the exact place of revelation.');
+    }
+    if (order) {
+        parts.push(`Traditionally listed as revelation number ${order}.`);
+    }
+    if (verses) {
+        parts.push(`Contains ${verses} verses.`);
+    }
+
+    return `Revelation Context: ${parts.join(' ')}`;
+}
+
+function updateClientSeo(surahAr, surahIntro) {
+    if (!surahAr) return;
+
+    const ayahCount = Number(surahAr.numberOfAyahs) || surahAr?.ayahs?.length || 0;
+    const revelation = surahAr.revelationType || 'Quranic';
+    const translatedName = surahAr.englishNameTranslation || surahAr.englishName;
+    const title = `Surah ${surahAr.englishName} (${surahAr.number}) - Arabic Text, English Translation, Tafsir Summary | RuhVerse`;
+    const description = truncateForMeta(
+        `Read Surah ${surahAr.englishName} (${translatedName}) online with Arabic text, English translation, and summary. ${revelation} Surah with ${ayahCount} verses. ${surahIntro?.summary || ''}`,
+        160
+    );
+    const keywords = truncateForMeta(
+        [
+            `Surah ${surahAr.englishName}`,
+            `Surah ${surahAr.number}`,
+            `${translatedName}`,
+            `Quran ${surahAr.number}`,
+            'read Quran online',
+            'Quran Arabic English translation',
+            'Quran tafsir summary',
+            'RuhVerse Quran'
+        ].join(', '),
+        250
+    );
+    const canonicalPath = buildSurahPath(surahAr);
+    const canonicalUrl = `${window.location.origin}${canonicalPath}`;
+    const ogImage = `${window.location.origin}/assets/Gemini_Generated_Image_1z0kzx1z0kzx1z0k.jpg`;
+
+    document.title = title;
+
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', description);
+    const metaKeywords = document.querySelector('meta[name="keywords"]');
+    if (metaKeywords) metaKeywords.setAttribute('content', keywords);
+
+    const canonical = document.querySelector('link[rel="canonical"]');
+    if (canonical) canonical.setAttribute('href', canonicalUrl);
+
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) ogTitle.setAttribute('content', title);
+    const ogDescription = document.querySelector('meta[property="og:description"]');
+    if (ogDescription) ogDescription.setAttribute('content', description);
+    const ogUrl = document.querySelector('meta[property="og:url"]');
+    if (ogUrl) ogUrl.setAttribute('content', canonicalUrl);
+    const ogImageMeta = document.querySelector('meta[property="og:image"]');
+    if (ogImageMeta) ogImageMeta.setAttribute('content', ogImage);
+
+    const twitterTitle = document.querySelector('meta[name="twitter:title"]');
+    if (twitterTitle) twitterTitle.setAttribute('content', title);
+    const twitterDescription = document.querySelector('meta[name="twitter:description"]');
+    if (twitterDescription) twitterDescription.setAttribute('content', description);
+    const twitterImage = document.querySelector('meta[name="twitter:image"]');
+    if (twitterImage) twitterImage.setAttribute('content', ogImage);
 }
 
 async function setupQuranApp() {
@@ -91,7 +209,8 @@ async function setupQuranApp() {
             bootstrapQuranState(window.__SSR_BOOTSTRAP);
             populateSurahList();
             renderPagination();
-            await loadSurah(currentSurahIndex, false, true);
+            updatePaginationUI();
+            await loadSurah(currentSurahIndex, false, false);
             setupAudioPlayer();
             ensureFullQuranData().catch(() => { });
         } catch (err) {
@@ -165,6 +284,21 @@ function bootstrapQuranState(bootstrap) {
         quranArabic[currentSurahIndex] = bootstrap.initialSurahArabic;
         quranEnglish[currentSurahIndex] = bootstrap.initialSurahEnglish;
     }
+
+    chapterMetaByNumber = {};
+    meta.forEach((surah) => {
+        if (!surah?.number) return;
+        chapterMetaByNumber[surah.number] = {
+            revelationPlace: surah.revelationPlace || '',
+            revelationOrder: surah.revelationOrder || null,
+            versesCount: surah.versesCount || surah.numberOfAyahs || null
+        };
+    });
+
+    const initialNumber = quranArabic[currentSurahIndex]?.number;
+    if (initialNumber && bootstrap.initialSurahIntro) {
+        surahIntroByNumber[initialNumber] = bootstrap.initialSurahIntro;
+    }
 }
 
 async function ensureFullQuranData() {
@@ -177,6 +311,7 @@ async function ensureFullQuranData() {
             if (json && json.quranArabic && json.quranEnglish) {
                 quranArabic = json.quranArabic;
                 quranEnglish = json.quranEnglish;
+                chapterMetaByNumber = json.chapterMetaMap || {};
                 hasFullQuranData = true;
                 return;
             }
@@ -192,6 +327,7 @@ async function ensureFullQuranData() {
     const [jsonAr, jsonEn] = await Promise.all([resAr.json(), resEn.json()]);
     quranArabic = jsonAr.data.surahs;
     quranEnglish = jsonEn.data.surahs;
+    chapterMetaByNumber = {};
     hasFullQuranData = true;
 }
 
@@ -386,10 +522,151 @@ function populateSurahList() {
     });
 }
 
+function stripHtmlTags(value) {
+    return String(value || '').replace(/<[^>]*>/g, ' ');
+}
+
+function decodeBasicHtmlEntities(value) {
+    return String(value || '')
+        .replace(/&nbsp;/gi, ' ')
+        .replace(/&amp;/gi, '&')
+        .replace(/&quot;/gi, '"')
+        .replace(/&#39;/gi, "'")
+        .replace(/&lt;/gi, '<')
+        .replace(/&gt;/gi, '>');
+}
+
+function normalizeWhitespace(value) {
+    return String(value || '').replace(/\s+/g, ' ').trim();
+}
+
+function escapeHtml(value) {
+    return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function getClientSummaryFallback(surahEn) {
+    const opening = (surahEn?.ayahs || [])
+        .slice(0, 2)
+        .map((ayah) => normalizeWhitespace(ayah?.text || ''))
+        .filter(Boolean)
+        .join(' ');
+
+    if (!opening) {
+        return 'This surah emphasizes worship of Allah, moral responsibility, and guidance for righteous living.';
+    }
+
+    const trimmed = opening.length > 260 ? `${opening.slice(0, 257).trimEnd()}...` : opening;
+    return `Opening message: ${trimmed}`;
+}
+
+function splitIntoSentences(text) {
+    const clean = normalizeWhitespace(text);
+    if (!clean) return [];
+    return clean
+        .split(/(?<=[.!?])\s+/)
+        .map((s) => normalizeWhitespace(s))
+        .filter((s) => s.length >= 24);
+}
+
+function buildClientSignificanceAndBenefits(summaryText) {
+    const cleanSummary = String(summaryText || '').replace(/^Opening message:\s*/i, '');
+    const sentences = splitIntoSentences(cleanSummary);
+    const significance = sentences[0] || truncateForMeta(cleanSummary, 220);
+    const benefits = sentences.slice(1, 3);
+    return {
+        significance: significance || 'This surah carries enduring guidance for belief, character, and daily life.',
+        benefits: benefits.length ? benefits : [truncateForMeta(cleanSummary, 220)].filter(Boolean)
+    };
+}
+
+function buildClientMainTheme(summaryText, surahName) {
+    const cleanSummary = String(summaryText || '').replace(/^Opening message:\s*/i, '').trim();
+    const firstSentence = splitIntoSentences(cleanSummary)[0] || cleanSummary;
+    const normalized = firstSentence
+        .replace(/^the\s+(principal\s+)?(subject|theme|central theme|main theme|discourse)\s+(of\s+this\s+surah|of\s+the\s+surah)?\s*(is|was|:)?\s*/i, '')
+        .replace(/^its\s+theme\s+is\s+to\s+/i, '')
+        .replace(/^this\s+surah\s+(focuses\s+on|is\s+about|deals\s+with)\s+/i, '')
+        .replace(/[.]+$/, '')
+        .trim();
+    const core = normalized || 'sincere faith, moral responsibility, and accountability before Allah';
+    return truncateForMeta(`Surah ${surahName} focuses on ${core}.`, 230);
+}
+
+function getSurahIntroForClient(surahAr, surahEn) {
+    const cachedIntro = surahIntroByNumber[surahAr.number];
+    if (cachedIntro && cachedIntro.summary) {
+        if (!cachedIntro.mainTheme) {
+            cachedIntro.mainTheme = buildClientMainTheme(cachedIntro.summary || '', surahAr.englishName);
+        }
+        if (!cachedIntro.revelationContext) {
+            const chapterMeta = chapterMetaByNumber[surahAr.number] || {};
+            cachedIntro.revelationContext = buildRevelationContext(
+                chapterMeta.revelationPlace || surahAr.revelationType || '',
+                chapterMeta.revelationOrder || null,
+                chapterMeta.versesCount || surahAr.numberOfAyahs || surahAr.ayahs.length
+            );
+        }
+        if (!cachedIntro.significance || !Array.isArray(cachedIntro.benefits)) {
+            const derived = buildClientSignificanceAndBenefits(cachedIntro.summary || '');
+            cachedIntro.significance = derived.significance;
+            cachedIntro.benefits = derived.benefits;
+        }
+        return cachedIntro;
+    }
+
+    const chapterMeta = chapterMetaByNumber[surahAr.number] || {};
+    const summary = getClientSummaryFallback(surahEn);
+    const derived = buildClientSignificanceAndBenefits(summary);
+    const generatedIntro = {
+        heading: `About Surah ${surahAr.englishName}`,
+        meta: `${surahAr.number}. ${surahAr.englishNameTranslation || surahAr.englishName} | ${surahAr.revelationType || 'Quranic'} | ${surahAr.numberOfAyahs || surahAr.ayahs.length} verses`,
+        summary,
+        mainTheme: buildClientMainTheme(summary, surahAr.englishName),
+        significance: derived.significance,
+        benefits: derived.benefits
+    };
+    generatedIntro.revelationContext = buildRevelationContext(
+        chapterMeta.revelationPlace || surahAr.revelationType || '',
+        chapterMeta.revelationOrder || null,
+        chapterMeta.versesCount || surahAr.numberOfAyahs || surahAr.ayahs.length
+    );
+
+    surahIntroByNumber[surahAr.number] = generatedIntro;
+    return generatedIntro;
+}
+
+async function ensureSurahIntroForClient(surahAr, surahEn) {
+    const number = surahAr.number;
+    const cached = surahIntroByNumber[number];
+    if (cached && cached.summary && cached.mainTheme && cached.revelationContext && cached.significance && Array.isArray(cached.benefits)) {
+        return cached;
+    }
+
+    try {
+        const res = await fetch(`${API_SURAH_INFO}/${number}`);
+        if (res.ok) {
+            const json = await res.json();
+            if (json && json.intro && json.intro.summary) {
+                surahIntroByNumber[number] = json.intro;
+                return json.intro;
+            }
+        }
+    } catch (_) {
+        // fallback below
+    }
+
+    return getSurahIntroForClient(surahAr, surahEn);
+}
+
 async function loadSurah(index, keepAudio = false, forceReload = false) {
     // Check if we already have this surah loaded to avoid unnecessary DOM thrashing
     // But allow forced reload during auto-play transitions
-    if (!forceReload && currentSurahIndex === index && document.querySelector('.verse-block')) {
+    if (!forceReload && currentSurahIndex === index && document.querySelector('.verse-block .ayah-arabic')) {
         highlightSurahInList(index);
         return;
     }
@@ -428,10 +705,9 @@ async function loadSurah(index, keepAudio = false, forceReload = false) {
     const container = document.getElementById('quran-text-container');
     container.innerHTML = '';
 
+    const surahIntro = await ensureSurahIntroForClient(surahAr, surahEn);
+    updateClientSeo(surahAr, surahIntro);
     const BISMILLAH_TEXT = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ";
-
-    // Show Bismillah header separately (Traditional Look)
-    // Except for Surah 9 (At-Tawbah) and Surah 1 (where Bismillah is Verse 1)
     if (index !== 0 && index !== 8) {
         const bismDiv = document.createElement('div');
         bismDiv.className = 'bismillah-block';
@@ -439,13 +715,35 @@ async function loadSurah(index, keepAudio = false, forceReload = false) {
         container.appendChild(bismDiv);
     }
 
+    if (surahIntro) {
+        const introSection = document.createElement('section');
+        introSection.className = 'verse-block surah-intro-block';
+        introSection.setAttribute('aria-label', 'Surah introduction');
+        introSection.innerHTML = `
+            <h2 class="surah-intro-title">${escapeHtml(surahIntro.heading)}</h2>
+            <p class="surah-intro-meta">${escapeHtml(surahIntro.meta)}</p>
+            <p class="surah-intro-summary">${escapeHtml(stripHtmlTags(decodeBasicHtmlEntities(surahIntro.summary)))}</p>
+            <p class="surah-intro-theme"><strong>Main Theme:</strong> ${escapeHtml(stripHtmlTags(decodeBasicHtmlEntities(surahIntro.mainTheme || '')))}</p>
+            <p class="surah-intro-revelation">${escapeHtml(stripHtmlTags(decodeBasicHtmlEntities(surahIntro.revelationContext || '')))}</p>
+            <div class="surah-significance-block">
+                <h3 class="surah-significance-title">Benefits &amp; Significance</h3>
+                <p class="surah-significance-text">${escapeHtml(stripHtmlTags(decodeBasicHtmlEntities(surahIntro.significance || '')))}</p>
+                ${Array.isArray(surahIntro.benefits) && surahIntro.benefits.length
+                ? `<ul class="surah-benefits-list">${surahIntro.benefits.map((item) => `<li>${escapeHtml(stripHtmlTags(decodeBasicHtmlEntities(item)))}</li>`).join('')}</ul>`
+                : '<p class="surah-benefits-empty">Key lessons are preserved in this surah&#39;s themes and guidance.</p>'}
+            </div>
+        `;
+        container.appendChild(introSection);
+    }
+
     surahAr.ayahs.forEach((ayah, vIndex) => {
         let text = ayah.text;
 
         // Strip Bismillah from the first verse if it's there (since we show it as a header)
         if (vIndex === 0 && index !== 0 && index !== 8) {
+            text = text.replace(/^\uFEFF/, '');
             if (text.startsWith(BISMILLAH_TEXT)) {
-                text = text.replace(BISMILLAH_TEXT, "").trim();
+                text = text.slice(BISMILLAH_TEXT.length).trim();
             }
         }
 
@@ -480,7 +778,7 @@ async function loadSurah(index, keepAudio = false, forceReload = false) {
 
 function updateQuranUrl(index) {
     if (!window.history || !window.history.replaceState) return;
-    const url = index === 0 ? '/quran.html' : `/quran/surah/${index + 1}`;
+    const url = buildSurahPath(quranArabic[index]) || `/quran/surah/${index + 1}`;
     window.history.replaceState({}, '', url);
 }
 

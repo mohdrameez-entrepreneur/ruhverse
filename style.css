@@ -992,6 +992,83 @@ body.dark-mode #insights {
     border-bottom-color: transparent;
 }
 
+.surah-intro-block {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+}
+
+.surah-intro-title {
+    margin: 0 0 0.5rem;
+    color: var(--emerald);
+    font-size: clamp(1.15rem, 2.5vw, 1.4rem);
+}
+
+.surah-intro-meta {
+    margin: 0 0 0.75rem;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+.surah-intro-summary {
+    margin: 0;
+    color: var(--text-main);
+    line-height: 1.7;
+}
+
+.surah-intro-theme {
+    margin: 0.8rem 0 0;
+    color: var(--text-main);
+    line-height: 1.65;
+}
+
+.surah-intro-theme strong {
+    color: var(--emerald);
+    font-weight: 600;
+}
+
+.surah-intro-revelation {
+    margin: 0.9rem 0 0;
+    color: var(--text-muted);
+    line-height: 1.6;
+    font-size: 0.95rem;
+    border-top: 1px dashed var(--sidebar-border);
+    padding-top: 0.8rem;
+}
+
+.surah-significance-block {
+    margin-top: 1rem;
+    padding-top: 0.9rem;
+    border-top: 1px dashed var(--sidebar-border);
+}
+
+.surah-significance-title {
+    margin: 0 0 0.5rem;
+    color: var(--emerald);
+    font-size: 1rem;
+}
+
+.surah-significance-text {
+    margin: 0;
+    color: var(--text-main);
+    line-height: 1.65;
+}
+
+.surah-benefits-list {
+    margin: 0.8rem 0 0;
+    padding-left: 1.2rem;
+    color: var(--text-main);
+}
+
+.surah-benefits-list li {
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+
+.surah-benefits-empty {
+    margin: 0.8rem 0 0;
+    color: var(--text-muted);
+}
+
 .bismillah-block {
     text-align: center;
     font-family: 'Amiri', serif;

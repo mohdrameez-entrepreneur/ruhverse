@@ -1,0 +1,4 @@
+/* Footer stylesheet exists to avoid 404s; footer rules are primarily in style.css */
+.site-footer {
+    margin-top: auto;
+}

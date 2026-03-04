@@ -273,17 +273,17 @@
         },
         {
             "day": 30,
-            "date": "19 Mar 2026",
-            "weekday": "Thu",
-            "sehri": "04:58 AM",
-            "fajr": "05:08 AM",
-            "iftar": "06:32 PM",
+            "date": "20 Mar 2026",
+            "weekday": "Fri",
+            "sehri": "04:57 AM",
+            "fajr": "05:07 AM",
+            "iftar": "06:33 PM",
             "hijri": "30 Ramadan"
         }
     ],
     "eid": {
-        "date": "20 Mar 2026",
-        "weekday": "Fri",
+        "date": "21 Mar 2026",
+        "weekday": "Sat",
         "hijri": "1 Shawwal 1447"
     }
 }
