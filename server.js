@@ -13,6 +13,8 @@ const API_CHAPTER_INFO = 'https://api.quran.com/api/v4/chapters';
 const TEMPLATE_PATH = path.join(__dirname, 'quran.html');
 const QURAN_TEMPLATE = fs.readFileSync(TEMPLATE_PATH, 'utf8');
 const SURAH_PROFILES_PATH = path.join(__dirname, 'data', 'surah_profiles.json');
+const CITY_PROFILES_PATH = path.join(__dirname, 'data', 'city_profiles.json');
+const WORLD_CITY_SEED_PATH = path.join(__dirname, 'data', 'world_cities_seed.json');
 const BISMILLAH = 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ';
 
 let quranCache = null;
@@ -27,12 +29,44 @@ let chapterMetaCache = null;
 let chapterMetaCacheTime = 0;
 let chapterMetaFetchPromise = null;
 let surahProfiles = {};
+const cityPrayerCache = new Map(); // slug -> { data, time }
+const CITY_PRAYER_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
+const cityRamadanCache = new Map(); // `${slug}:${year}` -> { data, time }
+const CITY_RAMADAN_CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
+const RAMADAN_CALENDAR_YEAR = 2026;
+const IST_TIME_ZONE = 'Asia/Kolkata';
+const SITEMAP_CITY_CHUNK_SIZE = 45000;
+let cityPrayerTemplate = null;
+let cityProfiles = {};
+let worldCitySeeds = [];
 
 try {
   surahProfiles = JSON.parse(fs.readFileSync(SURAH_PROFILES_PATH, 'utf8'));
 } catch (err) {
   surahProfiles = {};
   console.warn('Unable to load hardcoded surah profiles:', err.message);
+}
+
+try {
+  cityProfiles = JSON.parse(fs.readFileSync(CITY_PROFILES_PATH, 'utf8'));
+} catch (err) {
+  cityProfiles = {};
+  console.warn('Unable to load city profiles:', err.message);
+}
+
+try {
+  worldCitySeeds = JSON.parse(fs.readFileSync(WORLD_CITY_SEED_PATH, 'utf8'));
+  if (!Array.isArray(worldCitySeeds)) worldCitySeeds = [];
+} catch (err) {
+  worldCitySeeds = [];
+  console.warn('Unable to load world city seeds:', err.message);
+}
+
+try {
+  cityPrayerTemplate = fs.readFileSync(path.join(__dirname, 'prayer-times-city.html'), 'utf8');
+} catch (err) {
+  cityPrayerTemplate = null;
+  console.warn('Unable to load city prayer template:', err.message);
 }
 
 function escapeHtml(str) {
@@ -61,6 +95,110 @@ function decodeBasicHtmlEntities(value) {
 function normalizeWhitespace(value) {
   return String(value || '').replace(/\s+/g, ' ').trim();
 }
+
+function slugifyCityName(name) {
+  const cityPart = String(name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  return cityPart || '';
+}
+
+function toNumber(value, fallback = 0) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+function buildDefaultCityProfile(seedRaw) {
+  const seed = seedRaw && typeof seedRaw === 'object' ? seedRaw : {};
+  const name = normalizeWhitespace(seed.name || '');
+  const country = normalizeWhitespace(seed.country || 'India');
+  const state = normalizeWhitespace(seed.state || seed.region || '');
+  const slug = normalizeWhitespace(seed.slug || slugifyCityName(name));
+  if (!name || !slug) return null;
+
+  const zone = normalizeWhitespace(seed.timezone || IST_TIME_ZONE);
+  const regionLabel = [state, country].filter(Boolean).join(', ') || country;
+  const aliases = Array.isArray(seed.aliases)
+    ? seed.aliases.map((x) => normalizeWhitespace(x)).filter(Boolean)
+    : [];
+
+  return {
+    slug,
+    name,
+    state,
+    country,
+    latitude: toNumber(seed.latitude),
+    longitude: toNumber(seed.longitude),
+    method: Number.isFinite(Number(seed.method)) ? Number(seed.method) : 1,
+    timezone: zone,
+    aliases,
+    muslimPopulation: normalizeWhitespace(seed.muslimPopulation || ''),
+    famousLandmark: normalizeWhitespace(seed.famousLandmark || `${name} Central Mosque`),
+    insights: normalizeWhitespace(
+      seed.insights
+      || `${name} is a major Muslim community center in ${regionLabel}. This page provides daily Fajr, Zohr, Asr, Magrib, and Isha timings with location-aware calculations.`
+    ),
+    facts: Array.isArray(seed.facts) && seed.facts.length
+      ? seed.facts.map((x) => normalizeWhitespace(x)).filter(Boolean).slice(0, 5)
+      : [
+        `${name} follows ${zone} for local prayer schedules.`,
+        `Daily salah timings are calculated using coordinates for ${name}.`,
+        `Local mosques and Muslim communities in ${name} rely on accurate Fajr and Magrib times during Ramadan.`
+      ],
+    ramadanNote: normalizeWhitespace(
+      seed.ramadanNote
+      || `During Ramadan in ${name}, verify moon-sighting announcements from local authorities for final fasting and Eid dates.`
+    ),
+    faqItems: Array.isArray(seed.faqItems) && seed.faqItems.length
+      ? seed.faqItems
+      : [
+        {
+          q: `What method is used for ${name} Namaz timings?`,
+          a: `RuhVerse calculates ${name} timings using AlAdhan coordinates and the configured method for this city.`
+        },
+        {
+          q: `Are these timings valid for nearby areas around ${name}?`,
+          a: `Nearby districts usually differ by a few minutes. Use this page as a reliable city-center reference.`
+        },
+        {
+          q: `Do Ramadan and Eid dates in ${name} change each year?`,
+          a: `Yes. Ramadan and Eid depend on moon sighting, so official local announcements should be followed.`
+        }
+      ]
+  };
+}
+
+function mergeCityProfiles(explicitProfiles, seedCities) {
+  const merged = {};
+
+  if (Array.isArray(seedCities)) {
+    seedCities.forEach((seed) => {
+      const profile = buildDefaultCityProfile(seed);
+      if (!profile || !profile.slug) return;
+      let finalSlug = profile.slug;
+      if (merged[finalSlug]) {
+        const countrySuffix = slugifyCityName(profile.country || 'city');
+        finalSlug = `${profile.slug}-${countrySuffix || 'global'}`;
+      }
+      merged[finalSlug] = { ...profile, slug: finalSlug };
+    });
+  }
+
+  if (explicitProfiles && typeof explicitProfiles === 'object') {
+    Object.entries(explicitProfiles).forEach(([key, value]) => {
+      if (!value || typeof value !== 'object') return;
+      const profile = { ...value };
+      const fallbackSlug = slugifyCityName(profile.name);
+      const slug = normalizeWhitespace(profile.slug || key || fallbackSlug);
+      if (!slug) return;
+      profile.slug = slug;
+      if (!Array.isArray(profile.aliases)) profile.aliases = [];
+      merged[slug] = profile;
+    });
+  }
+
+  return merged;
+}
+
+cityProfiles = mergeCityProfiles(cityProfiles, worldCitySeeds);
 
 function slugifySurahName(name) {
   const slug = String(name || '')
@@ -570,12 +708,12 @@ function renderQuranPage(templateHtml, data, initialSurahIndex, canonicalPath, i
   const ssrData = `
 <script>
 window.__SSR_BOOTSTRAP = ${JSON.stringify({
-  surahMeta,
-  initialSurahIndex,
-  initialSurahArabic: surahAr,
-  initialSurahEnglish: surahEn,
-  initialSurahIntro
-})};
+    surahMeta,
+    initialSurahIndex,
+    initialSurahArabic: surahAr,
+    initialSurahEnglish: surahEn,
+    initialSurahIntro
+  })};
 window.__INITIAL_SURAH_INDEX = ${initialSurahIndex};
 </script>
 `;
@@ -697,9 +835,52 @@ app.get('/api/surah-info/:surahNumber(\\d+)', async (req, res) => {
   }
 });
 
-app.get('/sitemap.xml', async (req, res) => {
-  const lastmod = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
-  const staticUrls = [
+app.get('/api/cities', (req, res) => {
+  const query = normalizeWhitespace(req.query.q || '').toLowerCase();
+  const limitRaw = Number(req.query.limit);
+  const limit = Number.isFinite(limitRaw) ? Math.max(1, Math.min(500, limitRaw)) : 50;
+
+  const allCities = Object.values(cityProfiles);
+  const filtered = query
+    ? allCities.filter((city) => {
+      const aliases = Array.isArray(city.aliases) ? city.aliases : [];
+      const haystack = [
+        city.slug,
+        city.name,
+        city.state,
+        city.country,
+        ...aliases
+      ].map((x) => normalizeWhitespace(x).toLowerCase()).join(' ');
+      return haystack.includes(query);
+    })
+    : allCities;
+
+  const items = filtered
+    .sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')))
+    .slice(0, limit)
+    .map((city) => ({
+      slug: city.slug,
+      name: city.name,
+      state: city.state || '',
+      country: city.country || '',
+      timezone: city.timezone || '',
+      latitude: city.latitude,
+      longitude: city.longitude
+    }));
+
+  res.json({
+    total: filtered.length,
+    returned: items.length,
+    items
+  });
+});
+
+function getSitemapLastMod() {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: IST_TIME_ZONE }).format(new Date());
+}
+
+function getStaticSitemapUrls() {
+  return [
     { loc: `${PUBLIC_BASE_URL}/`, changefreq: 'weekly', priority: '1.0' },
     { loc: `${PUBLIC_BASE_URL}/quran`, changefreq: 'weekly', priority: '0.9' },
     { loc: `${PUBLIC_BASE_URL}/terms.html`, changefreq: 'yearly', priority: '0.3' },
@@ -707,9 +888,18 @@ app.get('/sitemap.xml', async (req, res) => {
     { loc: `${PUBLIC_BASE_URL}/prayer-times-new-delhi.html`, changefreq: 'weekly', priority: '0.8' },
     { loc: `${PUBLIC_BASE_URL}/prayer-times-global.html`, changefreq: 'monthly', priority: '0.7' }
   ];
+}
 
-  const buildXml = (urls) => {
-    const body = urls.map((entry) => `
+function getCitySitemapUrls() {
+  return Object.values(cityProfiles).map((city) => ({
+    loc: `${PUBLIC_BASE_URL}/namaz-times/${city.slug}`,
+    changefreq: 'daily',
+    priority: '0.85'
+  }));
+}
+
+function buildSitemapUrlset(urls, lastmod) {
+  const body = urls.map((entry) => `
   <url>
     <loc>${escapeHtml(entry.loc)}</loc>
     <lastmod>${lastmod}</lastmod>
@@ -717,27 +907,79 @@ app.get('/sitemap.xml', async (req, res) => {
     <priority>${entry.priority}</priority>
   </url>`).join('');
 
-    return `<?xml version="1.0" encoding="UTF-8"?>
+  return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${body}
 </urlset>`;
-  };
+}
 
+function buildSitemapIndex(entries, lastmod) {
+  const body = entries.map((entry) => `
+  <sitemap>
+    <loc>${escapeHtml(entry.loc)}</loc>
+    <lastmod>${lastmod}</lastmod>
+  </sitemap>`).join('');
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${body}
+</sitemapindex>`;
+}
+
+async function getCoreSitemapUrls() {
+  const staticUrls = getStaticSitemapUrls();
+  const data = await getQuranData();
+  const surahUrls = data.quranArabic.map((surah) => ({
+    loc: `${PUBLIC_BASE_URL}${buildSurahPath(surah)}`,
+    changefreq: 'monthly',
+    priority: '0.8'
+  }));
+  return staticUrls.concat(surahUrls);
+}
+
+app.get('/sitemap-core.xml', async (req, res) => {
+  const lastmod = getSitemapLastMod();
   try {
-    const data = await getQuranData();
-    const surahUrls = data.quranArabic.map((surah) => ({
-      loc: `${PUBLIC_BASE_URL}${buildSurahPath(surah)}`,
-      changefreq: 'monthly',
-      priority: '0.8'
-    }));
-
-    const xml = buildXml(staticUrls.concat(surahUrls));
+    const urls = await getCoreSitemapUrls();
     res.set('Content-Type', 'application/xml; charset=utf-8');
-    res.send(xml);
-  } catch (err) {
+    res.send(buildSitemapUrlset(urls, lastmod));
+  } catch (_) {
     res.set('Content-Type', 'application/xml; charset=utf-8');
-    res.send(buildXml(staticUrls));
+    res.send(buildSitemapUrlset(getStaticSitemapUrls(), lastmod));
   }
+});
+
+app.get('/sitemap-cities-:chunk(\\d+).xml', (req, res) => {
+  const lastmod = getSitemapLastMod();
+  const chunkIndex = Math.max(0, Number(req.params.chunk) || 0);
+  const cityUrls = getCitySitemapUrls();
+  const start = chunkIndex * SITEMAP_CITY_CHUNK_SIZE;
+  const chunkUrls = cityUrls.slice(start, start + SITEMAP_CITY_CHUNK_SIZE);
+
+  if (!chunkUrls.length) {
+    res.status(404).set('Content-Type', 'application/xml; charset=utf-8');
+    res.send(buildSitemapUrlset([], lastmod));
+    return;
+  }
+
+  res.set('Content-Type', 'application/xml; charset=utf-8');
+  res.send(buildSitemapUrlset(chunkUrls, lastmod));
+});
+
+app.get('/sitemap.xml', (req, res) => {
+  const lastmod = getSitemapLastMod();
+  const cityUrls = getCitySitemapUrls();
+  const entries = [{ loc: `${PUBLIC_BASE_URL}/sitemap-core.xml` }];
+
+  if (cityUrls.length) {
+    const cityChunkCount = Math.ceil(cityUrls.length / SITEMAP_CITY_CHUNK_SIZE);
+    for (let i = 0; i < cityChunkCount; i += 1) {
+      entries.push({ loc: `${PUBLIC_BASE_URL}/sitemap-cities-${i}.xml` });
+    }
+  }
+
+  res.set('Content-Type', 'application/xml; charset=utf-8');
+  res.send(buildSitemapIndex(entries, lastmod));
 });
 
 app.get(['/quran.html', '/quran'], async (req, res) => {
@@ -811,7 +1053,450 @@ app.get('/quran/:surahSlug/:surahNumber(\\d+)', async (req, res) => {
   }
 });
 
-// Static files should be served after SSR Quran routes so quran.html is not served raw.
+// ─── City Prayer Times SSR ─────────────────────────────────────────────────
+
+function getTodayIstIsoDate() {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: IST_TIME_ZONE }).format(new Date());
+}
+
+function extractTimeHHMM(rawValue) {
+  const match = String(rawValue || '').match(/(\d{1,2}):(\d{2})/);
+  if (!match) return '';
+  return `${String(Number(match[1])).padStart(2, '0')}:${match[2]}`;
+}
+
+function formatTime12h(rawValue) {
+  const normalized = extractTimeHHMM(rawValue);
+  if (!normalized) return '';
+  const [h, m] = normalized.split(':').map(Number);
+  return `${String(h % 12 || 12).padStart(2, '0')}:${String(m).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`;
+}
+
+function parseGregorianDateToIso(gregorianDate) {
+  const match = String(gregorianDate || '').match(/^(\d{2})-(\d{2})-(\d{4})$/);
+  if (!match) return '';
+  return `${match[3]}-${match[2]}-${match[1]}`;
+}
+
+async function fetchCityCalendarMonth(cityProfile, year, month) {
+  const url = `https://api.aladhan.com/v1/calendar/${year}/${month}?latitude=${cityProfile.latitude}&longitude=${cityProfile.longitude}&method=${cityProfile.method || 1}`;
+  const response = await fetch(url, { headers: { Accept: 'application/json' } });
+  if (!response.ok) throw new Error(`AlAdhan calendar failed: ${response.status}`);
+  const payload = await response.json();
+  const days = payload?.data;
+  if (!Array.isArray(days)) throw new Error('Unexpected calendar payload from AlAdhan');
+  return days;
+}
+
+async function getCityRamadanCalendar(cityProfile, year = RAMADAN_CALENDAR_YEAR) {
+  const cacheKey = `${cityProfile.slug}:${year}`;
+  const now = Date.now();
+  const cached = cityRamadanCache.get(cacheKey);
+  if (cached && (now - cached.time) < CITY_RAMADAN_CACHE_TTL_MS) {
+    return cached.data;
+  }
+
+  const monthChunks = await Promise.all([2, 3].map((month) => fetchCityCalendarMonth(cityProfile, year, month)));
+  const todayIso = getTodayIstIsoDate();
+  const ramadanDays = monthChunks
+    .flat()
+    .filter((entry) => Number(entry?.date?.hijri?.month?.number) === 9)
+    .map((entry) => {
+      const hijriDay = Number(entry?.date?.hijri?.day || 0);
+      const isoDate = parseGregorianDateToIso(entry?.date?.gregorian?.date || '');
+      const monthName = normalizeWhitespace(entry?.date?.gregorian?.month?.en || '');
+      const dayOfMonth = String(entry?.date?.gregorian?.day || '').padStart(2, '0');
+      const weekday = normalizeWhitespace(entry?.date?.gregorian?.weekday?.en || '').slice(0, 3);
+      return {
+        day: hijriDay,
+        date: `${dayOfMonth} ${monthName.slice(0, 3)} ${year}`.trim(),
+        weekday,
+        hijri: `${hijriDay} Ramadan`,
+        sehri: formatTime12h(entry?.timings?.Imsak || entry?.timings?.Fajr),
+        fajr: formatTime12h(entry?.timings?.Fajr),
+        iftar: formatTime12h(entry?.timings?.Maghrib),
+        isToday: isoDate && isoDate === todayIso,
+        isQadr: [21, 23, 25, 27, 29].includes(hijriDay),
+        sortDate: isoDate
+      };
+    })
+    .filter((day) => day.day > 0 && day.sortDate)
+    .sort((a, b) => a.sortDate.localeCompare(b.sortDate));
+
+  const result = {
+    year,
+    hijriYear: normalizeWhitespace(monthChunks?.[0]?.[0]?.date?.hijri?.year || ''),
+    days: ramadanDays
+  };
+  cityRamadanCache.set(cacheKey, { data: result, time: Date.now() });
+  return result;
+}
+
+async function getCityPrayerTimes(slug, latitude, longitude, method) {
+  const now = Date.now();
+  const cached = cityPrayerCache.get(slug);
+  if (cached && (now - cached.time) < CITY_PRAYER_CACHE_TTL_MS) {
+    return cached.data;
+  }
+
+  const today = getTodayIstIsoDate();
+  const url = `https://api.aladhan.com/v1/timings/${today}?latitude=${latitude}&longitude=${longitude}&method=${method || 1}`;
+  const response = await fetch(url, { headers: { Accept: 'application/json' } });
+  if (!response.ok) throw new Error(`AlAdhan API failed: ${response.status}`);
+  const payload = await response.json();
+  const apiTimings = payload?.data?.timings || {};
+  const timings = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'].reduce((acc, prayer) => {
+    acc[prayer] = extractTimeHHMM(apiTimings[prayer] || '');
+    return acc;
+  }, {});
+  const result = { timings, date: today };
+  cityPrayerCache.set(slug, { data: result, time: Date.now() });
+  return result;
+}
+
+function buildCityStructuredData(cityProfile) {
+  const faqEntities = (cityProfile.faqItems || []).map(item => ({
+    '@type': 'Question',
+    name: item.q,
+    acceptedAnswer: { '@type': 'Answer', text: item.a }
+  }));
+
+  const citySlug = cityProfile.slug;
+  const canonical = `${PUBLIC_BASE_URL}/namaz-times/${citySlug}`;
+
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqEntities
+  };
+
+  const articleSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: `Namaz Timings in ${cityProfile.name}, ${cityProfile.country || 'India'} Today | Fajr, Zohr, Asr, Magrib, Isha | RuhVerse`,
+    description: `Accurate daily Namaz timings in ${cityProfile.name}, ${cityProfile.country || 'India'} with Fajr, Zohr, Asr, Magrib, and Isha times.`,
+    url: canonical,
+    image: [`${PUBLIC_BASE_URL}/assets/Gemini_Generated_Image_1z0kzx1z0kzx1z0k.jpg`],
+    author: { '@type': 'Organization', name: 'RuhVerse' },
+    publisher: {
+      '@type': 'Organization',
+      name: 'RuhVerse',
+      logo: { '@type': 'ImageObject', url: `${PUBLIC_BASE_URL}/assets/Gemini_Generated_Image_1z0kzx1z0kzx1z0k.jpg` }
+    },
+    mainEntityOfPage: canonical,
+    inLanguage: 'en'
+  };
+
+  return [
+    `<script type="application/ld+json">${JSON.stringify(faqSchema)}</script>`,
+    `<script type="application/ld+json">${JSON.stringify(articleSchema)}</script>`
+  ].join('\n');
+}
+
+function renderPrayerCardsHtml(timings) {
+  const prayers = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+  const prayerLabels = { Fajr: 'Fajr', Dhuhr: 'Zohr', Asr: 'Asr', Maghrib: 'Magrib', Isha: 'Isha' };
+  return prayers.map(name => {
+    const displayTime = formatTime12h(timings[name] || '') || '--';
+    return `<div class="prayer-card"><h4>${escapeHtml(prayerLabels[name] || name)}</h4><span>${escapeHtml(displayTime)}</span></div>`;
+  }).join('');
+}
+
+function renderCityFactsHtml(facts) {
+  const icons = ['🕌', '📜', '🍽️', '🌙', '✨'];
+  return (facts || []).map((fact, i) => `
+    <div class="city-fact-card">
+      <span class="city-fact-icon">${icons[i % icons.length]}</span>
+      <p>${escapeHtml(fact)}</p>
+    </div>
+  `).join('');
+}
+
+function renderCityFaqHtml(faqItems) {
+  return (faqItems || []).map(item => `
+    <div class="faq-item">
+      <h3>${escapeHtml(item.q)}</h3>
+      <p>${escapeHtml(item.a)}</p>
+    </div>
+  `).join('');
+}
+
+function getRelatedCityProfiles(cityProfile, limit = 8) {
+  const sameCountry = normalizeWhitespace(cityProfile.country || '').toLowerCase();
+  const sameState = normalizeWhitespace(cityProfile.state || '').toLowerCase();
+  const allCities = Object.values(cityProfiles).filter((city) => city && city.slug && city.slug !== cityProfile.slug);
+
+  const ranked = allCities.map((city) => {
+    let score = 0;
+    const cityCountry = normalizeWhitespace(city.country || '').toLowerCase();
+    const cityState = normalizeWhitespace(city.state || '').toLowerCase();
+    if (sameCountry && cityCountry === sameCountry) score += 100;
+    if (sameState && cityState && cityState === sameState) score += 25;
+    if (Array.isArray(city.aliases) && city.aliases.length) score += 3;
+    if (normalizeWhitespace(city.muslimPopulation || '')) score += 2;
+    return { city, score };
+  });
+
+  ranked.sort((a, b) => b.score - a.score || String(a.city.name || '').localeCompare(String(b.city.name || '')));
+  return ranked.slice(0, limit).map((item) => item.city);
+}
+
+function renderRelatedCityLinksHtml(cityProfile) {
+  const related = getRelatedCityProfiles(cityProfile, 8);
+  if (!related.length) {
+    return `
+      <a href="/prayer-times-global.html" class="related-city-link">
+        <h4>Explore Worldwide Cities</h4>
+        <p>Browse global prayer-time hubs and find your next city.</p>
+        <small>Global Directory</small>
+      </a>
+    `;
+  }
+
+  return related.map((city) => {
+    const region = [city.state, city.country].filter(Boolean).join(', ');
+    const snippet = truncateForMeta(city.famousLandmark || city.insights || `Namaz timings in ${city.name}.`, 92);
+    return `
+      <a href="/namaz-times/${encodeURIComponent(city.slug)}" class="related-city-link">
+        <h4>${escapeHtml(city.name)}</h4>
+        <p>${escapeHtml(snippet)}</p>
+        <small>${escapeHtml(region)}</small>
+      </a>
+    `;
+  }).join('');
+}
+
+function renderRamadanNoteHtml(note) {
+  if (!note) return '';
+  return `
+    <div class="ramadan-note-banner">
+      <span class="ramadan-icon">🌙</span>
+      <div>
+        <h4>Ramadan in This City</h4>
+        <p>${escapeHtml(note)}</p>
+      </div>
+    </div>
+  `;
+}
+
+function renderRamadanCalendarHtml(calendarData, cityProfile) {
+  if (!calendarData || !Array.isArray(calendarData.days) || !calendarData.days.length) {
+    return `
+      <div class="ramadan-calendar-wrap" style="margin: 2.5rem 0;">
+        <div class="ramadan-cal-header">
+          <h2 class="section-title">Ramadan ${RAMADAN_CALENDAR_YEAR} Calendar - ${escapeHtml(cityProfile.name)}</h2>
+          <p class="cal-note">City-specific Ramadan calendar is currently unavailable. Please check back shortly.</p>
+        </div>
+      </div>
+    `;
+  }
+
+  const rowsHtml = calendarData.days.map((day) => {
+    const classes = [day.isToday ? 'today-row' : '', day.isQadr ? 'qadr-row' : ''].filter(Boolean).join(' ');
+    const todayBadge = day.isToday ? '<span class="today-badge">Today</span>' : '';
+    const qadrBadge = day.isQadr ? '<span class="qadr-badge">Qadr</span>' : '';
+    return `
+      <tr${classes ? ` class="${classes}"` : ''}>
+        <td><strong>${escapeHtml(day.day)}</strong></td>
+        <td>${escapeHtml(day.date)} <small style="color:var(--text-muted)">${escapeHtml(day.weekday)}</small> ${todayBadge}</td>
+        <td style="color:var(--text-muted); font-size:0.85rem;">${escapeHtml(day.hijri)}</td>
+        <td><strong>${escapeHtml(day.sehri)}</strong></td>
+        <td style="color:var(--text-muted)">${escapeHtml(day.fajr)}</td>
+        <td><strong style="color:var(--emerald)">${escapeHtml(day.iftar)}</strong></td>
+        <td>${qadrBadge}</td>
+      </tr>
+    `;
+  }).join('');
+
+  const hijriLabel = calendarData.hijriYear ? ` / ${escapeHtml(calendarData.hijriYear)} AH` : '';
+
+  return `
+    <div class="ramadan-calendar-wrap" style="margin: 3.5rem 0 1rem;">
+      <div class="ramadan-cal-header">
+        <h2 class="section-title">Ramadan ${escapeHtml(calendarData.year)} Calendar - ${escapeHtml(cityProfile.name)}${hijriLabel}</h2>
+        <p class="cal-note">Sehri ends at Imsak. Iftar is at Maghrib. Times are in IST.</p>
+      </div>
+      <div class="ramadan-table-scroll">
+        <table class="ramadan-table">
+          <thead>
+            <tr>
+              <th>Day</th>
+              <th>Date</th>
+              <th>Hijri</th>
+              <th>Sehri Ends</th>
+              <th>Fajr</th>
+              <th>Iftar</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsHtml}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function renderCityPage(template, cityProfile, prayerData, ramadanCalendar) {
+  const { timings, date } = prayerData;
+  const citySlug = cityProfile.slug;
+  const canonical = `${PUBLIC_BASE_URL}/namaz-times/${citySlug}`;
+  const ogImage = `${PUBLIC_BASE_URL}/assets/Gemini_Generated_Image_1z0kzx1z0kzx1z0k.jpg`;
+  const countryName = cityProfile.country || 'India';
+  const regionName = [cityProfile.state, countryName].filter(Boolean).join(', ');
+  const cityCountryLabel = `${cityProfile.name}, ${countryName}`;
+
+  const fajrDisplay = formatTime12h(timings['Fajr'] || '') || '--';
+  const zohrDisplay = formatTime12h(timings['Dhuhr'] || '') || '--';
+  const asrDisplay = formatTime12h(timings['Asr'] || '') || '--';
+  const maghribDisplay = formatTime12h(timings['Maghrib'] || '') || '--';
+  const ishaDisplay = formatTime12h(timings['Isha'] || '') || '--';
+
+  const pageTitle = `Namaz Timings in ${cityCountryLabel} Today | Fajr, Zohr, Asr, Magrib, Isha | RuhVerse`;
+  const pageDescription = truncateForMeta(
+    `Today's Namaz timings in ${cityCountryLabel}: Fajr ${fajrDisplay}, Zohr ${zohrDisplay}, Asr ${asrDisplay}, Magrib ${maghribDisplay}, Isha ${ishaDisplay}.`,
+    160
+  );
+  const aliasTerms = Array.isArray(cityProfile.aliases)
+    ? cityProfile.aliases.map((x) => normalizeWhitespace(x)).filter(Boolean).slice(0, 8)
+    : [];
+  const keywordSet = new Set([
+    `namaz timings ${cityProfile.name} ${countryName}`,
+    `prayer times ${cityProfile.name} ${countryName}`,
+    `${cityProfile.name} namaz timing today`,
+    `${cityProfile.name} fajr zohr asr magrib isha time`,
+    `fajr time ${cityProfile.name}`,
+    `zohr time ${cityProfile.name}`,
+    `asr time ${cityProfile.name}`,
+    `magrib time ${cityProfile.name}`,
+    `isha time ${cityProfile.name}`,
+    `${cityProfile.name} salah schedule`,
+    `ramadan ${RAMADAN_CALENDAR_YEAR} ${cityProfile.name}`,
+    `iftar time ${cityProfile.name}`,
+    `sehri time ${cityProfile.name}`,
+    `namaz ${countryName}`,
+    'RuhVerse namaz'
+  ]);
+  aliasTerms.forEach((alias) => {
+    keywordSet.add(`namaz timings ${alias} ${countryName}`);
+    keywordSet.add(`prayer time ${alias}`);
+    keywordSet.add(`${alias} fajr zohr asr magrib isha`);
+  });
+  const pageKeywords = Array.from(keywordSet).join(', ');
+
+  const heroTitle = `Namaz Times in ${cityProfile.name}`;
+  const heroSubtitle = `Official Salah schedule for ${cityProfile.name}, ${regionName}. Timings for Fajr, Zohr, Asr, Magrib, and Isha calculated using the University of Islamic Sciences (Karachi) method at coordinates ${cityProfile.latitude}° N, ${cityProfile.longitude}° E.`;
+  const locationLabel = `${cityProfile.name}, ${regionName} (${cityProfile.timezone || IST_TIME_ZONE})`;
+  const insightsHeading = `Islam & the Muslim Community in ${cityProfile.name}`;
+
+  const chipsHtml = [
+    `<span class="city-meta-chip">📍 ${escapeHtml(regionName)}</span>`,
+    `<span class="city-meta-chip">🕌 ${escapeHtml(cityProfile.muslimPopulation || '')} Muslims</span>`,
+    `<span class="city-meta-chip">📅 ${escapeHtml(date)}</span>`
+  ].join('');
+
+  const insightsHtml = `
+    <h3>${escapeHtml(cityProfile.famousLandmark || cityProfile.name)}</h3>
+    <p>${escapeHtml(cityProfile.insights || '')}</p>
+  `;
+
+  const structuredData = buildCityStructuredData(cityProfile);
+  const ramadanCalendarHtml = renderRamadanCalendarHtml(ramadanCalendar, cityProfile);
+  const relatedCitiesHtml = renderRelatedCityLinksHtml(cityProfile);
+
+  const ssrBootstrap = `
+<script>
+window.__SSR_CITY = ${JSON.stringify({
+    slug: citySlug,
+    name: cityProfile.name,
+    latitude: cityProfile.latitude,
+    longitude: cityProfile.longitude,
+    timezone: cityProfile.timezone || IST_TIME_ZONE,
+    method: cityProfile.method,
+    prayerTimes: timings,
+    date
+  })};
+</script>`;
+
+  return template
+    .replace('<!--SSR_PAGE_TITLE-->Namaz Times - RuhVerse', escapeHtml(pageTitle))
+    .replace('<!--SSR_PAGE_DESCRIPTION-->Accurate daily Namaz timings with city insights on RuhVerse.', escapeHtml(pageDescription))
+    .replace('<!--SSR_PAGE_KEYWORDS-->namaz times india, prayer times', escapeHtml(pageKeywords))
+    .replace('<!--SSR_CANONICAL-->https://ruhverse.online/namaz-times', escapeHtml(canonical))
+    .replace('<!--SSR_OG_TITLE-->Namaz Times - RuhVerse', escapeHtml(pageTitle))
+    .replace('<!--SSR_OG_DESCRIPTION-->Accurate daily Namaz timings on RuhVerse.', escapeHtml(pageDescription))
+    .replace('<!--SSR_OG_URL-->https://ruhverse.online/namaz-times', escapeHtml(canonical))
+    .replace('<!--SSR_OG_IMAGE-->https://ruhverse.online/assets/Gemini_Generated_Image_1z0kzx1z0kzx1z0k.jpg', escapeHtml(ogImage))
+    .replace('<!--SSR_TWITTER_TITLE-->Namaz Times - RuhVerse', escapeHtml(pageTitle))
+    .replace('<!--SSR_TWITTER_DESCRIPTION-->Accurate daily Namaz timings on RuhVerse.', escapeHtml(pageDescription))
+    .replace('<!--SSR_TWITTER_IMAGE-->https://ruhverse.online/assets/Gemini_Generated_Image_1z0kzx1z0kzx1z0k.jpg', escapeHtml(ogImage))
+    .replace('<!--SSR_STRUCTURED_DATA-->', structuredData)
+    .replace('<!--SSR_CITY_CHIPS-->', chipsHtml)
+    .replace('<!--SSR_CITY_HERO_TITLE-->Prayer Times', escapeHtml(heroTitle))
+    .replace('<!--SSR_CITY_HERO_SUBTITLE-->Accurate Namaz timings calculated using the University of Islamic Sciences (Karachi) method.', escapeHtml(heroSubtitle))
+    .replace('<!--SSR_CITY_LOCATION_LABEL-->India (IST)', escapeHtml(locationLabel))
+    .replace('<!--SSR_COUNTDOWN_INIT-->Loading...', 'Loading...')
+    .replace('<!--SSR_PRAYER_CARDS-->', renderPrayerCardsHtml(timings))
+    .replace('<!--SSR_CITY_INSIGHTS_HEADING-->Islam & Community in This City', escapeHtml(insightsHeading))
+    .replace('<!--SSR_CITY_INSIGHTS-->', insightsHtml)
+    .replace('<!--SSR_RAMADAN_NOTE-->', renderRamadanNoteHtml(cityProfile.ramadanNote))
+    .replace('<!--SSR_RAMADAN_CALENDAR-->', ramadanCalendarHtml)
+    .replace('<!--SSR_CITY_FACTS-->', renderCityFactsHtml(cityProfile.facts))
+    .replace('<!--SSR_FAQ_ITEMS-->', renderCityFaqHtml(cityProfile.faqItems))
+    .replace('<!--SSR_RELATED_CITIES-->', relatedCitiesHtml)
+    .replace('<!--SSR_DATA-->', ssrBootstrap);
+}
+
+async function serveCityPage(req, res, cityProfile) {
+  if (!cityPrayerTemplate) {
+    res.status(500).send('City prayer template not found.');
+    return;
+  }
+
+  const ramadanPromise = getCityRamadanCalendar(cityProfile).catch((err) => {
+    console.warn(`City Ramadan calendar failed for ${cityProfile.slug}:`, err.message);
+    return null;
+  });
+
+  try {
+    const prayerData = await getCityPrayerTimes(
+      cityProfile.slug,
+      cityProfile.latitude,
+      cityProfile.longitude,
+      cityProfile.method
+    );
+    const ramadanCalendar = await ramadanPromise;
+    const html = renderCityPage(cityPrayerTemplate, cityProfile, prayerData, ramadanCalendar);
+    res.send(html);
+  } catch (err) {
+    console.error(`City SSR failed for ${cityProfile.slug}:`, err.message);
+    // Fallback: render page with dashes on prayer cards
+    const fallbackTimings = { Fajr: '', Dhuhr: '', Asr: '', Maghrib: '', Isha: '' };
+    const fallbackData = { timings: fallbackTimings, date: getTodayIstIsoDate() };
+    const fallbackCalendar = await ramadanPromise;
+    try {
+      const html = renderCityPage(cityPrayerTemplate, cityProfile, fallbackData, fallbackCalendar);
+      res.send(html);
+    } catch (e2) {
+      res.status(500).send('Failed to render city prayer page.');
+    }
+  }
+}
+
+app.get('/namaz-times/:citySlug', async (req, res) => {
+  const slug = (req.params.citySlug || '').toLowerCase().trim();
+  const cityProfile = cityProfiles[slug];
+
+  if (!cityProfile) {
+    res.status(404).send(`City "${escapeHtml(slug)}" not found. <a href="/prayer-times-india.html">View all Indian cities</a>.`);
+    return;
+  }
+
+  await serveCityPage(req, res, cityProfile);
+});
+
+// ─── Static files should be served after SSR routes ──────────────────────────
 app.use(express.static(path.join(__dirname)));
 
 if (require.main === module) {

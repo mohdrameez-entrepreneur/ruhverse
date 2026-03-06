@@ -12,11 +12,12 @@
           "prayer-times-global.html",
           "prayer-times-india.html",
           "prayer-times-new-delhi.html",
+          "prayer-times-city.html",
           "style.css",
+          "footer_styles.css",
           "script.js",
           "script_3d.js",
           "robots.txt",
-          "sitemap.xml",
           "google50b824ea32f5425b.html",
           "assets/**",
           "data/**"

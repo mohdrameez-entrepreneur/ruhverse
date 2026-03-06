@@ -1,0 +1,387 @@
+{
+    "new-delhi": {
+        "slug": "new-delhi",
+        "name": "New Delhi",
+        "state": "Delhi",
+        "country": "India",
+        "latitude": 28.6139,
+        "longitude": 77.209,
+        "method": 1,
+        "timezone": "Asia/Kolkata",
+        "muslimPopulation": "~2 million",
+        "famousLandmark": "Jama Masjid – one of the largest mosques in India",
+        "insights": "New Delhi, the heart of India, is home to one of the country's most historic Muslim communities. The Walled City (Shahjahanabad), built by Mughal Emperor Shah Jahan in the 17th century, remains a crown jewel of Islamic heritage in South Asia. The towering Jama Masjid — constructed between 1644 and 1656 — can accommodate over 25,000 worshippers and stands as a powerful symbol of Delhi's Islamic legacy. From Lodi Garden's 15th-century tombs to Humayun's Tomb and Nizamuddin Dargah, the city breathes centuries of Sufi tradition and Mughal grandeur.",
+        "facts": [
+            "The Jama Masjid in Old Delhi was commissioned by Mughal Emperor Shah Jahan and completed in 1656 — it can hold over 25,000 worshippers.",
+            "Nizamuddin Dargah, the shrine of Sufi saint Nizamuddin Auliya, draws thousands of devotees every week for Qawwali gatherings.",
+            "Delhi has over 1,300 mosques, with the highest concentration in the Walled City area of Shahjahanabad.",
+            "The Mehrauli Archaeological Park contains over 100 medieval monuments, many of Islamic origin, including the iconic Qutub Minar.",
+            "During Ramadan, markets like Urdu Bazaar and Matia Mahal in Old Delhi come alive with special iftar spreads and nocturnal cultural celebrations."
+        ],
+        "ramadanNote": "During Ramadan, the lanes around Jama Masjid and Nizamuddin Auliya's dargah are especially vibrant — local restaurants offer special iftar menus and Qawwali nights are held after Taraweeh prayer.",
+        "faqItems": [
+            {
+                "q": "What method is used for New Delhi prayer time calculations?",
+                "a": "RuhVerse uses the University of Islamic Sciences (Karachi) method with Fajr and Isha angles of 18°, widely accepted across the Indian subcontinent."
+            },
+            {
+                "q": "Are these timings valid for Noida and Gurgaon?",
+                "a": "Yes, based on the coordinates (28.6139° N, 77.2090° E), these timings are accurate for the entire Delhi NCR region including Noida, Gurgaon, and Ghaziabad with less than 60 seconds variation."
+            },
+            {
+                "q": "When does Ramadan 2026 start in New Delhi?",
+                "a": "Ramadan 2026 is expected to begin on February 19, 2026, in New Delhi, subject to moon sighting confirmation."
+            }
+        ]
+    },
+    "mumbai": {
+        "slug": "mumbai",
+        "name": "Mumbai",
+        "state": "Maharashtra",
+        "country": "India",
+        "latitude": 19.076,
+        "longitude": 72.8777,
+        "method": 1,
+        "timezone": "Asia/Kolkata",
+        "muslimPopulation": "~3.9 million",
+        "famousLandmark": "Haji Ali Dargah – iconic mosque-shrine on a tidal islet",
+        "insights": "Mumbai is home to one of India's largest and most diverse urban Muslim communities, comprising roughly 19% of the city's population. The iconic Haji Ali Dargah, perched on a small islet off Worli, is one of the most-visited Muslim shrines in the country. From the historic Minara Masjid in Bhendi Bazaar to the grand Jama Masjid near Crawford Market, Mumbai's Islamic heritage stretches across centuries. The city's Muslim artisans, traders, and scholars have been integral to its identity since the Mughal and Portuguese eras.",
+        "facts": [
+            "The Haji Ali Dargah, built in 1431, is connected to the mainland by a 500-metre causeway that gets submerged at high tide.",
+            "Bhendi Bazaar in South Mumbai is a centuries-old Muslim cultural enclave and one of the city's most vibrant food markets during Ramadan.",
+            "Mumbai's Bohri Muslim community operates a unique religious infrastructure including exclusive mosques and social welfare networks.",
+            "The Mohammad Ali Road area becomes one of India's most famous Ramadan food streets, drawing thousands nightly for Raan, Nalli Nihari, and Malpua.",
+            "Mumbai has the largest concentration of Muslims in any Indian city by absolute numbers, with nearly 4 million adherents."
+        ],
+        "ramadanNote": "Mohammad Ali Road in Mumbai transforms into a legendary iftar destination during Ramadan — the street food here is considered some of the best in South Asia.",
+        "faqItems": [
+            {
+                "q": "What calculation method is used for Mumbai prayer times?",
+                "a": "RuhVerse uses the University of Islamic Sciences (Karachi) method for Mumbai, with a Fajr angle of 18° and Isha angle of 18°."
+            },
+            {
+                "q": "Are these timings valid for Thane and Navi Mumbai?",
+                "a": "These timings are based on central Mumbai coordinates (19.0760° N, 72.8777° E). For Thane or Navi Mumbai, there may be a 1–3 minute difference due to geographical distance."
+            },
+            {
+                "q": "When is Ramadan 2026 Iftar in Mumbai?",
+                "a": "Mumbai's Iftar (Maghrib) time shifts slightly later than New Delhi due to its more southerly and westerly location. Check today's live timing card for an accurate time."
+            }
+        ]
+    },
+    "bangalore": {
+        "slug": "bangalore",
+        "name": "Bangalore",
+        "state": "Karnataka",
+        "country": "India",
+        "latitude": 12.9716,
+        "longitude": 77.5946,
+        "method": 1,
+        "timezone": "Asia/Kolkata",
+        "muslimPopulation": "~1.5 million",
+        "famousLandmark": "Jamia Masjid – the largest mosque in Bangalore",
+        "insights": "Bangalore, India's Silicon Valley, has a Muslim population that blends centuries of Deccani culture with a modern, cosmopolitan identity. The city's Shivajinagar and Cox Town neighbourhoods are home to vibrant Muslim communities, the city's most historic mosques, and bustling bazaars with a rich South Indian Muslim culinary tradition. Tipu Sultan's Summer Palace, a fine example of Indo-Islamic architecture, stands as a reminder of the city's deep Muslim history under the Mysore Sultanate.",
+        "facts": [
+            "Tipu Sultan, the Tiger of Mysore, ruled Bangalore as part of his Sultanate and built several mosques, including the Idgah Masjid.",
+            "Shivajinagar is Bangalore's primary Muslim commercial and cultural hub, featuring the city's central mosque, gold markets, and spice bazaars.",
+            "The Bangalore biryani style, a lighter Deccani variant, is a culinary contribution of the local Muslim community.",
+            "Bangalore has over 300 registered mosques, with the Jamia Masjid being the most prominent for Friday congregations.",
+            "Karnataka has a significant Muslim minority of around 13%, making Bangalore a major centre of Islamic culture in South India."
+        ],
+        "ramadanNote": "During Ramadan, the Nixon area and Shivajinagar fill with iftar stalls serving Haleem, Biryani, and sweet shops open late into the night.",
+        "faqItems": [
+            {
+                "q": "What calculation method is used for Bangalore prayer times?",
+                "a": "RuhVerse uses the University of Islamic Sciences (Karachi) method for Bangalore, with Fajr and Isha angles of 18°."
+            },
+            {
+                "q": "Is the Fajr time in Bangalore earlier or later than Delhi?",
+                "a": "Bangalore is further south and close to the same longitude as Delhi. Fajr time in Bangalore is typically 30–60 minutes later than New Delhi due to the time zone being the same (IST) but the sun rising differently."
+            },
+            {
+                "q": "When does Ramadan 2026 begin in Bangalore?",
+                "a": "Ramadan 2026 is expected to begin around February 19, 2026, in Bangalore, subject to moon sighting confirmation."
+            }
+        ]
+    },
+    "hyderabad": {
+        "slug": "hyderabad",
+        "name": "Hyderabad",
+        "state": "Telangana",
+        "country": "India",
+        "latitude": 17.385,
+        "longitude": 78.4867,
+        "method": 1,
+        "timezone": "Asia/Kolkata",
+        "muslimPopulation": "~2 million",
+        "famousLandmark": "Mecca Masjid – one of the oldest and largest mosques in India",
+        "insights": "Hyderabad, the City of Pearls, carries the richest Islamic cultural legacy in Deccan India. Founded by Muhammad Quli Qutb Shah in 1591, the city flourished under the Nizams and became a global centre of Urdu literature, Islamic jurisprudence, and refined culture. The Mecca Masjid — one of the largest mosques in Asia — and the iconic Charminar are symbols of this grand heritage. Today, Old Hyderabad remains one of the most architecturally and culturally Muslim cities in South India.",
+        "facts": [
+            "Mecca Masjid, built by the Qutb Shahi dynasty and completed by Aurangzeb in 1694, can accommodate up to 10,000 worshippers at once.",
+            "The Charminar, built in 1591, was constructed by Muhammad Quli Qutb Shah to mark the location where a plague epidemic ended.",
+            "Hyderabad's Dum Biryani is world-famous and was perfected in the royal kitchens of the Nizam.",
+            "The Nizams of Hyderabad were among the wealthiest rulers in the world and were known for generous endowments to Islamic institutions.",
+            "Hyderabad is home to some of India's finest Urdu newspapers and hosts an international Urdu festival every year."
+        ],
+        "ramadanNote": "Ramadan in Hyderabad is a grand affair — the lanes of the Charminar and Laad Bazaar are lit up, Haleem is prepared in massive quantities, and the Mecca Masjid holds some of the most moving Taraweeh prayers in the country.",
+        "faqItems": [
+            {
+                "q": "Which method is used for Hyderabad Namaz timings?",
+                "a": "We use the University of Islamic Sciences (Karachi) method for Hyderabad, with a Fajr angle of 18° and Isha angle of 18°."
+            },
+            {
+                "q": "What is the significance of the Mecca Masjid for local prayer?",
+                "a": "The Mecca Masjid is the primary Friday congregational mosque for Hyderabad's Muslim community and has been so for over 300 years. Bricks from Mecca were used in its central arch, hence the name."
+            },
+            {
+                "q": "When does Ramadan 2026 start in Hyderabad?",
+                "a": "Ramadan 2026 is expected to begin on February 19, 2026, in Hyderabad, subject to official moon sighting."
+            }
+        ]
+    },
+    "chennai": {
+        "slug": "chennai",
+        "name": "Chennai",
+        "state": "Tamil Nadu",
+        "country": "India",
+        "latitude": 13.0827,
+        "longitude": 80.2707,
+        "method": 1,
+        "timezone": "Asia/Kolkata",
+        "muslimPopulation": "~700 thousand",
+        "famousLandmark": "Wallajah Big Mosque (Nawab's Mosque) in Triplicane",
+        "insights": "Chennai has a distinct and ancient Muslim heritage. The Tamil Muslims, known locally as Labbai, trace their roots to Arab traders who came to the Coromandel Coast over a thousand years ago. The Wallajah Mosque in Triplicane, built in 1795, is one of South India's most revered mosques. Chennai's Muslim community plays a vital role in the city's trade, cuisine, and cultural fabric — from the fragrant biryani of Triplicane to the Sufi shrines along the coast.",
+        "facts": [
+            "Arab traders arrived on the Tamil Nadu coast as early as the 7th century CE, establishing one of the oldest Muslim communities in India.",
+            "The Wallajah Big Mosque in Triplicane was built by Nawab Muhammad Ali Khan Wallajah in 1795 and remains a major spiritual centre.",
+            "The tomb of the Islamic scholar Shaikh Muhammad Yusuf, near Royapuram, is a significant pilgrimage site for local Muslims.",
+            "Tamil Nadu's unique Dakhni cuisine, particularly the Ambur and Arcot styles of Biryani, are beloved across India.",
+            "Chennai's Triplicane and Royapuram areas have some of the oldest mosques in South India, many dating to the 17th and 18th centuries."
+        ],
+        "ramadanNote": "During Ramadan, Chennai's Triplicane area buzzes with festivity — local khaana shops serve elaborate iftar spreads and the Wallajah Mosque holds a large communal iftar for thousands.",
+        "faqItems": [
+            {
+                "q": "What calculation method is used for Chennai prayer times?",
+                "a": "RuhVerse uses the University of Islamic Sciences (Karachi) method for Chennai, with Fajr and Isha angles of 18°."
+            },
+            {
+                "q": "Is Fajr time in Chennai different from North India?",
+                "a": "Yes, because Chennai is further south and shares the same time zone (IST) as all of India, its Fajr time is typically around 20–40 minutes later than Delhi during winter months."
+            },
+            {
+                "q": "When is Eid ul-Fitr 2026 in Chennai?",
+                "a": "Eid ul-Fitr 2026 is expected around March 20–21, 2026, subject to moon sighting. The Eid prayer is traditionally held at the Chepauk Stadium ground and the Wallajah Mosque."
+            }
+        ]
+    },
+    "kolkata": {
+        "slug": "kolkata",
+        "name": "Kolkata",
+        "state": "West Bengal",
+        "country": "India",
+        "latitude": 22.5726,
+        "longitude": 88.3639,
+        "method": 1,
+        "timezone": "Asia/Kolkata",
+        "muslimPopulation": "~1.7 million",
+        "famousLandmark": "Nakhoda Mosque – the city's grand Friday mosque",
+        "insights": "Kolkata, the cultural capital of East India, has a long and layered Islamic heritage. The Nakhoda Mosque — a stunning red sandstone structure modelled on Akbar's tomb in Sikandra — is the city's principal mosque and can hold 10,000 worshippers. The Tipu Sultan Mosque (1832) and the historic mosques of central Kolkata bear witness to centuries of Muslim intellectual and artistic contribution to Bengal. Kolkata's Muslim community has been instrumental in shaping the city's literature, music, and culinary traditions.",
+        "facts": [
+            "The Nakhoda Mosque, completed in 1926, was built by the Kutchi Memon community and modelled on Mughal architecture.",
+            "West Bengal has the second-highest Muslim population of any Indian state, with nearly 27% of the state being Muslim.",
+            "Kolkata's Mughlai cuisine — Kathi Rolls, Nargisi Kofta, and Rezala — was developed in Muslim kitchens and is now iconic globally.",
+            "The poet and Nobel laureate Rabindranath Tagore was deeply influenced by Baul and Sufi mysticism, reflecting in Bengal's unique composite culture.",
+            "Park Circus and Rajabazar are the main Muslim neighbourhoods of Kolkata, known for their vibrant Eid celebrations and Muharram processions."
+        ],
+        "ramadanNote": "During Ramadan, the Park Circus area and the lanes near Nakhoda Mosque host some of Kolkata's most popular iftar markets, famous for Haleem, Kebabs, Firni, and Shahi Tukda.",
+        "faqItems": [
+            {
+                "q": "What method is used for Kolkata prayer time calculations?",
+                "a": "RuhVerse uses the University of Islamic Sciences (Karachi) method for Kolkata, with Fajr and Isha angles of 18°."
+            },
+            {
+                "q": "Is sunrise earlier in Kolkata than the rest of India?",
+                "a": "Yes. Kolkata is one of the easternmost major Indian cities, so sun-based prayer times like Fajr and Maghrib occur earlier than in New Delhi or Mumbai despite all sharing the IST (UTC+5:30) timezone."
+            },
+            {
+                "q": "What is the Eid ground in Kolkata?",
+                "a": "Eid prayers in Kolkata are traditionally held at the Red Road ground near the Victoria Memorial, one of the largest open-air Eid congregations in India."
+            }
+        ]
+    },
+    "lucknow": {
+        "slug": "lucknow",
+        "name": "Lucknow",
+        "state": "Uttar Pradesh",
+        "country": "India",
+        "latitude": 26.8467,
+        "longitude": 80.9462,
+        "method": 1,
+        "timezone": "Asia/Kolkata",
+        "muslimPopulation": "~600 thousand",
+        "famousLandmark": "Asafi (Bara) Imambara – a magnificent Nawabi monument",
+        "insights": "Lucknow, the City of Nawabs, is one of the most refined centres of Urdu culture and Islamic civilisation in the world. Home to the Awadhi Nawabs who ruled in the 18th and 19th centuries, Lucknow developed the tehzeeb (etiquette), poetry, music, and cuisine that define Urdu cultural identity. The Hussainabad precinct, with the Bara Imambara, Chota Imambara, and Rumi Darwaza, is among South Asia's most spectacular examples of Indo-Islamic architecture. Lucknow's Shia Muslim community, one of the most prominent in the subcontinent, gives the city a particularly distinctive religious character.",
+        "facts": [
+            "The Bara Imambara, built in 1784, contains the largest vaulted hall in the world built without the use of steel or wood beams.",
+            "Lucknow's Dum Pukht (slow-cooked) biryani and Galouti Kebabs were invented in the royal kitchens of the Nawabs and are now famous globally.",
+            "The Rumi Darwaza (1784), inspired by the Sublime Porte in Istanbul, is one of the most iconic gateways in India.",
+            "The Dargah-e-Hazrat Abbas is one of the most visited Shia shrines in India, especially during the month of Muharram.",
+            "Lucknow's Urdu literary tradition produced greats like Mir Anees, Mir Dard, and Dagh Dehlvi, whose works remain canonical in South Asian poetry."
+        ],
+        "ramadanNote": "Ramadan in Lucknow is as much a cultural event as a religious one — the bazaars of Aminabad and Hazratganj overflow with special iftar delicacies, Sheer Korma, Phirni, and handmade sherbet.",
+        "faqItems": [
+            {
+                "q": "What method is used for Lucknow prayer time calculations?",
+                "a": "RuhVerse uses the University of Islamic Sciences (Karachi) method for Lucknow, with Fajr and Isha angles of 18°."
+            },
+            {
+                "q": "Is Lucknow prayer time the same as New Delhi?",
+                "a": "Lucknow is slightly east of New Delhi (by ~3° longitude), so prayer times like Fajr and Maghrib occur about 10–12 minutes earlier than in New Delhi."
+            },
+            {
+                "q": "Where is the main Eid prayer held in Lucknow?",
+                "a": "The main Eid prayers in Lucknow are traditionally held at the Eidgah grounds in Hussainabad and the Aishbagh Eidgah, drawing tens of thousands of worshippers."
+            }
+        ]
+    },
+    "jaipur": {
+        "slug": "jaipur",
+        "name": "Jaipur",
+        "state": "Rajasthan",
+        "country": "India",
+        "latitude": 26.9124,
+        "longitude": 75.7873,
+        "method": 1,
+        "timezone": "Asia/Kolkata",
+        "muslimPopulation": "~500 thousand",
+        "famousLandmark": "Atish Market Mosque and historic mosques in the Walled City",
+        "insights": "Jaipur, the Pink City, is known for its vibrant Rajput heritage — but its Muslim community has been equally central to the city's story. Muslim artisans, poets, and traders have shaped Jaipur's architecture, handicrafts, and trade networks for centuries. The city's Walled City area contains numerous historic mosques and tombs. From the Sunehri Kothi to the Idgah Mosque, and from gem-cutting workshops run by Muslim craftsmen to Persian-inspired architecture, Jaipur's Islamic fingerprint is visible at every turn.",
+        "facts": [
+            "Jaipur's world-famous gemstone cutting and jewellery industry has historically been dominated by Muslim artisans from the Mughal era.",
+            "The city has the largest Eid congregation in Rajasthan, held annually at the Idgah grounds near Amer Fort.",
+            "Jaipur's Muslim community settled in large numbers during the Mughal period, and many of their descendants continue to live in the historic Walled City.",
+            "Rajasthan has unique Meo Muslim communities in the northeast, known for preserving pre-Islamic folk traditions alongside Islamic faith.",
+            "The Dargah of Hazrat Nizamuddin Chishti in Ajmer (nearby) draws millions from across India and the world, making Rajasthan a major Sufi pilgrimage hub."
+        ],
+        "ramadanNote": "Ramadan in Jaipur brings alive the Walled City's markets — the Johari Bazaar area hosts colourful iftar stalls and the local Shahi Tukda and Malpua are a must-try.",
+        "faqItems": [
+            {
+                "q": "What calculation method is used for Jaipur prayer times?",
+                "a": "RuhVerse uses the University of Islamic Sciences (Karachi) method for Jaipur, with Fajr and Isha angles of 18°."
+            },
+            {
+                "q": "Is Jaipur prayer time the same as New Delhi?",
+                "a": "Jaipur is about 2° west of New Delhi, so its prayer times are typically 8–10 minutes later than New Delhi for times like Fajr and Maghrib."
+            },
+            {
+                "q": "Where is the famous Sufi shrine near Jaipur?",
+                "a": "The Ajmer Sharif Dargah, dedicated to Hazrat Moinuddin Chishti, is located about 130 km from Jaipur and is one of the most visited shrines in the Islamic world."
+            }
+        ]
+    },
+    "ahmedabad": {
+        "slug": "ahmedabad",
+        "name": "Ahmedabad",
+        "state": "Gujarat",
+        "country": "India",
+        "latitude": 23.0225,
+        "longitude": 72.5714,
+        "method": 1,
+        "timezone": "Asia/Kolkata",
+        "muslimPopulation": "~750 thousand",
+        "famousLandmark": "Jama Masjid of Ahmedabad (1424) – a UNESCO World Heritage site",
+        "insights": "Ahmedabad, founded by Sultan Ahmad Shah I in 1411, bears one of the richest concentrations of Islamic architecture in South Asia. The old city — a UNESCO World Heritage Site — is filled with mosques, tombs, and step wells built by the Sultanate of Gujarat. The Jama Masjid, Sidi Saiyyed Mosque (famous for its intricate stone jali), and the Hutheesing Jain Temple collectively tell the story of Gujarat's pluralistic medieval identity. Ahmedabad's Muslim community today is diverse, including Sunni, Bohri, Ismaili, and other sects.",
+        "facts": [
+            "The Sidi Saiyyed Mosque's intricately carved stone jali lattice windows (1573) are among the finest examples of Islamic stone carving in the world.",
+            "Ahmedabad's Jama Masjid (1424) was built by Ahmad Shah I and served as the royal mosque of the Gujarat Sultanate.",
+            "The Bohri (Dawoodi Bohra) Muslim community, headquartered in Mumbai but strongest in Gujarat, has deep roots in Ahmedabad's history.",
+            "The Roza of Ahmad Shah I and the Mahmud Begada tomb complex represent some of Gujarat's most exquisite Indo-Saracenic architecture.",
+            "Ahmedabad's old city has 26 religious precincts (pol) reflecting centuries of Hindu-Muslim coexistence in shared neighbourhoods."
+        ],
+        "ramadanNote": "Ramadan in Ahmedabad's old city is intensely spiritual — the Jama Masjid and surrounding alleyways host nightly iftar gatherings, and the famous Bohri mohalla prepares traditional Bohri cuisine.",
+        "faqItems": [
+            {
+                "q": "What method is used for Ahmedabad prayer times?",
+                "a": "RuhVerse uses the University of Islamic Sciences (Karachi) method for Ahmedabad, with Fajr and Isha angles of 18°."
+            },
+            {
+                "q": "Is Ahmedabad's Fajr time different from Mumbai?",
+                "a": "Ahmedabad is north of Mumbai and about 1° west, so its prayer times are very close to Mumbai's — typically within 3–5 minutes for most prayers."
+            },
+            {
+                "q": "Is the Sidi Saiyyed Mosque open to non-Muslim visitors?",
+                "a": "Yes, the Sidi Saiyyed Mosque is open to all visitors outside of prayer times. Its jali windows are considered among the finest stone carvings in India and are a major heritage landmark."
+            }
+        ]
+    },
+    "srinagar": {
+        "slug": "srinagar",
+        "name": "Srinagar",
+        "state": "Jammu & Kashmir",
+        "country": "India",
+        "latitude": 34.0837,
+        "longitude": 74.7973,
+        "method": 1,
+        "timezone": "Asia/Kolkata",
+        "muslimPopulation": "~1.2 million",
+        "famousLandmark": "Hazratbal Shrine – houses a relic believed to be hair of the Prophet ﷺ",
+        "insights": "Srinagar, the summer capital of Jammu & Kashmir, is India's most predominantly Muslim city and one of the most spiritually significant in the subcontinent. Islam reached Kashmir in the 14th century through the Sufi saint Mir Syed Ali Hamadani and became deeply embedded in the region's culture, weaving together Persian mysticism with Kashmiri identity. The Hazratbal Shrine on Dal Lake and the Jamia Masjid in the old city are the beating heart of Islamic life in the Valley. Kashmir's distinct form of Sufism — Rishi tradition — has shaped centuries of tolerance, devotion, and poetry.",
+        "facts": [
+            "The Hazratbal Shrine houses a relic (Moi-e-Muqaddas) believed to be a hair of Prophet Muhammad ﷺ — it is one of the holiest sites for Muslims in South Asia.",
+            "Mir Syed Ali Hamadani (Shah-e-Hamadan) brought Islam to Kashmir in the 14th century and is credited with converting over 37,000 Kashmiris.",
+            "The Jamia Masjid of Srinagar, founded in 1394, was built in the Indo-Saracenic style with 378 wooden pillars and can hold 33,000 worshippers.",
+            "Kashmir's unique form of Muslim devotion — Sufiana Kalam (Sufi poetry set to classical music) — is a UNESCO Intangible Cultural Heritage.",
+            "Kashmiri embroidery (Kashida), papier-mâché, and walnut wood crafts have been practiced predominantly by Muslim artisans for centuries."
+        ],
+        "ramadanNote": "Ramadan in Srinagar is a time of extraordinary spiritual intensity — the Dal Lake shimmers with Hazratbal's lights, homes keep iftar tables open, and the Wazwan feast is prepared for communal breaking of fast.",
+        "faqItems": [
+            {
+                "q": "What method is used for Srinagar prayer time calculations?",
+                "a": "RuhVerse uses the University of Islamic Sciences (Karachi) method for Srinagar. The city's northerly latitude (34°N) means Fajr and Isha angles can produce long twilight times, especially in summer."
+            },
+            {
+                "q": "Does Srinagar have very long fasting hours in summer Ramadan?",
+                "a": "Yes. Because Srinagar is at a high latitude, summer Ramadan fasting hours can exceed 16–17 hours. In winter Ramadan (2026), fasting is around 12–13 hours, making it more manageable."
+            },
+            {
+                "q": "What is the significance of the Hazratbal Shrine?",
+                "a": "Hazratbal Shrine houses a relic believed to be a hair of Prophet Muhammad ﷺ. It is among the holiest sites in South Asian Islam, and large congregations gather there on Eid and other occasions."
+            }
+        ]
+    },
+    "jakarta": {
+        "slug": "jakarta",
+        "name": "Jakarta",
+        "state": "DKI Jakarta",
+        "country": "Indonesia",
+        "latitude": -6.2088,
+        "longitude": 106.8456,
+        "method": 3,
+        "timezone": "Asia/Jakarta",
+        "muslimPopulation": "~9.7 million",
+        "famousLandmark": "Istiqlal Mosque - the largest mosque in Southeast Asia",
+        "insights": "Jakarta is one of the world's largest Muslim-majority capitals. Istiqlal Mosque stands at the center of the city's Islamic life, hosting major congregations for Jumu'ah, Ramadan, and Eid. The city's diverse Muslim communities include Betawi, Javanese, Sundanese, Arab-Indonesian, and other traditions.",
+        "facts": [
+            "Istiqlal Mosque in Central Jakarta is the largest mosque in Southeast Asia and can host over 100,000 worshippers.",
+            "Jakarta follows WIB (UTC+7), which makes local prayer windows different from Gulf and South Asian cities.",
+            "During Ramadan, many neighborhoods run free iftar programs (takjil) before Magrib prayer.",
+            "The city has thousands of mosques and musallas serving daily congregational prayer.",
+            "Islamic study circles and Quran recitation programs are widely active throughout the year."
+        ],
+        "ramadanNote": "Ramadan in Jakarta is marked by strong communal iftar culture, night prayers, and active mosque programs across all districts.",
+        "faqItems": [
+            {
+                "q": "What method is used for Jakarta Namaz timings on RuhVerse?",
+                "a": "RuhVerse uses AlAdhan calculations with method 3 for Jakarta coordinates, then renders daily timings for Fajr, Zohr, Asr, Magrib, and Isha."
+            },
+            {
+                "q": "Are these timings valid for all of Greater Jakarta?",
+                "a": "These timings are centered on Jakarta coordinates. Nearby areas like Depok, Bekasi, and Tangerang may differ slightly by a few minutes."
+            },
+            {
+                "q": "Do Ramadan and Eid dates vary in Jakarta?",
+                "a": "Yes. Ramadan and Eid are moon-sighting based, so official Indonesian announcements should be followed for final confirmation."
+            }
+        ]
+    }
+}

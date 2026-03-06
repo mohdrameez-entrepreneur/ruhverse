@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><!--SSR_PAGE_TITLE-->Namaz Times - RuhVerse</title>
+    <meta name="description"
+        content="<!--SSR_PAGE_DESCRIPTION-->Accurate daily Namaz timings with city insights on RuhVerse.">
+    <meta name="keywords" content="<!--SSR_PAGE_KEYWORDS-->namaz times india, prayer times">
+    <link rel="canonical" href="<!--SSR_CANONICAL-->https://ruhverse.online/namaz-times">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="<!--SSR_OG_TITLE-->Namaz Times - RuhVerse">
+    <meta property="og:description" content="<!--SSR_OG_DESCRIPTION-->Accurate daily Namaz timings on RuhVerse.">
+    <meta property="og:url" content="<!--SSR_OG_URL-->https://ruhverse.online/namaz-times">
+    <meta property="og:image"
+        content="<!--SSR_OG_IMAGE-->https://ruhverse.online/assets/Gemini_Generated_Image_1z0kzx1z0kzx1z0k.jpg">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<!--SSR_TWITTER_TITLE-->Namaz Times - RuhVerse">
+    <meta name="twitter:description" content="<!--SSR_TWITTER_DESCRIPTION-->Accurate daily Namaz timings on RuhVerse.">
+    <meta name="twitter:image"
+        content="<!--SSR_TWITTER_IMAGE-->https://ruhverse.online/assets/Gemini_Generated_Image_1z0kzx1z0kzx1z0k.jpg">
+
+    <!-- Structured Data -->
+    <!--SSR_STRUCTURED_DATA-->
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/footer_styles.css">
+
+    <style>
+        .city-facts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 3rem 0;
+        }
+
+        .city-fact-card {
+            padding: 2rem 2.25rem;
+            background: var(--white);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+            position: relative;
+        }
+
+        .city-fact-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--emerald);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+        }
+
+        .city-fact-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .city-fact-card p {
+            font-size: 0.975rem;
+            color: var(--text-muted);
+            line-height: 1.75;
+        }
+
+        .city-insights-block {
+            background: var(--cream);
+            border-radius: 30px;
+            padding: 3.5rem;
+            margin: 4rem 0;
+            border-left: 4px solid var(--emerald);
+        }
+
+        .city-insights-block h3 {
+            font-family: var(--font-display);
+            font-size: 1.6rem;
+            color: var(--emerald-dark);
+            margin-bottom: 1.25rem;
+        }
+
+        .city-insights-block p {
+            font-size: 1.075rem;
+            line-height: 1.85;
+            color: var(--text-main);
+        }
+
+        .faq-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .faq-item {
+            padding: 2.5rem;
+            background: var(--white);
+            border: 1px solid var(--card-border);
+            border-radius: 25px;
+            transition: 0.3s;
+        }
+
+        .faq-item:hover {
+            transform: translateY(-5px);
+            border-color: var(--emerald);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .faq-item h3 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: var(--emerald);
+            font-family: var(--font-display);
+            line-height: 1.45;
+        }
+
+        .faq-item p {
+            font-size: 0.975rem;
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+
+        .ramadan-note-banner {
+            background: linear-gradient(135deg, rgba(26, 77, 46, 0.08), rgba(16, 185, 129, 0.06));
+            border: 1px solid rgba(26, 77, 46, 0.2);
+            border-radius: 20px;
+            padding: 2rem 2.5rem;
+            margin: 3rem 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 1.25rem;
+        }
+
+        .ramadan-note-banner .ramadan-icon {
+            font-size: 2.5rem;
+            flex-shrink: 0;
+            margin-top: 0.1rem;
+        }
+
+        .ramadan-note-banner h4 {
+            font-family: var(--font-display);
+            color: var(--emerald-dark);
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .ramadan-note-banner p {
+            font-size: 0.975rem;
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+
+        .city-meta-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.4rem 1rem;
+            background: rgba(26, 77, 46, 0.1);
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--emerald-dark);
+            margin: 0.3rem;
+        }
+
+        .related-city-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0 2.5rem;
+        }
+
+        .related-city-link {
+            display: block;
+            text-decoration: none;
+            background: var(--white);
+            border: 1px solid var(--card-border);
+            border-radius: 18px;
+            padding: 1rem 1.1rem;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+        }
+
+        .related-city-link:hover {
+            transform: translateY(-2px);
+            border-color: var(--emerald);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+        }
+
+        .related-city-link h4 {
+            color: var(--emerald-dark);
+            font-size: 1.05rem;
+            margin-bottom: 0.35rem;
+        }
+
+        .related-city-link p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.45;
+            margin-bottom: 0.45rem;
+        }
+
+        .related-city-link small {
+            color: var(--emerald);
+            font-weight: 600;
+            font-size: 0.78rem;
+        }
+
+        .section-divider {
+            border: none;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--card-border), transparent);
+            margin: 4rem 0;
+        }
+    </style>
+    <script>
+        window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/speed-insights/script.js" data-sdkn="@vercel/speed-insights/vanilla" data-sdkv="1.3.1"></script>
+</head>
+
+<body class="city-page">
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a href="/index.html" class="logo">
+            <img src="/assets/Gemini_Generated_Image_1z0kzx1z0kzx1z0k.jpg" alt="RuhVerse">
+            RuhVerse
+        </a>
+        <div class="nav-links">
+            <a href="#" class="back-link" id="back-prev-nav">← Previous Page</a>
+            <a href="/index.html" class="back-link">Home</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section" style="padding: 10rem 2rem 6rem; text-align: center;">
+        <div class="container">
+            <div style="margin-bottom: 1.5rem;" id="city-chips">
+                <!--SSR_CITY_CHIPS-->
+            </div>
+            <h1 class="hero-title" style="font-size: clamp(2.4rem, 6vw, 4rem);">
+                <!--SSR_CITY_HERO_TITLE-->Prayer Times
+            </h1>
+            <p class="hero-subtitle" style="margin: 0 auto 3rem; max-width: 780px;">
+                <!--SSR_CITY_HERO_SUBTITLE-->Accurate Namaz timings calculated using the University of Islamic Sciences
+                (Karachi) method.
+            </p>
+            <a href="#today-prayers" class="btn-pill btn-fill">View Today's Timing &darr;</a>
+        </div>
+    </section>
+
+    <!-- Prayer Times Section -->
+    <section id="today-prayers" class="prayer-section">
+        <div class="container">
+            <div class="prayer-header">
+                <h2>Today's Prayer Times</h2>
+                <p id="city-location-label"><!--SSR_CITY_LOCATION_LABEL-->India (IST)</p>
+                <p style="margin-top:0.5rem; font-size:0.9rem;">Next: <span id="next-prayer-name">&mdash;</span></p>
+            </div>
+
+            <div class="large-countdown" id="prayer-countdown">
+                <!--SSR_COUNTDOWN_INIT-->Loading...
+            </div>
+
+            <div class="prayer-cards" id="prayer-cards-container">
+                <!--SSR_PRAYER_CARDS-->
+            </div>
+        </div>
+    </section>
+
+    <!-- City Content -->
+    <section class="city-content-section" style="background: var(--cream); padding: 6rem 2rem;">
+        <div class="container">
+
+            <!-- City Insights -->
+            <div style="text-align:center; max-width:820px; margin: 0 auto 3rem;">
+                <h2 class="section-title"><!--SSR_CITY_INSIGHTS_HEADING-->Islam & Community in This City</h2>
+            </div>
+
+            <div class="city-insights-block">
+                <!--SSR_CITY_INSIGHTS-->
+            </div>
+
+            <!-- Ramadan Note -->
+            <!--SSR_RAMADAN_NOTE-->
+
+            <!-- Ramadan Calendar -->
+            <div id="ramadan-calendar">
+                <!--SSR_RAMADAN_CALENDAR-->
+            </div>
+
+            <hr class="section-divider">
+
+            <!-- City Facts -->
+            <div style="text-align:center; margin-bottom: 2.5rem;">
+                <h2 class="section-title">Islamic Heritage & Facts</h2>
+            </div>
+
+            <div class="city-facts-grid" id="city-facts-grid">
+                <!--SSR_CITY_FACTS-->
+            </div>
+
+            <hr class="section-divider">
+
+            <!-- FAQs -->
+            <h2 class="section-title" style="text-align:center; margin-bottom: 2.5rem;">Frequently Asked Questions</h2>
+            <div class="faq-grid" id="city-faq-grid">
+                <!--SSR_FAQ_ITEMS-->
+            </div>
+
+            <hr class="section-divider">
+
+            <div style="text-align:center; margin-bottom: 2rem;">
+                <h2 class="section-title">You May Also Check</h2>
+            </div>
+            <div class="related-city-grid" id="related-city-grid">
+                <!--SSR_RELATED_CITIES-->
+            </div>
+
+            <!-- CTA Buttons -->
+            <div style="margin-top: 5rem; display:flex; flex-wrap:wrap; gap:1rem; justify-content:center;">
+                <a href="#" id="back-prev-btn" class="btn-pill btn-outline">Back to Previous Page</a>
+                <a href="#ramadan-calendar" class="btn-pill btn-fill">City Ramadan Calendar</a>
+                <a href="/prayer-times-india.html" class="btn-pill btn-fill">India Cities</a>
+                <a href="/prayer-times-global.html" class="btn-pill btn-fill">All City Hubs</a>
+                <a href="/quran.html" class="btn-pill btn-fill">Read Quran Online</a>
+                <a href="/index.html" class="btn-pill btn-outline">Back to Home</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-col">
+                    <div class="footer-logo">
+                        <img src="/assets/Gemini_Generated_Image_1z0kzx1z0kzx1z0k.jpg" alt="RuhVerse Logo">
+                        RuhVerse
+                    </div>
+                    <p class="footer-slogan">Illuminating Hearts with Divine Wisdom.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul class="footer-links">
+                        <li><a href="/quran.html">Read Quran</a></li>
+                        <li><a href="/index.html#prayer">Prayer Times</a></li>
+                        <li><a href="/index.html#ramadan">Ramadan</a></li>
+                        <li><a href="/index.html#insights">Insights</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Legal</h4>
+                    <ul class="footer-links">
+                        <li><a href="/terms.html">Terms & Conditions</a></li>
+                        <li><a href="/terms.html">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Contact Us</h4>
+                    <ul class="footer-links">
+                        <li><a href="mailto:ruhversebusiness@gmail.com">ruhversebusiness@gmail.com</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                &copy; 2026 RuhVerse. All rights reserved. | Made by <span class="author-name">Mohd Rameez</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- SSR Bootstrap Data -->
+    <!--SSR_DATA-->
+
+    <script>
+        // ─── Hydration & Live Prayer Logic ────────────────────────────────────────
+        const PRAYER_KEYS = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+        const PRAYER_LABELS = { Fajr: 'Fajr', Dhuhr: 'Zohr', Asr: 'Asr', Maghrib: 'Magrib', Isha: 'Isha' };
+        const ssrCity = window.__SSR_CITY || {};
+        const CITY_TIMEZONE = ssrCity.timezone || 'Asia/Kolkata';
+        const BACK_FALLBACK_URL = '/index.html';
+
+        function goBackOrHome(ev) {
+            if (ev) ev.preventDefault();
+            const hasHistory = window.history.length > 1;
+            const ref = document.referrer || '';
+            const sameOrigin = ref && ref.startsWith(window.location.origin);
+            if (hasHistory && sameOrigin) {
+                window.history.back();
+                return;
+            }
+            window.location.href = BACK_FALLBACK_URL;
+        }
+
+        const backNavBtn = document.getElementById('back-prev-nav');
+        const backCtaBtn = document.getElementById('back-prev-btn');
+        if (backNavBtn) backNavBtn.addEventListener('click', goBackOrHome);
+        if (backCtaBtn) backCtaBtn.addEventListener('click', goBackOrHome);
+
+        function sanitizeTimeStr(raw) {
+            const m = String(raw || '').match(/(\d{1,2}):(\d{2})/);
+            if (!m) return '';
+            return `${String(Number(m[1])).padStart(2, '0')}:${m[2]}`;
+        }
+
+        function format12h(timeStr) {
+            const normalized = sanitizeTimeStr(timeStr);
+            if (!normalized) return '--';
+            const [h, m] = normalized.split(':').map(Number);
+            return `${String(h % 12 || 12).padStart(2, '0')}:${String(m).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`;
+        }
+
+        function timeStrToCityZone(timeStr) {
+            const normalized = sanitizeTimeStr(timeStr);
+            if (!normalized) return null;
+            const [h, m] = normalized.split(':').map(Number);
+            const d = new Date(new Date().toLocaleString('en-US', { timeZone: CITY_TIMEZONE }));
+            d.setHours(h, m, 0, 0);
+            return d;
+        }
+
+        function updateCountdown(times) {
+            const nowIST = new Date(new Date().toLocaleString('en-US', { timeZone: CITY_TIMEZONE }));
+            let nextPrayer = null, nextTime = null;
+            for (let i = 0; i < PRAYER_KEYS.length; i++) {
+                const t = timeStrToCityZone(times[PRAYER_KEYS[i]]);
+                if (t && t > nowIST) { nextPrayer = PRAYER_KEYS[i]; nextTime = t; break; }
+            }
+            if (!nextPrayer) {
+                nextPrayer = 'Fajr';
+                nextTime = timeStrToCityZone(times['Fajr']);
+                if (!nextTime) return;
+                nextTime.setDate(nextTime.getDate() + 1);
+            }
+            const nameEl = document.getElementById('next-prayer-name');
+            if (nameEl) nameEl.textContent = PRAYER_LABELS[nextPrayer] || nextPrayer;
+
+            const countdownEl = document.getElementById('prayer-countdown');
+            if (countdownEl) {
+                const diff = Math.max(0, nextTime - nowIST);
+                const h = Math.floor(diff / 3600000);
+                const m = Math.floor((diff % 3600000) / 60000);
+                const s = Math.floor((diff % 60000) / 1000);
+                countdownEl.textContent =
+                    String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+            }
+        }
+
+        function renderPrayerCards(times) {
+            const cards = document.querySelectorAll('.prayer-card');
+            const nowIST = new Date(new Date().toLocaleString('en-US', { timeZone: CITY_TIMEZONE }));
+            cards.forEach((card, i) => {
+                const name = PRAYER_KEYS[i];
+                if (!name || !times[name]) return;
+                const h4 = card.querySelector('h4');
+                const span = card.querySelector('span');
+                if (h4) h4.textContent = PRAYER_LABELS[name] || name;
+                if (span) span.textContent = format12h(times[name]);
+                card.classList.remove('active');
+                if (i < PRAYER_KEYS.length - 1) {
+                    const nextT = timeStrToCityZone(times[PRAYER_KEYS[i + 1]]);
+                    const currentT = timeStrToCityZone(times[name]);
+                    if (currentT && nextT && currentT <= nowIST && nowIST < nextT) card.classList.add('active');
+                } else {
+                    const currentT = timeStrToCityZone(times[name]);
+                    if (currentT && currentT <= nowIST) card.classList.add('active');
+                }
+            });
+        }
+
+        function startLiveUpdates(times) {
+            renderPrayerCards(times);
+            updateCountdown(times);
+            setInterval(() => {
+                updateCountdown(times);
+                renderPrayerCards(times);
+            }, 1000);
+        }
+
+        // ─── Bootstrap from SSR data or fetch live ──────────────────────────────
+        (async function init() {
+            const ssr = ssrCity;
+
+            if (ssr && ssr.prayerTimes) {
+                // Hydrate from SSR — no extra API call needed
+                startLiveUpdates(ssr.prayerTimes);
+                return;
+            }
+
+            // Fallback: fetch live if SSR data missing
+            if (!ssr || !ssr.latitude || !ssr.longitude) return;
+            const today = new Date().toLocaleDateString('en-GB', { timeZone: CITY_TIMEZONE }).split('/').reverse().join('-');
+            const url = `https://api.aladhan.com/v1/timings/${today}?latitude=${ssr.latitude}&longitude=${ssr.longitude}&method=${ssr.method || 1}`;
+            const countdownEl = document.getElementById('prayer-countdown');
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                if (data && data.data && data.data.timings) {
+                    startLiveUpdates(data.data.timings);
+                }
+            } catch (e) {
+                if (countdownEl) countdownEl.textContent = 'Failed to load. Check connection.';
+            }
+        })();
+    </script>
+</body>
+
+</html>

@@ -47,6 +47,10 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;500&family=Playfair+Display:wght@400;600;700&display=swap"
         rel="stylesheet">
+    <script>
+        window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/speed-insights/script.js" data-sdkn="@vercel/speed-insights/vanilla" data-sdkv="1.3.1"></script>
 </head>
 
 <body>
@@ -283,22 +287,54 @@
             <div class="directory-container">
                 <div class="directory-group">
                     <h3 class="group-title">🌍 Strategic Hubs</h3>
-                    <div class="intelligence-grid">
-                        <a href="prayer-times-india.html" class="intel-card">
+                    <div class="intelligence-grid global-hubs-grid">
+                        <a href="/prayer-times-india.html" class="intel-card hub-card hub-card--india">
+                            <span class="hub-label">South Asia Core</span>
                             <span class="intel-icon">🇮🇳</span>
-                            <h4>India Hub</h4>
-                            <p>Full directory covering 50+ major Indian cities including Delhi and Mumbai.</p>
+                            <h4>India Network</h4>
+                            <p>Delhi to Srinagar coverage with city-level Ramadan charts and fast city routes.</p>
+                            <div class="hub-meta">Priority Cities: Delhi, Mumbai, Hyderabad</div>
                         </a>
-                        <a href="prayer-times-new-delhi.html" class="intel-card">
-                            <span class="intel-icon">🏛️</span>
-                            <h4>New Delhi</h4>
-                            <p>Official timings for the national capital. Specialized for the NCR region.</p>
+
+                        <a href="/namaz-times/jakarta" class="intel-card hub-card hub-card--seasia">
+                            <span class="hub-label">SEA Pulse</span>
+                            <span class="intel-icon">🇮🇩</span>
+                            <h4>Jakarta Corridor</h4>
+                            <p>Southeast Asia flow tuned for timezone-specific Fajr, Zohr, Asr, Magrib, and Isha.</p>
+                            <div class="hub-meta">Also Active: Bandung, Surabaya, Kuala Lumpur</div>
                         </a>
-                        <div class="intel-card coming-soon" style="opacity: 0.5;">
-                            <span class="intel-icon">🇸🇦</span>
-                            <h4>Saudi Arabia</h4>
-                            <p>Official timings for Makkah, Madinah, and Riyadh. (Updating...)</p>
-                        </div>
+
+                        <a href="/namaz-times/mecca" class="intel-card hub-card hub-card--haramain">
+                            <span class="hub-label">Holy Cities</span>
+                            <span class="intel-icon">🕋</span>
+                            <h4>Haramain Compass</h4>
+                            <p>Makkah and Madinah anchor routes designed for pilgrims, Umrah traffic, and seasonal peaks.</p>
+                            <div class="hub-meta">Pilgrim Focus: Makkah, Madinah, Jeddah</div>
+                        </a>
+
+                        <a href="/namaz-times/dubai" class="intel-card hub-card hub-card--gulf">
+                            <span class="hub-label">GCC Grid</span>
+                            <span class="intel-icon">🏙️</span>
+                            <h4>Gulf Metro Belt</h4>
+                            <p>Urban prayer schedules for UAE and Gulf hubs used by commuters and expat communities.</p>
+                            <div class="hub-meta">Fast Lanes: Dubai, Doha, Kuwait City</div>
+                        </a>
+
+                        <a href="/namaz-times/london" class="intel-card hub-card hub-card--europe">
+                            <span class="hub-label">Europe Mix</span>
+                            <span class="intel-icon">🇬🇧</span>
+                            <h4>London Gateway</h4>
+                            <p>European day-length variation handling with clean routing across UK and continental cities.</p>
+                            <div class="hub-meta">Expansion: Birmingham, Paris, Berlin</div>
+                        </a>
+
+                        <a href="/namaz-times/new-york" class="intel-card hub-card hub-card--na">
+                            <span class="hub-label">North America</span>
+                            <span class="intel-icon">🇺🇸</span>
+                            <h4>US City Spine</h4>
+                            <p>Cross-timezone stack from East Coast to West Coast with metro-by-metro targeting.</p>
+                            <div class="hub-meta">Major Nodes: NYC, Chicago, Los Angeles</div>
+                        </a>
                     </div>
                 </div>
             </div>

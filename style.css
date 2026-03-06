@@ -2067,8 +2067,127 @@ body.dark-mode .location-intelligence-hub {
     line-height: 1.6;
 }
 
+/* Strategic hub variants */
+.global-hubs-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.4rem;
+}
+
+.hub-card {
+    --hub-accent: #1A4D2E;
+    --hub-soft: rgba(26, 77, 46, 0.08);
+    min-height: 295px;
+    padding: 2rem 1.6rem 1.8rem;
+    border-radius: 26px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    transform: none !important;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(250, 250, 250, 0.8)),
+        radial-gradient(circle at 85% 15%, var(--hub-soft), transparent 55%);
+}
+
+.hub-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(140deg, transparent 35%, rgba(255, 255, 255, 0.35));
+    pointer-events: none;
+}
+
+.hub-card:hover {
+    border-color: var(--hub-accent);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+}
+
+.hub-label {
+    display: inline-flex;
+    align-self: flex-start;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--hub-accent);
+    background: var(--hub-soft);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    padding: 0.28rem 0.68rem;
+    border-radius: 999px;
+}
+
+.hub-card .intel-icon {
+    margin-bottom: 0.6rem;
+    font-size: 2.4rem;
+}
+
+.hub-card h4 {
+    font-size: 1.22rem;
+    margin-bottom: 0.15rem;
+}
+
+.hub-card p {
+    font-size: 0.9rem;
+    line-height: 1.55;
+    margin-bottom: 0.65rem;
+    flex-grow: 1;
+}
+
+.hub-meta {
+    margin-top: auto;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--hub-accent);
+    padding-top: 0.75rem;
+    border-top: 1px dashed rgba(0, 0, 0, 0.14);
+}
+
+.hub-card--india {
+    --hub-accent: #e67700;
+    --hub-soft: rgba(230, 119, 0, 0.1);
+}
+
+.hub-card--seasia {
+    --hub-accent: #0f766e;
+    --hub-soft: rgba(15, 118, 110, 0.1);
+}
+
+.hub-card--haramain {
+    --hub-accent: #a16207;
+    --hub-soft: rgba(161, 98, 7, 0.12);
+}
+
+.hub-card--gulf {
+    --hub-accent: #0369a1;
+    --hub-soft: rgba(3, 105, 161, 0.11);
+}
+
+.hub-card--europe {
+    --hub-accent: #475569;
+    --hub-soft: rgba(71, 85, 105, 0.11);
+}
+
+.hub-card--na {
+    --hub-accent: #b91c1c;
+    --hub-soft: rgba(185, 28, 28, 0.09);
+}
+
+.hub-card--africa {
+    --hub-accent: #15803d;
+    --hub-soft: rgba(21, 128, 61, 0.1);
+}
+
+.hub-card--pak {
+    --hub-accent: #0f766e;
+    --hub-soft: rgba(15, 118, 110, 0.1);
+}
+
 @media (max-width: 992px) {
     .intelligence-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .global-hubs-grid {
         grid-template-columns: 1fr 1fr;
     }
 
@@ -2081,6 +2200,16 @@ body.dark-mode .location-intelligence-hub {
     .intelligence-grid {
         grid-template-columns: 1fr;
         gap: 1.5rem;
+    }
+
+    .global-hubs-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .hub-card {
+        min-height: auto;
+        padding: 1.45rem 1.2rem 1.25rem;
     }
 
     .search-nexus {
