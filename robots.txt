@@ -1,7 +1,5 @@
 User-agent: *
 Allow: /
 
-# Sitemap Locations
+# Sitemap Location
 Sitemap: https://ruhverse.online/sitemap.xml
-Sitemap: https://ruhverse.online/sitemap-core.xml
-Sitemap: https://ruhverse.online/sitemap-cities-0.xml
