@@ -883,12 +883,17 @@ function getStaticSitemapUrls() {
   return [
     { loc: `${PUBLIC_BASE_URL}/`, changefreq: 'weekly', priority: '1.0' },
     { loc: `${PUBLIC_BASE_URL}/quran`, changefreq: 'weekly', priority: '0.9' },
-    { loc: `${PUBLIC_BASE_URL}/blog`, changefreq: 'weekly', priority: '0.7' },
-    { loc: `${PUBLIC_BASE_URL}/why-genz-muslims-losing-faith`, changefreq: 'monthly', priority: '0.65' },
     { loc: `${PUBLIC_BASE_URL}/terms.html`, changefreq: 'yearly', priority: '0.3' },
     { loc: `${PUBLIC_BASE_URL}/prayer-times-india.html`, changefreq: 'monthly', priority: '0.9' },
     { loc: `${PUBLIC_BASE_URL}/prayer-times-new-delhi.html`, changefreq: 'weekly', priority: '0.8' },
     { loc: `${PUBLIC_BASE_URL}/prayer-times-global.html`, changefreq: 'monthly', priority: '0.7' }
+  ];
+}
+
+function getBlogSitemapUrls() {
+  return [
+    { loc: `${PUBLIC_BASE_URL}/blog`, changefreq: 'weekly', priority: '0.7' },
+    { loc: `${PUBLIC_BASE_URL}/why-genz-muslims-losing-faith`, changefreq: 'monthly', priority: '0.65' }
   ];
 }
 
@@ -951,6 +956,13 @@ app.get('/sitemap-core.xml', async (req, res) => {
   }
 });
 
+app.get('/sitemap-blogs.xml', (req, res) => {
+  const lastmod = getSitemapLastMod();
+  const urls = getBlogSitemapUrls();
+  res.set('Content-Type', 'application/xml; charset=utf-8');
+  res.send(buildSitemapUrlset(urls, lastmod));
+});
+
 app.get('/sitemap-cities-:chunk(\\d+).xml', (req, res) => {
   const lastmod = getSitemapLastMod();
   const chunkIndex = Math.max(0, Number(req.params.chunk) || 0);
@@ -971,7 +983,10 @@ app.get('/sitemap-cities-:chunk(\\d+).xml', (req, res) => {
 app.get('/sitemap.xml', (req, res) => {
   const lastmod = getSitemapLastMod();
   const cityUrls = getCitySitemapUrls();
-  const entries = [{ loc: `${PUBLIC_BASE_URL}/sitemap-core.xml` }];
+  const entries = [
+    { loc: `${PUBLIC_BASE_URL}/sitemap-core.xml` },
+    { loc: `${PUBLIC_BASE_URL}/sitemap-blogs.xml` }
+  ];
 
   if (cityUrls.length) {
     const cityChunkCount = Math.ceil(cityUrls.length / SITEMAP_CITY_CHUNK_SIZE);

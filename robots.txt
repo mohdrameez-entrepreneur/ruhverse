@@ -3,3 +3,4 @@ Allow: /
 
 # Sitemap Location
 Sitemap: https://ruhverse.online/sitemap.xml
+Sitemap: https://ruhverse.online/sitemap-blogs.xml
