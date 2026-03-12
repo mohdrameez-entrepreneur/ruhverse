@@ -7,6 +7,8 @@
       "config": {
         "includeFiles": [
           "index.html",
+          "blog.html",
+          "why-genz-muslims-losing-faith.html",
           "quran.html",
           "terms.html",
           "prayer-times-global.html",
@@ -15,6 +17,7 @@
           "prayer-times-city.html",
           "style.css",
           "footer_styles.css",
+          "theme.js",
           "script.js",
           "script_3d.js",
           "robots.txt",

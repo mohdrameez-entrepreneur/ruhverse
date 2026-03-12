@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RuhVerse Blog | All Islamic Articles</title>
+    <meta name="description"
+        content="Browse all RuhVerse blogs by category: faith, youth struggles, Quran reflection, prayer discipline, and Ramadan growth.">
+    <meta name="keywords" content="RuhVerse blog, Islamic articles, Muslim youth faith, Quran blog, Ramadan reminders">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <link rel="canonical" href="https://ruhverse.online/blog">
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="RuhVerse Blog | All Islamic Articles">
+    <meta property="og:description" content="Explore all RuhVerse blogs with category sections and featured Islamic writing.">
+    <meta property="og:url" content="https://ruhverse.online/blog">
+    <meta property="og:image" content="https://ruhverse.online/assets/Gemini_Generated_Image_1z0kzx1z0kzx1z0k.jpg">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="RuhVerse Blog | All Islamic Articles">
+    <meta name="twitter:description" content="Explore all RuhVerse blogs with category sections and featured Islamic writing.">
+    <meta name="twitter:image" content="https://ruhverse.online/assets/Gemini_Generated_Image_1z0kzx1z0kzx1z0k.jpg">
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="footer_styles.css">
+    <link rel="icon" type="image/jpg" href="assets/Gemini_Generated_Image_1z0kzx1z0kzx1z0k.jpg">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap"
+        rel="stylesheet">
+    <style>
+        .blog-shell {
+            width: min(1160px, 100%);
+            margin: 0 auto;
+            padding: 8.8rem 2rem 5rem;
+        }
+
+        .blog-head {
+            border-radius: 28px;
+            border: 1px solid rgba(26, 77, 46, 0.16);
+            background:
+                radial-gradient(circle at 85% 14%, rgba(212, 175, 55, 0.2), transparent 42%),
+                linear-gradient(150deg, #fbf8ef 0%, #ffffff 72%);
+            box-shadow: 0 24px 60px rgba(12, 42, 26, 0.1);
+            padding: 2.4rem 2.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .blog-head h1 {
+            margin: 0 0 0.8rem;
+            font-size: clamp(2rem, 5vw, 3.1rem);
+            color: var(--emerald-dark);
+            line-height: 1.18;
+        }
+
+        .blog-head p {
+            margin: 0;
+            max-width: 72ch;
+            color: var(--text-muted);
+            line-height: 1.75;
+            font-size: 1.03rem;
+        }
+
+        .blog-section {
+            margin-bottom: 1.7rem;
+            border-radius: 24px;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            background: rgba(255, 255, 255, 0.94);
+            box-shadow: 0 16px 38px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem 1.4rem;
+        }
+
+        .blog-section h2 {
+            margin: 0 0 1rem;
+            font-size: 1.35rem;
+            color: var(--emerald-dark);
+        }
+
+        .blog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .blog-card {
+            display: block;
+            border-radius: 16px;
+            text-decoration: none;
+            border: 1px solid rgba(26, 77, 46, 0.14);
+            background: rgba(26, 77, 46, 0.04);
+            padding: 1rem 0.95rem;
+            transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .blog-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(26, 77, 46, 0.35);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .blog-card h3 {
+            margin: 0 0 0.45rem;
+            color: var(--text-main);
+            font-size: 1.03rem;
+            line-height: 1.38;
+        }
+
+        .blog-card p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.62;
+        }
+
+        .blog-card .card-tag {
+            display: inline-flex;
+            margin-bottom: 0.65rem;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 700;
+            border-radius: 999px;
+            border: 1px solid rgba(26, 77, 46, 0.26);
+            background: rgba(26, 77, 46, 0.08);
+            color: var(--emerald-dark);
+            padding: 0.2rem 0.58rem;
+        }
+
+        body.dark-mode .blog-head {
+            border-color: rgba(255, 255, 255, 0.15);
+            background:
+                radial-gradient(circle at 85% 14%, rgba(212, 175, 55, 0.15), transparent 42%),
+                linear-gradient(150deg, #19211d 0%, #202923 72%);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        body.dark-mode .blog-head h1 {
+            color: #eef8f1;
+        }
+
+        body.dark-mode .blog-head p {
+            color: #bfd0c5;
+        }
+
+        body.dark-mode .blog-section {
+            background: rgba(27, 34, 30, 0.95);
+            border-color: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 16px 38px rgba(0, 0, 0, 0.35);
+        }
+
+        body.dark-mode .blog-section h2 {
+            color: #eaf6ef;
+        }
+
+        body.dark-mode .blog-card {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.16);
+        }
+
+        body.dark-mode .blog-card h3 {
+            color: #e4f0e9;
+        }
+
+        body.dark-mode .blog-card p {
+            color: #b7c8be;
+        }
+
+        body.dark-mode .blog-card .card-tag {
+            color: #d8ebe0;
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-wrap: wrap;
+                row-gap: 0.8rem;
+            }
+
+            .navbar .nav-links {
+                display: flex;
+                margin-left: 0;
+                margin-right: 0;
+                width: 100%;
+                justify-content: center;
+                gap: 1rem;
+                flex-wrap: wrap;
+            }
+
+            .blog-shell {
+                padding: 7.3rem 1rem 4rem;
+            }
+        }
+    </style>
+    <script>
+        window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/speed-insights/script.js" data-sdkn="@vercel/speed-insights/vanilla" data-sdkv="1.3.1"></script>
+</head>
+
+<body class="blog-page">
+    <nav class="navbar">
+        <a href="/index.html" class="logo">
+            <img src="assets/Gemini_Generated_Image_1z0kzx1z0kzx1z0k.jpg" alt="RuhVerse">
+            RuhVerse
+        </a>
+        <ul class="nav-links">
+            <li><a href="/quran">Quran</a></li>
+            <li><a href="/index.html#prayer">Prayer</a></li>
+            <li><a href="/index.html#ramadan">Ramadan</a></li>
+            <li><a href="/index.html#insights">Insights</a></li>
+            <li><a href="/blog" aria-current="page">Blog</a></li>
+        </ul>
+    </nav>
+
+    <main class="blog-shell">
+        <header class="blog-head">
+            <h1>All RuhVerse Blogs</h1>
+            <p>Explore every blog by topic. Each section below has focused articles so visitors can quickly read what
+                matters most.</p>
+        </header>
+
+        <section id="faith-identity" class="blog-section">
+            <h2>Faith & Identity</h2>
+            <div class="blog-grid">
+                <a class="blog-card" href="/why-genz-muslims-losing-faith">
+                    <span class="card-tag">Published</span>
+                    <h3>Why Gen Z Muslims Are Losing Their Faith (And How to Hold On)</h3>
+                    <p>A deep look at why youth are drifting and how hearts return to Allah with clarity and mercy.</p>
+                </a>
+                <a class="blog-card" href="#">
+                    <span class="card-tag">Coming Soon</span>
+                    <h3>Identity Fatigue: Living Muslim Between Two Worlds</h3>
+                    <p>How internal conflict, social pressure, and online narratives reshape belief.</p>
+                </a>
+            </div>
+        </section>
+
+        <section id="salah-discipline" class="blog-section">
+            <h2>Salah & Discipline</h2>
+            <div class="blog-grid">
+                <a class="blog-card" href="#">
+                    <span class="card-tag">Coming Soon</span>
+                    <h3>How to Rebuild Salah Consistency in a Distracted Life</h3>
+                    <p>A practical framework for students and professionals balancing pressure and prayer.</p>
+                </a>
+                <a class="blog-card" href="#">
+                    <span class="card-tag">Coming Soon</span>
+                    <h3>From Guilt to Growth: Returning to Prayer After Falling Off</h3>
+                    <p>Why shame blocks progress and how compassion helps real spiritual recovery.</p>
+                </a>
+            </div>
+        </section>
+
+        <section id="quran-reflection" class="blog-section">
+            <h2>Quran & Reflection</h2>
+            <div class="blog-grid">
+                <a class="blog-card" href="#">
+                    <span class="card-tag">Coming Soon</span>
+                    <h3>How to Read Quran for Transformation, Not Information</h3>
+                    <p>Simple habits to move from occasional recitation to daily spiritual nourishment.</p>
+                </a>
+                <a class="blog-card" href="#">
+                    <span class="card-tag">Coming Soon</span>
+                    <h3>When Your Heart Feels Numb: Quranic Steps to Feel Again</h3>
+                    <p>A grounded path back to sincerity through remembrance and reflection.</p>
+                </a>
+            </div>
+        </section>
+
+        <section id="ramadan-renewal" class="blog-section">
+            <h2>Ramadan & Renewal</h2>
+            <div class="blog-grid">
+                <a class="blog-card" href="#">
+                    <span class="card-tag">Coming Soon</span>
+                    <h3>How to Keep Ramadan Energy Alive After Eid</h3>
+                    <p>Carry your Ramadan discipline into normal months with realistic routines.</p>
+                </a>
+                <a class="blog-card" href="#">
+                    <span class="card-tag">Coming Soon</span>
+                    <h3>Sehri to Isha: Structuring a Spiritually Strong Ramadan Day</h3>
+                    <p>A full-day rhythm for worship, work, and emotional stability during fasting months.</p>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-col">
+                    <div class="footer-logo">
+                        <img src="assets/Gemini_Generated_Image_1z0kzx1z0kzx1z0k.jpg" alt="RuhVerse Logo">
+                        RuhVerse
+                    </div>
+                    <p class="footer-slogan">Illuminating Hearts with Divine Wisdom.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul class="footer-links">
+                        <li><a href="/quran">Read Quran</a></li>
+                        <li><a href="/index.html#prayer">Prayer Times</a></li>
+                        <li><a href="/index.html#ramadan">Ramadan</a></li>
+                        <li><a href="/index.html#insights">Insights</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Legal</h4>
+                    <ul class="footer-links">
+                        <li><a href="/terms.html">Terms & Conditions</a></li>
+                        <li><a href="/terms.html">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Contact Us</h4>
+                    <ul class="footer-links">
+                        <li><a href="mailto:ruhversebusiness@gmail.com">ruhversebusiness@gmail.com</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                &copy; 2026 RuhVerse. All rights reserved. | Made by <span class="author-name">Mohd Rameez</span>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/theme.js"></script>
+    <script defer src="/_vercel/insights/script.js"></script>
+</body>
+
+</html>

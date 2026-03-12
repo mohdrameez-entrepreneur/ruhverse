@@ -7,6 +7,7 @@
     --emerald: #1A4D2E;
     --emerald-dark: #123520;
     --gold: #D4AF37;
+    --text-dark: #1f2a22;
     --text-main: #2C2C2C;
     --text-muted: #666666;
     --white: #FFFFFF;
@@ -73,8 +74,10 @@ body.dark-mode {
     --cream: #121212;
     --white: #1E1E1E;
     --text-main: #E0E0E0;
+    --text-dark: #E8F0EA;
     --text-muted: #A0A0A0;
     --emerald: #4CAF50;
+    --emerald-dark: #2f8d5b;
     --gold: #FFD700;
 
     --sidebar-bg: #1A1A1A;
@@ -179,6 +182,35 @@ a {
     font-size: 1.2rem;
     cursor: pointer;
     color: var(--emerald);
+}
+
+.floating-theme-toggle {
+    position: fixed;
+    right: 1.2rem;
+    bottom: 1.2rem;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    border: 1px solid rgba(26, 77, 46, 0.25);
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--emerald);
+    font-size: 1.2rem;
+    font-weight: 700;
+    cursor: pointer;
+    z-index: 1200;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.floating-theme-toggle:hover {
+    transform: translateY(-2px);
+}
+
+body.dark-mode .floating-theme-toggle {
+    background: rgba(30, 30, 30, 0.95);
+    color: var(--gold);
+    border-color: rgba(255, 255, 255, 0.2);
 }
 
 /* Hamburger */
@@ -1903,6 +1935,35 @@ body.dark-mode .location-intelligence-hub {
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
 }
 
+body.dark-mode .search-nexus {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.14);
+}
+
+body.dark-mode .unified-search-box {
+    background: rgba(18, 24, 21, 0.9);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 20px 45px -18px rgba(0, 0, 0, 0.55);
+}
+
+body.dark-mode .unified-search-box input {
+    color: #e8f2ec;
+}
+
+body.dark-mode .unified-search-box input::placeholder {
+    color: #9fb3a7;
+}
+
+body.dark-mode .quick-detect-btn {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #c8e5d4;
+}
+
+body.dark-mode .quick-detect-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
 /* Dynamic Result - Golden Ethereal Card */
 .dynamic-result-area {
     margin-bottom: 5rem;
@@ -2067,6 +2128,26 @@ body.dark-mode .location-intelligence-hub {
     line-height: 1.6;
 }
 
+body.dark-mode .intel-card {
+    background: rgba(24, 30, 27, 0.92);
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+}
+
+body.dark-mode .intel-card:hover {
+    background: rgba(33, 40, 36, 0.98);
+    border-color: rgba(76, 175, 80, 0.75);
+    box-shadow: 0 28px 58px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode .intel-card h4 {
+    color: #e7f0ea;
+}
+
+body.dark-mode .intel-card p {
+    color: #b7c5bd;
+}
+
 /* Strategic hub variants */
 .global-hubs-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -2089,12 +2170,23 @@ body.dark-mode .location-intelligence-hub {
         radial-gradient(circle at 85% 15%, var(--hub-soft), transparent 55%);
 }
 
+body.dark-mode .hub-card {
+    border-color: rgba(255, 255, 255, 0.12);
+    background:
+        linear-gradient(145deg, rgba(26, 31, 28, 0.96), rgba(19, 24, 22, 0.92)),
+        radial-gradient(circle at 85% 15%, var(--hub-soft), transparent 55%);
+}
+
 .hub-card::before {
     content: '';
     position: absolute;
     inset: 0;
     background: linear-gradient(140deg, transparent 35%, rgba(255, 255, 255, 0.35));
     pointer-events: none;
+}
+
+body.dark-mode .hub-card::before {
+    background: linear-gradient(140deg, transparent 35%, rgba(255, 255, 255, 0.06));
 }
 
 .hub-card:hover {
@@ -2116,6 +2208,10 @@ body.dark-mode .location-intelligence-hub {
     border-radius: 999px;
 }
 
+body.dark-mode .hub-label {
+    border-color: rgba(255, 255, 255, 0.18);
+}
+
 .hub-card .intel-icon {
     margin-bottom: 0.6rem;
     font-size: 2.4rem;
@@ -2133,6 +2229,14 @@ body.dark-mode .location-intelligence-hub {
     flex-grow: 1;
 }
 
+body.dark-mode .hub-card h4 {
+    color: #eff8f2;
+}
+
+body.dark-mode .hub-card p {
+    color: #c4d3ca;
+}
+
 .hub-meta {
     margin-top: auto;
     font-size: 0.8rem;
@@ -2142,9 +2246,18 @@ body.dark-mode .location-intelligence-hub {
     border-top: 1px dashed rgba(0, 0, 0, 0.14);
 }
 
+body.dark-mode .hub-meta {
+    border-top-color: rgba(255, 255, 255, 0.22);
+}
+
 .hub-card--india {
     --hub-accent: #e67700;
     --hub-soft: rgba(230, 119, 0, 0.1);
+}
+
+body.dark-mode .hub-card--india {
+    --hub-accent: #ffc561;
+    --hub-soft: rgba(255, 197, 97, 0.16);
 }
 
 .hub-card--seasia {
@@ -2152,9 +2265,19 @@ body.dark-mode .location-intelligence-hub {
     --hub-soft: rgba(15, 118, 110, 0.1);
 }
 
+body.dark-mode .hub-card--seasia {
+    --hub-accent: #5bd6cc;
+    --hub-soft: rgba(91, 214, 204, 0.16);
+}
+
 .hub-card--haramain {
     --hub-accent: #a16207;
     --hub-soft: rgba(161, 98, 7, 0.12);
+}
+
+body.dark-mode .hub-card--haramain {
+    --hub-accent: #f2ca72;
+    --hub-soft: rgba(242, 202, 114, 0.16);
 }
 
 .hub-card--gulf {
@@ -2162,9 +2285,19 @@ body.dark-mode .location-intelligence-hub {
     --hub-soft: rgba(3, 105, 161, 0.11);
 }
 
+body.dark-mode .hub-card--gulf {
+    --hub-accent: #7dc9ff;
+    --hub-soft: rgba(125, 201, 255, 0.16);
+}
+
 .hub-card--europe {
     --hub-accent: #475569;
     --hub-soft: rgba(71, 85, 105, 0.11);
+}
+
+body.dark-mode .hub-card--europe {
+    --hub-accent: #c3cfdb;
+    --hub-soft: rgba(195, 207, 219, 0.14);
 }
 
 .hub-card--na {
@@ -2172,14 +2305,29 @@ body.dark-mode .location-intelligence-hub {
     --hub-soft: rgba(185, 28, 28, 0.09);
 }
 
+body.dark-mode .hub-card--na {
+    --hub-accent: #ff8f8f;
+    --hub-soft: rgba(255, 143, 143, 0.16);
+}
+
 .hub-card--africa {
     --hub-accent: #15803d;
     --hub-soft: rgba(21, 128, 61, 0.1);
 }
 
+body.dark-mode .hub-card--africa {
+    --hub-accent: #84dd9f;
+    --hub-soft: rgba(132, 221, 159, 0.16);
+}
+
 .hub-card--pak {
     --hub-accent: #0f766e;
     --hub-soft: rgba(15, 118, 110, 0.1);
+}
+
+body.dark-mode .hub-card--pak {
+    --hub-accent: #7ee0d8;
+    --hub-soft: rgba(126, 224, 216, 0.16);
 }
 
 @media (max-width: 992px) {

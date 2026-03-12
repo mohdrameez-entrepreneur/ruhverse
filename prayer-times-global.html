@@ -143,6 +143,33 @@
             justify-content: center;
             flex-wrap: wrap;
         }
+
+        body.dark-mode .global-continents .intel-card:hover {
+            background: rgba(29, 36, 32, 0.98) !important;
+            border-color: rgba(76, 175, 80, 0.75) !important;
+            box-shadow: 0 35px 70px rgba(0, 0, 0, 0.45), 0 0 0 2px rgba(212, 175, 55, 0.24);
+        }
+
+        body.dark-mode .global-continents .continent-item a {
+            color: var(--text-main);
+            border-color: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        body.dark-mode .global-continents .continent-item a:hover {
+            background: rgba(212, 175, 55, 0.18);
+            border-color: rgba(212, 175, 55, 0.48);
+        }
+
+        body.dark-mode .global-continents .route-tag {
+            color: #f0cf79;
+            background: rgba(212, 175, 55, 0.2);
+            border-color: rgba(212, 175, 55, 0.45);
+        }
+
+        body.dark-mode .global-continents .continent-note {
+            color: #b8c7be;
+        }
     </style>
     <script>
         window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
@@ -282,6 +309,7 @@
             </div>
         </div>
     </footer>
+    <script src="/theme.js"></script>
 </body>
 
 </html>

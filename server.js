@@ -883,6 +883,8 @@ function getStaticSitemapUrls() {
   return [
     { loc: `${PUBLIC_BASE_URL}/`, changefreq: 'weekly', priority: '1.0' },
     { loc: `${PUBLIC_BASE_URL}/quran`, changefreq: 'weekly', priority: '0.9' },
+    { loc: `${PUBLIC_BASE_URL}/blog`, changefreq: 'weekly', priority: '0.7' },
+    { loc: `${PUBLIC_BASE_URL}/why-genz-muslims-losing-faith`, changefreq: 'monthly', priority: '0.65' },
     { loc: `${PUBLIC_BASE_URL}/terms.html`, changefreq: 'yearly', priority: '0.3' },
     { loc: `${PUBLIC_BASE_URL}/prayer-times-india.html`, changefreq: 'monthly', priority: '0.9' },
     { loc: `${PUBLIC_BASE_URL}/prayer-times-new-delhi.html`, changefreq: 'weekly', priority: '0.8' },
@@ -980,6 +982,14 @@ app.get('/sitemap.xml', (req, res) => {
 
   res.set('Content-Type', 'application/xml; charset=utf-8');
   res.send(buildSitemapIndex(entries, lastmod));
+});
+
+app.get(['/blog', '/blog.html'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'blog.html'));
+});
+
+app.get(['/why-genz-muslims-losing-faith', '/why-genz-muslims-losing-faith.html'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'why-genz-muslims-losing-faith.html'));
 });
 
 app.get(['/quran.html', '/quran'], async (req, res) => {

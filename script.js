@@ -479,11 +479,40 @@ function setupSidebarControls() {
 
 function setupDarkMode() {
     const nightBtn = document.getElementById('night-mode-toggle');
-    if (nightBtn) {
-        nightBtn.addEventListener('click', () => {
-            document.body.classList.toggle('dark-mode');
-        });
+    if (!nightBtn) return;
+
+    // Preferred: centralized cross-page theme manager (theme.js).
+    if (window.RuhVerseTheme && typeof window.RuhVerseTheme.bindToggle === 'function') {
+        window.RuhVerseTheme.bindToggle(nightBtn);
+        return;
     }
+
+    // Fallback when theme.js is unavailable.
+    if (nightBtn.dataset.themeManaged === '1') return;
+    nightBtn.dataset.themeManaged = '1';
+
+    const storedTheme = (() => {
+        try {
+            return sessionStorage.getItem('ruhverse-theme');
+        } catch (_) {
+            return null;
+        }
+    })();
+
+    if (storedTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+    }
+
+    nightBtn.addEventListener('click', () => {
+        const willBeDark = !document.body.classList.contains('dark-mode');
+        document.body.classList.toggle('dark-mode', willBeDark);
+        try {
+            if (willBeDark) sessionStorage.setItem('ruhverse-theme', 'dark');
+            else sessionStorage.removeItem('ruhverse-theme');
+        } catch (_) {
+            // Ignore storage failures.
+        }
+    });
 }
 
 function populateSurahList() {
