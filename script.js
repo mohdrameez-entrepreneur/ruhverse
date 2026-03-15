@@ -451,15 +451,16 @@ function updatePlayerUI() {
 
 function highlightVerse(index) {
     removeHighlights();
-    const verses = document.querySelectorAll('.verse-block');
-    if (verses[index]) {
-        verses[index].classList.add('active-verse');
-        verses[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const ayahBlocks = document.querySelectorAll('#quran-text-container .verse-block[data-ayah-index]');
+    const target = Array.from(ayahBlocks).find((block) => Number(block.dataset.ayahIndex) === Number(index));
+    if (target) {
+        target.classList.add('active-verse');
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 }
 
 function removeHighlights() {
-    document.querySelectorAll('.verse-block').forEach(v => v.classList.remove('active-verse'));
+    document.querySelectorAll('#quran-text-container .active-verse').forEach((v) => v.classList.remove('active-verse'));
 }
 
 function setupSidebarControls() {
@@ -778,6 +779,7 @@ async function loadSurah(index, keepAudio = false, forceReload = false) {
 
         const div = document.createElement('div');
         div.className = 'verse-block';
+        div.setAttribute('data-ayah-index', String(vIndex));
 
         const arP = document.createElement('p');
         arP.className = 'ayah-arabic';
@@ -906,12 +908,44 @@ function setupTimers() {
         if (!start || !end) return;
 
         let ramadanInterval = null;
+        const dayInMs = 24 * 60 * 60 * 1000;
+
+        function updateEidSalahPromo(phase, msReference) {
+            const textEl = document.getElementById('eid-promo-text');
+            if (!textEl) return;
+
+            const safeMs = Number.isFinite(msReference) ? msReference : 0;
+            const daysLeft = Math.max(0, Math.ceil(safeMs / dayInMs));
+            const daysText = String(daysLeft).padStart(2, '0');
+            const nextState = `${phase}:${daysText}`;
+            if (textEl.dataset.state === nextState) return;
+
+            if (phase === 'pre') {
+                textEl.innerHTML = `There are only <strong>${daysText}</strong> days left for Eid al-Fitr. Learn how to pray Eid Salah step by step with authentic Hadith guidance.`;
+                textEl.dataset.state = nextState;
+                return;
+            }
+
+            if (phase === 'ramadan') {
+                textEl.innerHTML = `There are only <strong>${daysText}</strong> days left for Eid al-Fitr. Learn the Eid Salah method, takbeer, and khutbah before Eid morning.`;
+                textEl.dataset.state = nextState;
+                return;
+            }
+
+            if (phase === 'eid') {
+                textEl.innerHTML = 'Eid is here. Read the step-by-step Eid Salah guide with takbeer, 2 rak\'ahs, and khutbah before going to the congregation.';
+                textEl.dataset.state = nextState;
+                return;
+            }
+
+            textEl.innerHTML = 'Bookmark this Eid Salah guide with authentic Hadith so you are prepared for the next Eid prayer.';
+            textEl.dataset.state = nextState;
+        }
 
         function updateRamadanCountdown() {
             const now = new Date();
             const msToStart = start - now;
             const msToEnd = end - now;
-            const dayInMs = 24 * 60 * 60 * 1000;
 
             const ramadanGrid = document.querySelector('.ramadan-grid');
             const subtitle = document.querySelector('.ramadan-subtitle');
@@ -921,6 +955,7 @@ function setupTimers() {
             if (msToStart > 0) {
                 if (sectionTitle) sectionTitle.textContent = 'Ramadan Starts In';
                 if (subtitle) subtitle.textContent = 'Counting down to the most blessed month of the year.';
+                updateEidSalahPromo('pre', msToEnd);
                 renderCountdown(msToStart);
                 return;
             }
@@ -928,6 +963,7 @@ function setupTimers() {
             // --- Phase 2: Ramadan DAY 1 (Greeting) ---
             if (msToStart <= 0 && msToStart > -dayInMs) {
                 if (sectionTitle) sectionTitle.textContent = 'Ramadan Mubarak';
+                updateEidSalahPromo('ramadan', msToEnd);
                 showFestiveMessage(ramadanGrid, subtitle, '🌙', 'Ramadan Mubarak!', 'The blessed month is here. May your fasts be accepted.', 'رَمَضَانُ مُبَارَكٌ');
                 return;
             }
@@ -936,6 +972,7 @@ function setupTimers() {
             if (msToEnd > 0) {
                 if (sectionTitle) sectionTitle.textContent = 'Ramadan Ends In';
                 if (subtitle) subtitle.textContent = 'The month of mercy is passing. Make the most of every moment.';
+                updateEidSalahPromo('ramadan', msToEnd);
                 // If we were showing the festive message, we might need to restore the grid
                 // This logic assumes renderCountdown handles restoring content if needed
                 renderCountdown(msToEnd);
@@ -945,12 +982,14 @@ function setupTimers() {
             // --- Phase 4: Eid Day 1 (Greeting) ---
             if (msToEnd <= 0 && msToEnd > -dayInMs) {
                 if (sectionTitle) sectionTitle.textContent = 'Eid Mubarak';
+                updateEidSalahPromo('eid', msToEnd);
                 showFestiveMessage(ramadanGrid, subtitle, '⭐', 'Eid Mubarak!', 'May Allah accept your fasts and prayers.', 'عيد مبارك');
                 return;
             }
 
             // --- Phase 5: POST EID (Reset to next year) ---
             if (msToEnd <= -dayInMs) {
+                updateEidSalahPromo('post', msToEnd);
                 clearInterval(ramadanInterval);
                 setTimeout(() => initRamadanCountdown(), 1000);
                 return;

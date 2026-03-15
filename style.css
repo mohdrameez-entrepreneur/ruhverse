@@ -597,6 +597,92 @@ body.dark-mode .ramadan-calendar-section {
     letter-spacing: 1px;
 }
 
+.eid-salah-promo {
+    margin: 2rem auto 0;
+    max-width: 780px;
+    display: block;
+    text-decoration: none;
+    text-align: left;
+    border-radius: 18px;
+    border: 1px solid rgba(26, 77, 46, 0.2);
+    border-left: 5px solid var(--gold);
+    background: linear-gradient(135deg, rgba(26, 77, 46, 0.06) 0%, rgba(212, 175, 55, 0.12) 100%);
+    padding: 1.15rem 1.2rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.eid-salah-promo:hover {
+    transform: translateY(-2px);
+    border-color: rgba(26, 77, 46, 0.4);
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.09);
+}
+
+.eid-promo-tag {
+    display: inline-flex;
+    border-radius: 999px;
+    border: 1px solid rgba(26, 77, 46, 0.25);
+    background: rgba(255, 255, 255, 0.65);
+    color: var(--emerald-dark);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+    padding: 0.18rem 0.62rem;
+    margin-bottom: 0.55rem;
+}
+
+.eid-salah-promo h3 {
+    margin: 0 0 0.34rem;
+    font-size: 1.2rem;
+    color: var(--emerald-dark);
+}
+
+.eid-salah-promo p {
+    margin: 0;
+    color: var(--text-main);
+    font-size: 0.97rem;
+    line-height: 1.62;
+}
+
+.eid-salah-promo strong {
+    color: var(--emerald-dark);
+}
+
+.eid-promo-cta {
+    display: inline-block;
+    margin-top: 0.6rem;
+    color: var(--emerald);
+    font-weight: 700;
+    font-size: 0.92rem;
+}
+
+body.dark-mode .eid-salah-promo {
+    border-color: rgba(255, 255, 255, 0.2);
+    border-left-color: var(--gold);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(212, 175, 55, 0.08) 100%);
+}
+
+body.dark-mode .eid-salah-promo:hover {
+    border-color: rgba(255, 255, 255, 0.32);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.35);
+}
+
+body.dark-mode .eid-promo-tag {
+    border-color: rgba(255, 255, 255, 0.24);
+    background: rgba(255, 255, 255, 0.08);
+    color: #dcebe2;
+}
+
+body.dark-mode .eid-salah-promo h3,
+body.dark-mode .eid-salah-promo p,
+body.dark-mode .eid-salah-promo strong {
+    color: var(--text-main);
+}
+
+body.dark-mode .eid-promo-cta {
+    color: #9be4b8;
+}
+
 /* Sidebar & Mobile Menu Overlay */
 .nav-overlay {
     position: fixed;
@@ -643,11 +729,25 @@ body.dark-mode .ramadan-calendar-section {
         padding: 1.5rem 2rem;
     }
 
-    .nav-links {
+    .navbar:not(.has-mobile-menu) {
+        flex-wrap: wrap;
+        row-gap: 0.75rem;
+    }
+
+    .navbar:not(.has-mobile-menu) .nav-links {
+        display: flex;
+        width: 100%;
+        justify-content: center;
+        margin: 0;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .navbar.has-mobile-menu .nav-links {
         display: none;
     }
 
-    .hamburger {
+    .navbar.has-mobile-menu .hamburger {
         display: flex;
     }
 

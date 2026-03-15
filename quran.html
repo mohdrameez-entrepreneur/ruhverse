@@ -31,6 +31,27 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;500&family=Playfair+Display:wght@400;600;700&display=swap"
         rel="stylesheet">
+    <style>
+        .quran-quick-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.45rem;
+            align-items: center;
+        }
+
+        .quran-quick-nav .back-link {
+            font-size: 0.78rem;
+            padding: 0.2rem 0.45rem;
+            border-radius: 999px;
+            border: 1px solid rgba(26, 77, 46, 0.22);
+            background: rgba(26, 77, 46, 0.06);
+        }
+
+        body.dark-mode .quran-quick-nav .back-link {
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.06);
+        }
+    </style>
     <!--SSR_STRUCTURED_DATA-->
     <script>
         window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
@@ -44,7 +65,13 @@
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <a href="/index.html" class="back-link">← Home</a>
+                <div class="quran-quick-nav">
+                    <a href="/index.html" class="back-link">← Home</a>
+                    <a href="/index.html#prayer" class="back-link">Prayer</a>
+                    <a href="/index.html#ramadan" class="back-link">Ramadan</a>
+                    <a href="/index.html#insights" class="back-link">Insights</a>
+                    <a href="/blog" class="back-link">Blog</a>
+                </div>
                 <div class="sidebar-controls">
                     <button id="night-mode-toggle" class="icon-btn" title="Night Mode">🌙</button>
                 </div>

@@ -7,8 +7,7 @@
       "config": {
         "includeFiles": [
           "index.html",
-          "blog.html",
-          "why-genz-muslims-losing-faith.html",
+          "Blog Pages/**",
           "quran.html",
           "terms.html",
           "prayer-times-global.html",

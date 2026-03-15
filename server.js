@@ -11,6 +11,7 @@ const API_AR = 'https://api.alquran.cloud/v1/quran/quran-uthmani';
 const API_EN = 'https://api.alquran.cloud/v1/quran/en.sahih';
 const API_CHAPTER_INFO = 'https://api.quran.com/api/v4/chapters';
 const TEMPLATE_PATH = path.join(__dirname, 'quran.html');
+const BLOGS_DIR = path.join(__dirname, 'Blog Pages');
 const QURAN_TEMPLATE = fs.readFileSync(TEMPLATE_PATH, 'utf8');
 const SURAH_PROFILES_PATH = path.join(__dirname, 'data', 'surah_profiles.json');
 const CITY_PROFILES_PATH = path.join(__dirname, 'data', 'city_profiles.json');
@@ -615,7 +616,7 @@ function renderSurahHtml(surahAr, surahEn, index, surahIntro) {
       }
     }
 
-    html += `<div class="verse-block">`;
+    html += `<div class="verse-block" data-ayah-index="${vIndex}">`;
     html += `<p class="ayah-arabic">${escapeHtml(text)} <span class="verse-number">${ayah.numberInSurah}</span></p>`;
     html += `<p class="ayah-translation">${escapeHtml(surahEn.ayahs[vIndex].text)}</p>`;
     html += `</div>`;
@@ -893,7 +894,8 @@ function getStaticSitemapUrls() {
 function getBlogSitemapUrls() {
   return [
     { loc: `${PUBLIC_BASE_URL}/blog`, changefreq: 'weekly', priority: '0.7' },
-    { loc: `${PUBLIC_BASE_URL}/why-genz-muslims-losing-faith`, changefreq: 'monthly', priority: '0.65' }
+    { loc: `${PUBLIC_BASE_URL}/why-genz-muslims-losing-faith`, changefreq: 'monthly', priority: '0.65' },
+    { loc: `${PUBLIC_BASE_URL}/how-to-pray-eid-salah`, changefreq: 'monthly', priority: '0.68' }
   ];
 }
 
@@ -931,6 +933,26 @@ function buildSitemapIndex(entries, lastmod) {
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${body}
 </sitemapindex>`;
+}
+
+function resolveBlogFilePath(fileName) {
+  const preferred = path.join(BLOGS_DIR, fileName);
+  if (fs.existsSync(preferred)) return preferred;
+
+  // Legacy fallback for older layouts where blog files lived in project root.
+  const legacy = path.join(__dirname, fileName);
+  if (fs.existsSync(legacy)) return legacy;
+
+  return null;
+}
+
+function sendBlogPage(res, fileName) {
+  const filePath = resolveBlogFilePath(fileName);
+  if (!filePath) {
+    res.status(404).send('Blog page not found.');
+    return;
+  }
+  res.sendFile(filePath);
 }
 
 async function getCoreSitemapUrls() {
@@ -1000,11 +1022,35 @@ app.get('/sitemap.xml', (req, res) => {
 });
 
 app.get(['/blog', '/blog.html'], (req, res) => {
-  res.sendFile(path.join(__dirname, 'blog.html'));
+  sendBlogPage(res, 'blog.html');
 });
 
 app.get(['/why-genz-muslims-losing-faith', '/why-genz-muslims-losing-faith.html'], (req, res) => {
-  res.sendFile(path.join(__dirname, 'why-genz-muslims-losing-faith.html'));
+  sendBlogPage(res, 'why-genz-muslims-losing-faith.html');
+});
+
+app.get(['/how-to-pray-eid-salah', '/how-to-pray-eid-salah.html'], (req, res) => {
+  sendBlogPage(res, 'how-to-pray-eid-salah.html');
+});
+
+app.get('/prayer-times-city.html', (req, res) => {
+  res.redirect(301, '/prayer-times-india.html');
+});
+
+app.get(['/prayer-times-india', '/prayer-times-india/'], (req, res) => {
+  res.redirect(301, '/prayer-times-india.html');
+});
+
+app.get(['/prayer-times-new-delhi', '/prayer-times-new-delhi/'], (req, res) => {
+  res.redirect(301, '/prayer-times-new-delhi.html');
+});
+
+app.get(['/prayer-times-global', '/prayer-times-global/'], (req, res) => {
+  res.redirect(301, '/prayer-times-global.html');
+});
+
+app.get(['/terms', '/terms/'], (req, res) => {
+  res.redirect(301, '/terms.html');
 });
 
 app.get(['/quran.html', '/quran'], async (req, res) => {
@@ -1522,7 +1568,21 @@ app.get('/namaz-times/:citySlug', async (req, res) => {
 });
 
 // ─── Static files should be served after SSR routes ──────────────────────────
-app.use(express.static(path.join(__dirname)));
+app.use(express.static(path.join(__dirname), {
+  etag: true,
+  lastModified: true,
+  maxAge: '7d',
+  setHeaders: (res, filePath) => {
+    if (/\.(html?)$/i.test(filePath)) {
+      res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
+      return;
+    }
+
+    if (/\.(css|js|mjs|jpg|jpeg|png|webp|svg|ico|woff2?|ttf|otf)$/i.test(filePath)) {
+      res.setHeader('Cache-Control', 'public, max-age=604800, stale-while-revalidate=86400');
+    }
+  }
+}));
 
 if (require.main === module) {
   const explicitPort = process.env.PORT;
