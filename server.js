@@ -880,22 +880,97 @@ function getSitemapLastMod() {
   return new Intl.DateTimeFormat('en-CA', { timeZone: IST_TIME_ZONE }).format(new Date());
 }
 
+function formatDateForSitemap(date) {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: IST_TIME_ZONE }).format(date);
+}
+
+function getFileSitemapLastMod(...filePaths) {
+  const existingPaths = filePaths.filter((filePath) => filePath && fs.existsSync(filePath));
+  if (!existingPaths.length) return getSitemapLastMod();
+
+  let latestMtime = 0;
+  existingPaths.forEach((filePath) => {
+    try {
+      const stat = fs.statSync(filePath);
+      if (stat.mtimeMs > latestMtime) latestMtime = stat.mtimeMs;
+    } catch (_) {
+      // Ignore unreadable files and fall back below.
+    }
+  });
+
+  return latestMtime ? formatDateForSitemap(new Date(latestMtime)) : getSitemapLastMod();
+}
+
+function getLatestSitemapLastMod(entries, fallback = getSitemapLastMod()) {
+  const lastmods = entries
+    .map((entry) => normalizeWhitespace(entry?.lastmod || ''))
+    .filter(Boolean)
+    .sort();
+
+  return lastmods.length ? lastmods[lastmods.length - 1] : fallback;
+}
+
 function getStaticSitemapUrls() {
   return [
-    { loc: `${PUBLIC_BASE_URL}/`, changefreq: 'weekly', priority: '1.0' },
-    { loc: `${PUBLIC_BASE_URL}/quran`, changefreq: 'weekly', priority: '0.9' },
-    { loc: `${PUBLIC_BASE_URL}/terms.html`, changefreq: 'yearly', priority: '0.3' },
-    { loc: `${PUBLIC_BASE_URL}/prayer-times-india.html`, changefreq: 'monthly', priority: '0.9' },
-    { loc: `${PUBLIC_BASE_URL}/prayer-times-new-delhi.html`, changefreq: 'weekly', priority: '0.8' },
-    { loc: `${PUBLIC_BASE_URL}/prayer-times-global.html`, changefreq: 'monthly', priority: '0.7' }
+    {
+      loc: `${PUBLIC_BASE_URL}/`,
+      changefreq: 'weekly',
+      priority: '1.0',
+      lastmod: getFileSitemapLastMod(path.join(__dirname, 'index.html'), path.join(__dirname, 'style.css'))
+    },
+    {
+      loc: `${PUBLIC_BASE_URL}/quran`,
+      changefreq: 'weekly',
+      priority: '0.9',
+      lastmod: getFileSitemapLastMod(path.join(__dirname, 'quran.html'), path.join(__dirname, 'data', 'surah_profiles.json'))
+    },
+    {
+      loc: `${PUBLIC_BASE_URL}/terms.html`,
+      changefreq: 'yearly',
+      priority: '0.3',
+      lastmod: getFileSitemapLastMod(path.join(__dirname, 'terms.html'))
+    },
+    {
+      loc: `${PUBLIC_BASE_URL}/prayer-times-india.html`,
+      changefreq: 'monthly',
+      priority: '0.9',
+      lastmod: getFileSitemapLastMod(path.join(__dirname, 'prayer-times-india.html'), path.join(__dirname, 'style.css'))
+    },
+    {
+      loc: `${PUBLIC_BASE_URL}/prayer-times-new-delhi.html`,
+      changefreq: 'weekly',
+      priority: '0.8',
+      lastmod: getFileSitemapLastMod(path.join(__dirname, 'prayer-times-new-delhi.html'), path.join(__dirname, 'style.css'))
+    },
+    {
+      loc: `${PUBLIC_BASE_URL}/prayer-times-global.html`,
+      changefreq: 'monthly',
+      priority: '0.7',
+      lastmod: getFileSitemapLastMod(path.join(__dirname, 'prayer-times-global.html'), path.join(__dirname, 'style.css'))
+    }
   ];
 }
 
 function getBlogSitemapUrls() {
   return [
-    { loc: `${PUBLIC_BASE_URL}/blog`, changefreq: 'weekly', priority: '0.7' },
-    { loc: `${PUBLIC_BASE_URL}/why-genz-muslims-losing-faith`, changefreq: 'monthly', priority: '0.65' },
-    { loc: `${PUBLIC_BASE_URL}/how-to-pray-eid-salah`, changefreq: 'monthly', priority: '0.68' }
+    {
+      loc: `${PUBLIC_BASE_URL}/blog`,
+      changefreq: 'weekly',
+      priority: '0.7',
+      lastmod: getFileSitemapLastMod(resolveBlogFilePath('blog.html'))
+    },
+    {
+      loc: `${PUBLIC_BASE_URL}/why-genz-muslims-losing-faith`,
+      changefreq: 'monthly',
+      priority: '0.65',
+      lastmod: getFileSitemapLastMod(resolveBlogFilePath('why-genz-muslims-losing-faith.html'))
+    },
+    {
+      loc: `${PUBLIC_BASE_URL}/how-to-pray-eid-salah`,
+      changefreq: 'monthly',
+      priority: '0.68',
+      lastmod: getFileSitemapLastMod(resolveBlogFilePath('how-to-pray-eid-salah.html'))
+    }
   ];
 }
 
@@ -903,7 +978,14 @@ function getCitySitemapUrls() {
   return Object.values(cityProfiles).map((city) => ({
     loc: `${PUBLIC_BASE_URL}/namaz-times/${city.slug}`,
     changefreq: 'daily',
-    priority: '0.85'
+    priority: '0.85',
+    lastmod: getFileSitemapLastMod(
+      path.join(__dirname, 'prayer-times-city.html'),
+      CITY_PROFILES_PATH,
+      WORLD_CITY_SEED_PATH,
+      path.join(__dirname, 'data', 'ramadan_2026.json'),
+      path.join(__dirname, 'data', 'ramadan_2026.js')
+    )
   }));
 }
 
@@ -911,7 +993,7 @@ function buildSitemapUrlset(urls, lastmod) {
   const body = urls.map((entry) => `
   <url>
     <loc>${escapeHtml(entry.loc)}</loc>
-    <lastmod>${lastmod}</lastmod>
+    <lastmod>${entry.lastmod || lastmod}</lastmod>
     <changefreq>${entry.changefreq}</changefreq>
     <priority>${entry.priority}</priority>
   </url>`).join('');
@@ -926,7 +1008,7 @@ function buildSitemapIndex(entries, lastmod) {
   const body = entries.map((entry) => `
   <sitemap>
     <loc>${escapeHtml(entry.loc)}</loc>
-    <lastmod>${lastmod}</lastmod>
+    <lastmod>${entry.lastmod || lastmod}</lastmod>
   </sitemap>`).join('');
 
   return `<?xml version="1.0" encoding="UTF-8"?>
@@ -967,26 +1049,26 @@ async function getCoreSitemapUrls() {
 }
 
 app.get('/sitemap-core.xml', async (req, res) => {
-  const lastmod = getSitemapLastMod();
+  const fallbackLastmod = getSitemapLastMod();
   try {
     const urls = await getCoreSitemapUrls();
     res.set('Content-Type', 'application/xml; charset=utf-8');
-    res.send(buildSitemapUrlset(urls, lastmod));
+    res.send(buildSitemapUrlset(urls, getLatestSitemapLastMod(urls, fallbackLastmod)));
   } catch (_) {
     res.set('Content-Type', 'application/xml; charset=utf-8');
-    res.send(buildSitemapUrlset(getStaticSitemapUrls(), lastmod));
+    const fallbackUrls = getStaticSitemapUrls();
+    res.send(buildSitemapUrlset(fallbackUrls, getLatestSitemapLastMod(fallbackUrls, fallbackLastmod)));
   }
 });
 
 app.get('/sitemap-blogs.xml', (req, res) => {
-  const lastmod = getSitemapLastMod();
   const urls = getBlogSitemapUrls();
   res.set('Content-Type', 'application/xml; charset=utf-8');
-  res.send(buildSitemapUrlset(urls, lastmod));
+  res.send(buildSitemapUrlset(urls, getLatestSitemapLastMod(urls)));
 });
 
 app.get('/sitemap-cities-:chunk(\\d+).xml', (req, res) => {
-  const lastmod = getSitemapLastMod();
+  const fallbackLastmod = getSitemapLastMod();
   const chunkIndex = Math.max(0, Number(req.params.chunk) || 0);
   const cityUrls = getCitySitemapUrls();
   const start = chunkIndex * SITEMAP_CITY_CHUNK_SIZE;
@@ -994,31 +1076,44 @@ app.get('/sitemap-cities-:chunk(\\d+).xml', (req, res) => {
 
   if (!chunkUrls.length) {
     res.status(404).set('Content-Type', 'application/xml; charset=utf-8');
-    res.send(buildSitemapUrlset([], lastmod));
+    res.send(buildSitemapUrlset([], fallbackLastmod));
     return;
   }
 
   res.set('Content-Type', 'application/xml; charset=utf-8');
-  res.send(buildSitemapUrlset(chunkUrls, lastmod));
+  res.send(buildSitemapUrlset(chunkUrls, getLatestSitemapLastMod(chunkUrls, fallbackLastmod)));
 });
 
 app.get('/sitemap.xml', (req, res) => {
-  const lastmod = getSitemapLastMod();
+  const fallbackLastmod = getSitemapLastMod();
+  const staticUrls = getStaticSitemapUrls();
+  const blogUrls = getBlogSitemapUrls();
   const cityUrls = getCitySitemapUrls();
   const entries = [
-    { loc: `${PUBLIC_BASE_URL}/sitemap-core.xml` },
-    { loc: `${PUBLIC_BASE_URL}/sitemap-blogs.xml` }
+    {
+      loc: `${PUBLIC_BASE_URL}/sitemap-core.xml`,
+      lastmod: getLatestSitemapLastMod(staticUrls, fallbackLastmod)
+    },
+    {
+      loc: `${PUBLIC_BASE_URL}/sitemap-blogs.xml`,
+      lastmod: getLatestSitemapLastMod(blogUrls, fallbackLastmod)
+    }
   ];
 
   if (cityUrls.length) {
     const cityChunkCount = Math.ceil(cityUrls.length / SITEMAP_CITY_CHUNK_SIZE);
     for (let i = 0; i < cityChunkCount; i += 1) {
-      entries.push({ loc: `${PUBLIC_BASE_URL}/sitemap-cities-${i}.xml` });
+      const start = i * SITEMAP_CITY_CHUNK_SIZE;
+      const chunkUrls = cityUrls.slice(start, start + SITEMAP_CITY_CHUNK_SIZE);
+      entries.push({
+        loc: `${PUBLIC_BASE_URL}/sitemap-cities-${i}.xml`,
+        lastmod: getLatestSitemapLastMod(chunkUrls, fallbackLastmod)
+      });
     }
   }
 
   res.set('Content-Type', 'application/xml; charset=utf-8');
-  res.send(buildSitemapIndex(entries, lastmod));
+  res.send(buildSitemapIndex(entries, getLatestSitemapLastMod(entries, fallbackLastmod)));
 });
 
 app.get(['/blog', '/blog.html'], (req, res) => {
