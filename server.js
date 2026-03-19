@@ -616,7 +616,7 @@ function renderSurahHtml(surahAr, surahEn, index, surahIntro) {
       }
     }
 
-    html += `<div class="verse-block" data-ayah-index="${vIndex}">`;
+    html += `<div class="verse-block" id="ayah-${ayah.numberInSurah}" data-ayah-index="${vIndex}" data-ayah-number="${ayah.numberInSurah}">`;
     html += `<p class="ayah-arabic">${escapeHtml(text)} <span class="verse-number">${ayah.numberInSurah}</span></p>`;
     html += `<p class="ayah-translation">${escapeHtml(surahEn.ayahs[vIndex].text)}</p>`;
     html += `</div>`;
@@ -970,6 +970,12 @@ function getBlogSitemapUrls() {
       changefreq: 'monthly',
       priority: '0.68',
       lastmod: getFileSitemapLastMod(resolveBlogFilePath('how-to-pray-eid-salah.html'))
+    },
+    {
+      loc: `${PUBLIC_BASE_URL}/is-trading-halal`,
+      changefreq: 'monthly',
+      priority: '0.66',
+      lastmod: getFileSitemapLastMod(resolveBlogFilePath('is-trading-halal.html'))
     }
   ];
 }
@@ -1126,6 +1132,10 @@ app.get(['/why-genz-muslims-losing-faith', '/why-genz-muslims-losing-faith.html'
 
 app.get(['/how-to-pray-eid-salah', '/how-to-pray-eid-salah.html'], (req, res) => {
   sendBlogPage(res, 'how-to-pray-eid-salah.html');
+});
+
+app.get(['/is-trading-halal', '/is-trading-halal.html'], (req, res) => {
+  sendBlogPage(res, 'is-trading-halal.html');
 });
 
 app.get('/prayer-times-city.html', (req, res) => {

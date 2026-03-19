@@ -779,7 +779,9 @@ async function loadSurah(index, keepAudio = false, forceReload = false) {
 
         const div = document.createElement('div');
         div.className = 'verse-block';
+        div.id = `ayah-${ayah.numberInSurah}`;
         div.setAttribute('data-ayah-index', String(vIndex));
+        div.setAttribute('data-ayah-number', String(ayah.numberInSurah));
 
         const arP = document.createElement('p');
         arP.className = 'ayah-arabic';

@@ -1107,12 +1107,21 @@ body.dark-mode #insights {
     padding-bottom: 2.5rem;
     border-bottom: 1px solid var(--sidebar-border);
     transition: all 0.4s ease;
+    scroll-margin-top: 7rem;
     border-radius: 12px;
     width: 100%;
     /* Ensure block doesn't expand beyond container */
     max-width: 100%;
     overflow: hidden;
     /* Local safety */
+}
+
+.verse-block:target {
+    background: rgba(16, 185, 129, 0.08);
+    border-left: 5px solid var(--emerald);
+    padding-left: 2rem;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.05);
+    border-bottom-color: transparent;
 }
 
 .verse-block.active-verse {
@@ -1881,6 +1890,11 @@ body.dark-mode .cal-eid {
     .verse-block.active-verse {
         padding-left: 1rem;
         /* Reduced from 2rem to prevent overflow */
+        border-left-width: 4px;
+    }
+
+    .verse-block:target {
+        padding-left: 1rem;
         border-left-width: 4px;
     }
 
