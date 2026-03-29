@@ -836,6 +836,17 @@ app.get('/api/surah-info/:surahNumber(\\d+)', async (req, res) => {
   }
 });
 
+// ── Qibla Finder page ──
+app.get('/qibla', (req, res) => {
+  const qiblaPath = path.join(__dirname, 'qibla.html');
+  if (!fs.existsSync(qiblaPath)) {
+    res.status(404).send('Qibla page not found.');
+    return;
+  }
+  res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
+  res.sendFile(qiblaPath);
+});
+
 app.get('/api/cities', (req, res) => {
   const query = normalizeWhitespace(req.query.q || '').toLowerCase();
   const limitRaw = Number(req.query.limit);
@@ -947,6 +958,12 @@ function getStaticSitemapUrls() {
       changefreq: 'monthly',
       priority: '0.7',
       lastmod: getFileSitemapLastMod(path.join(__dirname, 'prayer-times-global.html'), path.join(__dirname, 'style.css'))
+    },
+    {
+      loc: `${PUBLIC_BASE_URL}/qibla`,
+      changefreq: 'weekly',
+      priority: '0.8',
+      lastmod: getFileSitemapLastMod(path.join(__dirname, 'qibla.html'), path.join(__dirname, 'qibla.js'))
     }
   ];
 }

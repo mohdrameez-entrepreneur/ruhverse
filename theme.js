@@ -4,7 +4,7 @@
 
     function readStoredTheme() {
         try {
-            return sessionStorage.getItem(STORAGE_KEY) === DARK_VALUE;
+            return localStorage.getItem(STORAGE_KEY) === DARK_VALUE;
         } catch (_) {
             return false;
         }
@@ -13,9 +13,9 @@
     function persistTheme(isDark) {
         try {
             if (isDark) {
-                sessionStorage.setItem(STORAGE_KEY, DARK_VALUE);
+                localStorage.setItem(STORAGE_KEY, DARK_VALUE);
             } else {
-                sessionStorage.removeItem(STORAGE_KEY);
+                localStorage.removeItem(STORAGE_KEY);
             }
         } catch (_) {
             // Ignore storage failures in restricted environments.
