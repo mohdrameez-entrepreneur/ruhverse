@@ -993,6 +993,12 @@ function getBlogSitemapUrls() {
       changefreq: 'monthly',
       priority: '0.66',
       lastmod: getFileSitemapLastMod(resolveBlogFilePath('is-trading-halal.html'))
+    },
+    {
+      loc: `${PUBLIC_BASE_URL}/is-music-haram`,
+      changefreq: 'monthly',
+      priority: '0.66',
+      lastmod: getFileSitemapLastMod(resolveBlogFilePath('is-music-haram.html'))
     }
   ];
 }
@@ -1153,6 +1159,10 @@ app.get(['/how-to-pray-eid-salah', '/how-to-pray-eid-salah.html'], (req, res) =>
 
 app.get(['/is-trading-halal', '/is-trading-halal.html'], (req, res) => {
   sendBlogPage(res, 'is-trading-halal.html');
+});
+
+app.get(['/is-music-haram', '/is-music-haram.html'], (req, res) => {
+  sendBlogPage(res, 'is-music-haram.html');
 });
 
 app.get('/prayer-times-city.html', (req, res) => {
@@ -1714,7 +1724,7 @@ if (require.main === module) {
   const startServer = (port, attempt = 0) => {
     const server = app.listen(port, () => {
       const activePort = server.address()?.port || port;
-      console.log(`RuhVerse SSR server running on http://localhost:${activePort}`);
+      console.log(`\x1b[32m[RuhVerse]\x1b[0m SSR Server active on port ${activePort}`);
     });
 
     server.once('error', (err) => {
