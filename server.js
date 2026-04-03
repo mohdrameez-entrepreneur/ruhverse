@@ -1669,7 +1669,9 @@ function renderCityPage(template, cityProfile, prayerData, ramadanCalendar) {
   `;
 
   const structuredData = buildCityStructuredData(cityProfile);
-  const ramadanCalendarHtml = renderRamadanCalendarHtml(ramadanCalendar, cityProfile);
+  // Keep the backend logic but hide from frontend as requested
+  // const ramadanCalendarHtml = renderRamadanCalendarHtml(ramadanCalendar, cityProfile);
+  const ramadanCalendarHtml = ''; 
   const relatedCitiesHtml = renderRelatedCityLinksHtml(cityProfile);
 
   const ssrBootstrap = `
