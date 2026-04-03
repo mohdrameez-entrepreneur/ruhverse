@@ -107,6 +107,67 @@ function toNumber(value, fallback = 0) {
   return Number.isFinite(n) ? n : fallback;
 }
 
+const INSIGHT_TEMPLATES = {
+  opening: [
+    "{name} is a major Muslim community center in {regionLabel}.",
+    "The Muslim community in {name}, {regionLabel} relies on accurate daily prayer schedules for their spiritual routine.",
+    "In {name}, {regionLabel}, observing daily salah at the prescribed times is a core part of faith and community life.",
+    "{name} is home to a dedicated Muslim population in {regionLabel} that gathers for daily and Friday congregational prayers."
+  ],
+  utility: [
+    "This page provides precise daily Fajr, Zohr, Asr, Maghrib, and Isha timings based on the city's geographical coordinates.",
+    "Our automated system calculates highly accurate Namaz timings for {name} using the latest astronomical data and local standards.",
+    "Follow this comprehensive guide for today's Fajr, Zohar, Asr, Magrib, and Isha times in {name}, updated daily for accuracy."
+  ],
+  community: [
+    "During the holy month of Ramadan, these calculations are especially crucial for Sahur and Iftar timings in the {name} area.",
+    "Local mosques and Islamic centers in {name} often use these astronomical windows as a reliable reference for their Adhan.",
+    "Staying connected to the prayer schedule in {name} helps maintain a disciplined spiritual life and strengthens community bonds."
+  ]
+};
+
+const FACT_POOL = [
+  "Daily salah timings are calculated using the precise longitudinal and latitudinal coordinates for {name}.",
+  "The {name} area follows high-precision astronomical data to ensure Fajr and Maghrib timings are accurate year-round.",
+  "Islamic prayer times in {name} shift by a few minutes each day as the sun's position changes throughout the seasons.",
+  "During Ramadan, the Iftar and Sahur times in {name} are closely monitored by the local community for fasting.",
+  "The Fajr prayer marks the beginning of the spiritual day for Muslims in {name}, starting at the break of dawn.",
+  "The Maghrib prayer is observed just after sunset, a key moment for the community in {name} to gather and reflect.",
+  "The Dhuhr (Zohr) prayer occurs when the sun is at its highest point in the sky above {name}.",
+  "Asr prayer is performed in the afternoon, providing a spiritual pause in the busy daily life of {name}.",
+  "Isha is the final prayer of the day, observed by the Muslim community in {name} after twilight has disappeared.",
+  "Friday (Jumu'ah) is a special day for the community in {name}, with larger congregations for the noon prayer.",
+  "The {name} Central Mosque and other local masjids serve as vital hubs for worship and community welfare.",
+  "Islamic heritage in the {regionLabel} region is reflected in the cultural and social life of {name}.",
+  "Muslims in {name} often utilize digital tools and mobile apps to stay updated with live Namaz alerts.",
+  "Community iftars are a common sight in {name} during Ramadan, fostering a sense of brotherhood and charity.",
+  "Islamic values and traditions are deeply integrated into the local community fabric of the {name} area."
+];
+
+const FAQ_POOL = [
+  {
+    q: ["What method is used for {name} Namaz timings?", "How are the prayer times in {name} calculated?", "Are the {name} prayer times based on local mosque timings?"],
+    a: ["RuhVerse calculates {name} timings using high-precision coordinates and the widely accepted Islamic standards for this region.", "We use astronomical formulas and local GPS data for {name} to provide the most accurate Fajr, Dhuhr, Asr, Maghrib, and Isha times.", "The timings for {name} are generated based on the city's exact location, ensuring they align with local solar positions."]
+  },
+  {
+    q: ["Are these timings valid for nearby areas around {name}?", "Can I use these timings for suburbs surrounding {name}?", "How accurate are these timings for the {name} metropolitan region?"],
+    a: ["Nearby districts usually differ by a few minutes. Use this page as a reliable city-center reference for {name}.", "These calculations are optimized for {name} center. Suburbs within a 10km radius will have nearly identical timings.", "While accurate for {name}, we recommend adding a 1-2 minute buffer for locations at the far edges of the city."]
+  },
+  {
+    q: ["Do Ramadan and Eid dates in {name} change each year?", "When is Ramadan 2026 in {name}?", "How is the start of Ramadan determined in {name}?"],
+    a: ["Yes. Ramadan and Eid depend on moon sighting, so official local announcements in {name} should be followed.", "Ramadan 2026 is expected around Feb 19th in {name}, but always check the local Hilal sighting confirmation.", "The Islamic calendar is lunar, meaning dates for {name} shift roughly 11 days earlier each Gregorian year."]
+  }
+];
+
+function getDeterministicIndex(str, poolSize) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash) % poolSize;
+}
+
 function buildDefaultCityProfile(seedRaw) {
   const seed = seedRaw && typeof seedRaw === 'object' ? seedRaw : {};
   const name = normalizeWhitespace(seed.name || '');
@@ -121,6 +182,29 @@ function buildDefaultCityProfile(seedRaw) {
     ? seed.aliases.map((x) => normalizeWhitespace(x)).filter(Boolean)
     : [];
 
+  const idx = getDeterministicIndex(slug, 100);
+
+  // Generate unique Insights
+  const insOp = INSIGHT_TEMPLATES.opening[idx % INSIGHT_TEMPLATES.opening.length].replace(/{name}/g, name).replace(/{regionLabel}/g, regionLabel);
+  const insUt = INSIGHT_TEMPLATES.utility[idx % INSIGHT_TEMPLATES.utility.length].replace(/{name}/g, name);
+  const insCo = INSIGHT_TEMPLATES.community[idx % INSIGHT_TEMPLATES.community.length].replace(/{name}/g, name);
+  const generatedInsights = `${insOp} ${insUt} ${insCo}`;
+
+  // Generate unique Facts
+  const factIndices = [idx % FACT_POOL.length, (idx + 3) % FACT_POOL.length, (idx + 7) % FACT_POOL.length];
+  const uniqueFactIndices = [...new Set(factIndices)];
+  const generatedFacts = uniqueFactIndices.map(i => FACT_POOL[i].replace(/{name}/g, name).replace(/{regionLabel}/g, regionLabel));
+
+  // Generate unique FAQs
+  const generatedFaqs = FAQ_POOL.map((item, i) => {
+    const qIdx = (idx + i) % item.q.length;
+    const aIdx = (idx + i) % item.a.length;
+    return {
+      q: item.q[qIdx].replace(/{name}/g, name),
+      a: item.a[aIdx].replace(/{name}/g, name)
+    };
+  });
+
   return {
     slug,
     name,
@@ -133,37 +217,17 @@ function buildDefaultCityProfile(seedRaw) {
     aliases,
     muslimPopulation: normalizeWhitespace(seed.muslimPopulation || ''),
     famousLandmark: normalizeWhitespace(seed.famousLandmark || `${name} Central Mosque`),
-    insights: normalizeWhitespace(
-      seed.insights
-      || `${name} is a major Muslim community center in ${regionLabel}. This page provides daily Fajr, Zohr, Asr, Magrib, and Isha timings with location-aware calculations.`
-    ),
+    insights: normalizeWhitespace(seed.insights || generatedInsights),
     facts: Array.isArray(seed.facts) && seed.facts.length
       ? seed.facts.map((x) => normalizeWhitespace(x)).filter(Boolean).slice(0, 5)
-      : [
-        `${name} follows ${zone} for local prayer schedules.`,
-        `Daily salah timings are calculated using coordinates for ${name}.`,
-        `Local mosques and Muslim communities in ${name} rely on accurate Fajr and Magrib times during Ramadan.`
-      ],
+      : generatedFacts,
     ramadanNote: normalizeWhitespace(
       seed.ramadanNote
       || `During Ramadan in ${name}, verify moon-sighting announcements from local authorities for final fasting and Eid dates.`
     ),
     faqItems: Array.isArray(seed.faqItems) && seed.faqItems.length
       ? seed.faqItems
-      : [
-        {
-          q: `What method is used for ${name} Namaz timings?`,
-          a: `RuhVerse calculates ${name} timings using AlAdhan coordinates and the configured method for this city.`
-        },
-        {
-          q: `Are these timings valid for nearby areas around ${name}?`,
-          a: `Nearby districts usually differ by a few minutes. Use this page as a reliable city-center reference.`
-        },
-        {
-          q: `Do Ramadan and Eid dates in ${name} change each year?`,
-          a: `Yes. Ramadan and Eid depend on moon sighting, so official local announcements should be followed.`
-        }
-      ]
+      : generatedFaqs
   };
 }
 

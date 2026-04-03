@@ -383,5 +383,740 @@
                 "a": "Yes. Ramadan and Eid are moon-sighting based, so official Indonesian announcements should be followed for final confirmation."
             }
         ]
+    },
+    "mecca": {
+        "slug": "mecca",
+        "name": "Mecca",
+        "state": "Makkah Region",
+        "country": "Saudi Arabia",
+        "latitude": 21.3891,
+        "longitude": 39.8579,
+        "method": 4,
+        "timezone": "Asia/Riyadh",
+        "muslimPopulation": "100% (Restricted to Muslims)",
+        "famousLandmark": "Masjid al-Haram – the holiest mosque in Islam",
+        "insights": "Mecca is the spiritual heart of the Islamic world and the birthplace of the Prophet Muhammad ﷺ. As home to the Kaaba at Masjid al-Haram, it is the focal point of the Qibla for Muslims worldwide. The city's history is the history of Islam itself, from the first revelations at Jabal al-Nour to the grand assemblies of the Hajj pilgrimage. Every brick and stone in Mecca tells a story of devotion spanning over 14 centuries.",
+        "facts": [
+            "The Masjid al-Haram is the largest mosque in the world and can accommodate up to 4 million worshippers during Hajj.",
+            "The Kaaba, located in the center of the mosque, was traditionally rebuilt by Prophet Ibrahim (AS) and his son Isma'il (AS).",
+            "Mecca is home to the Well of Zamzam, which has provided water to millions of pilgrims for thousands of years.",
+            "The city's Clock Tower (Abraj Al-Bait) is one of the tallest buildings in the world and serves as a primary landmark for pilgrims.",
+            "Entrance to the sacred city of Mecca is exclusively reserved for Muslims as per Saudi Arabian law and Islamic tradition."
+        ],
+        "ramadanNote": "Ramadan in Mecca is an unparalleled experience — the Masjid al-Haram never sleeps, with millions breaking fast together on the marble courtyards and performing Umrah throughout the night.",
+        "faqItems": [
+            {
+                "q": "What calculation method is used for Mecca prayer times?",
+                "a": "RuhVerse uses the Umm al-Qura University method, which is the official standard for the Kingdom of Saudi Arabia."
+            },
+            {
+                "q": "Are the timings valid for the entire city of Mecca?",
+                "a": "Yes, these timings are calculated for the center of Mecca. Due to the city's terrain, slight variations of less than a minute may occur in distant outskirts."
+            },
+            {
+                "q": "When is the best time to perform Umrah during Ramadan?",
+                "a": "Following the Sunnah, performing Umrah during Ramadan is highly virtuous. Late-night sessions after Taraweeh or during Tahajjud are popular but can be very crowded."
+            }
+        ]
+    },
+    "medina": {
+        "slug": "medina",
+        "name": "Medina",
+        "state": "Al Madinah Region",
+        "country": "Saudi Arabia",
+        "latitude": 24.5247,
+        "longitude": 39.5692,
+        "method": 4,
+        "timezone": "Asia/Riyadh",
+        "muslimPopulation": "100% (Restricted to Muslims)",
+        "famousLandmark": "Al-Masjid an-Nabawi – the Prophet's Mosque",
+        "insights": "Medina, the 'Radiant City', served as the destination of the Hijrah and the cradle of the first Islamic state. It is uniquely beloved by Muslims as the city where Prophet Muhammad ﷺ lived, taught, and was ultimately laid to rest. The atmosphere in Medina is known for its profound tranquility (sakinah), centered around the Green Dome of the Prophet's Mosque and the historic sites of the Sahaba.",
+        "facts": [
+            "Al-Masjid an-Nabawi was originally built by the Prophet Muhammad ﷺ himself and has been expanded by Islamic rulers over centuries.",
+            "The mosque contains the Rawdah ash-Sharifah, an area believed to be a piece of Jannah (Paradise) on Earth.",
+            "Medina is home to the Quba Mosque, the first mosque ever built in Islam by the Prophet ﷺ upon his arrival.",
+            "The city was formerly known as Yathrib before being renamed Madinat al-Nabi (City of the Prophet).",
+            "The historic cemetery of Jannat al-Baqi contains the resting places of many of the Prophet's family members and early companions."
+        ],
+        "ramadanNote": "Medina's iftar is world-famous for its hospitality — the local residents (Ansar) continue the tradition of inviting pilgrims to share dates, yogurt, and bread in the mosque courtyards.",
+        "faqItems": [
+            {
+                "q": "Which method is used for Medina Namaz timings?",
+                "a": "RuhVerse uses the Umm al-Qura calculation method for all cities in Saudi Arabia, including Medina."
+            },
+            {
+                "q": "How does Medina's prayer time compare to Mecca?",
+                "a": "Medina is north of Mecca, so prayer times typically occur a few minutes later than in Mecca, depending on the season."
+            },
+            {
+                "q": "Is Al-Masjid an-Nabawi open 24/7 during Ramadan?",
+                "a": "Yes, during the holy month, the Prophet's Mosque remains open throughout the day and night for prayer, recitation, and Tahajjud."
+            }
+        ]
+    },
+    "riyadh": {
+        "slug": "riyadh",
+        "name": "Riyadh",
+        "state": "Riyadh Region",
+        "country": "Saudi Arabia",
+        "latitude": 24.7136,
+        "longitude": 46.6753,
+        "method": 4,
+        "timezone": "Asia/Riyadh",
+        "muslimPopulation": "~8 million",
+        "famousLandmark": "Al Rajhi Grand Mosque – a center of Islamic learning",
+        "insights": "Riyadh, the capital of Saudi Arabia, is a city where modern skyscrapers stand alongside historic mud-brick forts. It is a major center of Islamic scholarship and home to some of the world's most impressive modern mosques. The city's history is deeply tied to the Diriyah region, where the first Saudi state was founded on the principles of Islamic revival.",
+        "facts": [
+            "The Al Rajhi Grand Mosque is one of the largest and most architecturally stunning contemporary mosques in the capital.",
+            "Riyadh's Diriyah district is a UNESCO World Heritage site and the original home of the Saudi Royal family.",
+            "The Imam Turki bin Abdullah Mosque is a historic landmark in the city center where major religious gatherings are held.",
+            "Riyadh hosts some of the largest Islamic universities in the world, attracting students from across the globe.",
+            "The city was once a small oasis town and has transformed into a global metropolis of over 7 million people."
+        ],
+        "ramadanNote": "Ramadan in Riyadh is a time of vibrant evening activity — markets and restaurants stay open until Sahur, and the city's mosques are filled for nightly Taraweeh prayers.",
+        "faqItems": [
+            {
+                "q": "What method is used for Riyadh prayer time calculations?",
+                "a": "RuhVerse uses the Umm al-Qura University method for Riyadh, the standard for all official timings in the Kingdom."
+            },
+            {
+                "q": "Is the prayer time in Riyadh different from the Eastern Province?",
+                "a": "Yes, Riyadh is in the central region; cities in the Eastern Province like Dammam see the sunrise and sunset earlier due to their eastern location."
+            },
+            {
+                "q": "When does Tahajjud prayer start in Riyadh during the last 10 days of Ramadan?",
+                "a": "Tahajjud congregational prayers typically start in the major mosques of Riyadh after midnight, usually around 1:00 AM or 1:30 AM."
+            }
+        ]
+    },
+    "dubai": {
+        "slug": "dubai",
+        "name": "Dubai",
+        "state": "Dubai",
+        "country": "United Arab Emirates",
+        "latitude": 25.2048,
+        "longitude": 55.2708,
+        "method": 4,
+        "timezone": "Asia/Dubai",
+        "muslimPopulation": "~3 million",
+        "famousLandmark": "Jumeirah Mosque – an iconic example of Islamic architecture",
+        "insights": "Dubai is a global crossroads that beautifully blends high-tech ambition with traditional Islamic values. The city's skyline is punctuated by hundreds of minarets, ranging from the historic mosques of Al Fahidi to the modern marvels of Jumeirah and the Blue Mosque. Dubai's vibrant Muslim community represents nearly every culture on Earth, making its Eid and Ramadan celebrations exceptionally diverse and festive.",
+        "facts": [
+            "The Jumeirah Mosque is one of the most photographed mosques in Dubai and is uniquely open to visitors of all faiths for cultural exchange.",
+            "Dubai's Al Farooq Omar Bin Al Khattab Mosque is modeled after the Blue Mosque in Istanbul and is a major center for community activities.",
+            "The call to prayer (Adhan) is synchronized across the city's 2,000+ mosques through a central system.",
+            "Dubai's historic district, Al Fahidi, contains some of the oldest mosques in the UAE, built with traditional wind-tower architecture.",
+            "The city hosts the Dubai International Holy Quran Award (DIHQA) annually, drawing participants from around the world."
+        ],
+        "ramadanNote": "During Ramadan, Dubai's 'Ramadan Tents' offer a luxury iftar experience, while the city's charities distribute thousands of meals to the community in the spirit of giving.",
+        "faqItems": [
+            {
+                "q": "What calculation method is used for Dubai prayer times?",
+                "a": "RuhVerse uses the Umm al-Qura method for Dubai, which is widely adopted across the Gulf region."
+            },
+            {
+                "q": "Are these timings valid for Hatta?",
+                "a": "Hatta is about 130km from Dubai city center; its prayer times typically differ by 1–2 minutes due to its more easterly location."
+            },
+            {
+                "q": "When is the Eid Al-Fitr prayer in Dubai?",
+                "a": "Eid prayers are traditionally held in the city's major Eidgahs (musallas) and mosques around 15–20 minutes after sunrise."
+            }
+        ]
+    },
+    "karachi": {
+        "slug": "karachi",
+        "name": "Karachi",
+        "state": "Sindh",
+        "country": "Pakistan",
+        "latitude": 24.8607,
+        "longitude": 67.0011,
+        "method": 1,
+        "timezone": "Asia/Karachi",
+        "muslimPopulation": "~15 million",
+        "famousLandmark": "Mazar-e-Quaid – the mausoleum of Pakistan's founder",
+        "insights": "Karachi, the City of Lights, is a massive metropolis and a melting pot of Islamic cultures from across South Asia. Home to the towering Tooba Mosque (Gol Masjid) and the historic mosques of the Old City, Karachi's spiritual life is as vibrant as its economy. The city's residents are known for their resilience and deep-rooted faith, with thousands of mosques serving as community hubs in every district from Clifton to North Nazimabad.",
+        "facts": [
+            "Masjid-e-Tooba, known as the Gol Masjid, is the largest single-domed mosque in the world, built with pure white marble.",
+            "Karachi is home to the shrine of Abdullah Shah Ghazi, one of the most revered Sufi saints in Pakistan.",
+            "The Jamia Tur Rasheed in Karachi is one of the largest Islamic educational institutions in the region.",
+            "During the month of Rabi-ul-Awwal, Karachi's streets are transformed with stunning illuminations to celebrate Eid Milad-un-Nabi.",
+            "Karachi's Burns Road and Husainabad are legendary for their iftar food markets during the holy month of Ramadan."
+        ],
+        "ramadanNote": "Ramadan in Karachi is legendary for its nocturnal life — markets stay open until breakfast, and the smell of fresh pakoras and jalebis fills the air at sunset.",
+        "faqItems": [
+            {
+                "q": "What method is used for Karachi prayer time calculations?",
+                "a": "RuhVerse uses the University of Islamic Sciences (Karachi) method, which originated right here in this city, with Fajr and Isha at 18°."
+            },
+            {
+                "q": "Are these timings accurate for Bahria Town Karachi?",
+                "a": "Bahria Town is on the outskirts; prayer times may vary by 1–2 minutes from the city center coordinates used here."
+            },
+            {
+                "q": "When does the moon-sighting committee meet in Karachi?",
+                "a": "The Central Ruet-e-Hilal Committee often holds its primary sessions at the Met Office in Karachi to determine the start of Ramadan and Eid."
+            }
+        ]
+    },
+    "lahore": {
+        "slug": "lahore",
+        "name": "Lahore",
+        "state": "Punjab",
+        "country": "Pakistan",
+        "latitude": 31.5204,
+        "longitude": 74.3587,
+        "method": 1,
+        "timezone": "Asia/Karachi",
+        "muslimPopulation": "~11 million",
+        "famousLandmark": "Badshahi Mosque – a masterpiece of Mughal architecture",
+        "insights": "Lahore, the cultural soul of Pakistan, holds some of the most magnificent Islamic heritage in the world. From the grand Badshahi Mosque built by Aurangzeb to the intricate tile-work of the Wazir Khan Mosque, Lahore's Mughal past is visible in every corner of the Walled City. The city is also a major center for Sufism, with the Data Darbar shrine drawing millions of devotees throughout the year.",
+        "facts": [
+            "The Badshahi Mosque was the largest mosque in the world for over 300 years and is a prime example of Mughal floral art.",
+            "Data Darbar is the largest Sufi shrine in South Asia, dedicated to the 11th-century saint Abul Hassan Ali Hajvery (RA).",
+            "Lahore's Grand Jamia Mosque in Bahria Town is one of the largest contemporary mosques, featuring a blend of Mughal and modern styles.",
+            "The Wazir Khan Mosque is known locally as the 'shining jewel of Lahore' for its extraordinary fresco and tile work.",
+            "Lahore's Minar-e-Pakistan marks the spot where the resolution to create a separate Muslim state was passed in 1940."
+        ],
+        "ramadanNote": "Ramadan in Lahore is famous for its Sehri and Iftar at the Food Street near Badshahi Mosque, where the view of the illuminated minarets is breathtaking.",
+        "faqItems": [
+            {
+                "q": "What calculation method is used for Lahore prayer times?",
+                "a": "We use the University of Islamic Sciences (Karachi) method for Lahore, with the standard 18° angle for Fajr and Isha."
+            },
+            {
+                "q": "How do Lahore's timings differ from Islamabad?",
+                "a": "Lahore is south and slightly east of Islamabad, so prayer times like Fajr and Maghrib usually occur a few minutes earlier than in the capital."
+            },
+            {
+                "q": "Where is the main Eid congregational prayer held in Lahore?",
+                "a": "The largest Eid prayers are held at the Badshahi Mosque and the massive Eidgah grounds near the city center."
+            }
+        ]
+    },
+    "dhaka": {
+        "slug": "dhaka",
+        "name": "Dhaka",
+        "state": "Dhaka Division",
+        "country": "Bangladesh",
+        "latitude": 23.8103,
+        "longitude": 90.4125,
+        "method": 1,
+        "timezone": "Asia/Dhaka",
+        "muslimPopulation": "~18 million",
+        "famousLandmark": "Baitul Mukarram – the National Mosque of Bangladesh",
+        "insights": "Dhaka, often called the 'City of Mosques', has a history of Islamic architecture that dates back to the Mughal era. The city is home to thousands of mosques, from the historic Star Mosque (Tara Masjid) with its intricate motifs to the massive Baitul Mukarram National Mosque. Dhaka's Muslim community is known for its intense devotion, especially during the annual Bishwa Ijtema, one of the largest Islamic gatherings in the world.",
+        "facts": [
+            "Baitul Mukarram National Mosque was designed in the shape of the Kaaba in Mecca and can hold over 40,000 worshippers.",
+            "Dhaka is the site of the Bishwa Ijtema, an annual three-day congregation that is considered the second-largest Muslim gathering after Hajj.",
+            "The Star Mosque in Old Dhaka is a 19th-century marvel decorated with hundreds of blue stars made from broken porcelain.",
+            "The Hussaini Dalan, built in the 17th century, is the primary center for the city's Shia community during Muharram.",
+            "Dhaka's historic Chawkbazar is famous for its 'Iftar Bazar', where unique traditional food like 'Boro Baper Polay Khay' is sold."
+        ],
+        "ramadanNote": "Ramadan in Dhaka transforms the city's markets — Old Dhaka's Chawkbazar becomes a bustling hub for iftar hunters, with stalls overflowing with kebabs and sweets.",
+        "faqItems": [
+            {
+                "q": "What method is used for Dhaka prayer time calculations?",
+                "a": "RuhVerse uses the University of Islamic Sciences (Karachi) method for Dhaka, widely used across Bangladesh."
+            },
+            {
+                "q": "Is the prayer time in Dhaka different from Chittagong?",
+                "a": "Yes, Dhaka is west of Chittagong; the sun rises and sets a few minutes later in Dhaka than in Chittagong."
+            },
+            {
+                "q": "When is the Bishwa Ijtema held?",
+                "a": "The Bishwa Ijtema is typically held in January or February each year on the banks of the Turag River on the outskirts of Dhaka."
+            }
+        ]
+    },
+    "istanbul": {
+        "slug": "istanbul",
+        "name": "Istanbul",
+        "state": "Marmara",
+        "country": "Turkey",
+        "latitude": 41.0082,
+        "longitude": 28.9784,
+        "method": 13,
+        "timezone": "Europe/Istanbul",
+        "muslimPopulation": "~15 million",
+        "famousLandmark": "The Blue Mosque (Sultan Ahmed Mosque)",
+        "insights": "Istanbul is the bridge between East and West and was the seat of the Ottoman Caliphate for centuries. The city's skyline is defined by the majestic domes and slender minarets of the Hagia Sophia and the Blue Mosque. Istanbul's Islamic heritage is a unique blend of Byzantine grandeur and Ottoman elegance, serving as a global center of Islamic art, calligraphy, and history.",
+        "facts": [
+            "The Blue Mosque is famous for the hand-painted blue tiles that adorn its interior walls and is the only mosque in Turkey with six minarets.",
+            "Hagia Sophia, originally a cathedral, served as a mosque for nearly 500 years and was restored as a working mosque in 2020.",
+            "Istanbul's Topkapi Palace houses the Sacred Relics of Islam, including the Prophet Muhammad's ﷺ mantle and sword.",
+            "The Suleymaniye Mosque, designed by the great architect Mimar Sinan, is one of the finest examples of Ottoman architecture.",
+            "Istanbul served as the capital of the Ottoman Empire from 1453 until 1922, during which it was the center of the Islamic world."
+        ],
+        "ramadanNote": "Ramadan in Istanbul is magical — the area between Sultanahmet and Hagia Sophia becomes a festival ground with religious book fairs, traditional music, and public iftars.",
+        "faqItems": [
+            {
+                "q": "Which method is used for Istanbul Namaz timings?",
+                "a": "RuhVerse uses the Diyanet Isleri Baskanligi (Turkey) method, the official standard for all mosques in the Republic of Turkey."
+            },
+            {
+                "q": "Are these timings valid for both the European and Asian sides of Istanbul?",
+                "a": "Yes, but due to the city's vast size, there may be 1–2 minute difference between the westernmost and easternmost districts."
+            },
+            {
+                "q": "When is the night of Laylat al-Qadr celebrated in Istanbul?",
+                "a": "Laylat al-Qadr is celebrated with great fervor in Istanbul's grand mosques, traditionally on the 27th night of Ramadan."
+            }
+        ]
+    },
+    "cairo": {
+        "slug": "cairo",
+        "name": "Cairo",
+        "state": "Cairo Governorate",
+        "country": "Egypt",
+        "latitude": 30.0444,
+        "longitude": 31.2357,
+        "method": 5,
+        "timezone": "Africa/Cairo",
+        "muslimPopulation": "~10 million",
+        "famousLandmark": "Al-Azhar University and Mosque",
+        "insights": "Cairo, the 'City of a Thousand Minarets', is the historic heart of Islamic intellectual life in the Arab world. Founded by the Fatimids in the 10th century, the city flourished under the Ayyubids and Mamluks, leaving behind a treasure trove of mosques, madrasas, and palaces. Al-Azhar, both a mosque and one of the world's oldest universities, remains the primary global authority for Sunni Islamic scholarship.",
+        "facts": [
+            "Al-Azhar University in Cairo is the oldest degree-granting institution in Egypt and has been a global center of Islamic learning since 970 CE.",
+            "The Citadel of Saladin is a medieval Islamic fortification that houses the stunning Muhammad Ali Mosque (the Alabaster Mosque).",
+            "Islamic Cairo, a UNESCO World Heritage site, contains some of the best-preserved medieval Islamic architecture in the world.",
+            "The Mosque of Ibn Tulun, built in 879 CE, is one of the oldest mosques in Cairo and is famous for its unique spiral minaret.",
+            "Cairo's Khan el-Khalili bazaar has been a center of trade and artisan workshops since the 14th century."
+        ],
+        "ramadanNote": "Ramadan in Cairo is famous for the 'Fanous' (colorful lanterns) that decorate every street, and the tradition of 'Mawa'ed el-Rahman' (tables of the Merciful) where free meals are served to all.",
+        "faqItems": [
+            {
+                "q": "Which method is used for Cairo prayer timings?",
+                "a": "RuhVerse uses the Egyptian General Authority of Survey method, which is the official standard for the Arab Republic of Egypt."
+            },
+            {
+                "q": "Is the prayer time in Cairo different from Alexandria?",
+                "a": "Yes, Alexandria is west of Cairo; its prayer times typically occur 2–4 minutes later than in the capital."
+            },
+            {
+                "q": "What is the significance of the Ramadan Cannon in Cairo?",
+                "a": "The firing of the cannon (Midfa al-Iftar) from the Cairo Citadel has a long tradition of signaling the time to break the fast, heard across the city."
+            }
+        ]
+    },
+    "abu-dhabi": {
+        "slug": "abu-dhabi",
+        "name": "Abu Dhabi",
+        "state": "Abu Dhabi",
+        "country": "United Arab Emirates",
+        "latitude": 24.4539,
+        "longitude": 54.3773,
+        "method": 4,
+        "timezone": "Asia/Dubai",
+        "muslimPopulation": "~1.5 million",
+        "famousLandmark": "Sheikh Zayed Grand Mosque – a masterpiece of modern Islamic architecture",
+        "insights": "Abu Dhabi, the capital of the UAE, is home to one of the most stunning mosques in the world. The Sheikh Zayed Grand Mosque, with its 82 domes and 1,000 columns, serves as a global landmark of Islamic art and peaceful coexistence. The city combines heritage sites like Qasr Al Hosn with modern Islamic cultural centers, reflecting its commitment to preserving and sharing Islamic values.",
+        "facts": [
+            "The Sheikh Zayed Grand Mosque houses the world's largest hand-knotted carpet and one of the largest chandeliers in a mosque.",
+            "Abu Dhabi's Qasr Al Hosn is the oldest stone building in the city and contains a historic mosque that has served generations.",
+            "The city is a major center for Islamic finance and hosts numerous international conferences on Islamic culture and economy.",
+            "Abu Dhabi's Mary, Mother of Jesus Mosque (Masjid Maryam Um 'Issa) is famous for its name, symbolizing interfaith respect.",
+            "During Ramadan, the city's parks and public spaces host massive communal iftars organized by the Red Crescent."
+        ],
+        "ramadanNote": "Ramadan in Abu Dhabi is marked by a serene atmosphere, with the Grand Mosque offering some of the most beautiful Taraweeh and Tahajjud prayers in the region.",
+        "faqItems": [
+            {
+                "q": "What method is used for Abu Dhabi prayer time calculations?",
+                "a": "RuhVerse uses the Umm al-Qura method for Abu Dhabi, consistent with the UAE's official prayer timings."
+            },
+            {
+                "q": "Is prayer time in Abu Dhabi different from Dubai?",
+                "a": "Yes, Abu Dhabi is west of Dubai, so its prayer times occur approximately 3–4 minutes later than in Dubai."
+            },
+            {
+                "q": "Can non-Muslims visit the Sheikh Zayed Grand Mosque during Ramadan?",
+                "a": "Yes, visiting hours are usually maintained for non-Muslims during Ramadan, though they are often restricted during prayer times and on Fridays."
+            }
+        ]
+    },
+    "jeddah": {
+        "slug": "jeddah",
+        "name": "Jeddah",
+        "state": "Makkah Region",
+        "country": "Saudi Arabia",
+        "latitude": 21.5433,
+        "longitude": 39.1728,
+        "method": 4,
+        "timezone": "Asia/Riyadh",
+        "muslimPopulation": "~4 million",
+        "famousLandmark": "Al-Balad (Historic Jeddah) and the Floating Mosque",
+        "insights": "Jeddah has served as the 'Gateway to Mecca' for centuries, receiving millions of pilgrims by sea and air. The historic Al-Balad district, a UNESCO World Heritage site, is filled with ancient mosques and traditional coral-stone houses. Today, Jeddah is a vibrant coastal city where the iconic Floating Mosque (Masjid Al-Rahma) stands as a symbol of its enduring connection to the Red Sea and Islamic history.",
+        "facts": [
+            "Al-Balad contains the Al-Shafi'i Mosque, one of the oldest and most important mosques in the city, dating back to the 13th century.",
+            "The Floating Mosque is built on pillars over the Red Sea and is a favorite spot for pilgrims to pray during sunset.",
+            "Jeddah is home to King Fahd's Fountain, the tallest of its kind in the world, often illuminated during Islamic holidays.",
+            "The city's historic gate, Bab Makkah, has seen millions of pilgrims pass through on their way to the holy city of Mecca.",
+            "Jeddah hosts the headquarters of the Organization of Islamic Cooperation (OIC), making it a political hub for the Muslim world."
+        ],
+        "ramadanNote": "Ramadan in Jeddah is characterized by the 'Sahar' markets and the festive atmosphere in Al-Balad, where families gather to break fast by the sea.",
+        "faqItems": [
+            {
+                "q": "What calculation method is used for Jeddah prayer times?",
+                "a": "RuhVerse uses the Umm al-Qura University method, the official standard for all cities in Saudi Arabia."
+            },
+            {
+                "q": "Is Jeddah's prayer time the same as Mecca?",
+                "a": "No, Jeddah is about 70km west of Mecca, so its prayer times typically occur 2–3 minutes later than in Mecca."
+            },
+            {
+                "q": "When is the best time to visit Al-Balad during Ramadan?",
+                "a": "Al-Balad comes to life after Taraweeh prayer, with traditional markets and food stalls remaining active until the early hours of Sahur."
+            }
+        ]
+    },
+    "islamabad": {
+        "slug": "islamabad",
+        "name": "Islamabad",
+        "state": "Islamabad Capital Territory",
+        "country": "Pakistan",
+        "latitude": 33.6844,
+        "longitude": 73.0479,
+        "method": 1,
+        "timezone": "Asia/Karachi",
+        "muslimPopulation": "~2 million",
+        "famousLandmark": "Faisal Mosque – an iconic desert tent-inspired mosque",
+        "insights": "Islamabad, the purpose-built capital of Pakistan, is home to the Faisal Mosque, one of the most recognizable mosques in the world. Nestled at the foot of the Margalla Hills, the city's serene environment and modern planning make it a unique center for Islamic life. Islamabad is also a hub for national religious institutions and serves as a gateway to the historic Islamic sites of the Taxila and Potohar regions.",
+        "facts": [
+            "Faisal Mosque was for several years the largest mosque in the world and can accommodate over 300,000 worshippers across its grounds.",
+            "The mosque was a gift from King Faisal of Saudi Arabia and features a unique architectural design without traditional domes.",
+            "Islamabad's Margalla Hills are home to the shrine of Bari Imam, a 17th-century Sufi saint and a major spiritual landmark.",
+            "The city's Planning Commission was designed with a focus on green spaces and natural beauty, earning it the title 'The Beautiful'.",
+            "Islamabad hosts the International Islamic University, attracting thousands of scholars from across the Muslim world."
+        ],
+        "ramadanNote": "Ramadan in Islamabad is peaceful and organized — the Faisal Mosque holds massive Taraweeh congregations that attract worshippers from across the Rawalpindi-Islamabad area.",
+        "faqItems": [
+            {
+                "q": "What method is used for Islamabad prayer time calculations?",
+                "a": "RuhVerse uses the University of Islamic Sciences (Karachi) method for Islamabad, with 18° angles for Fajr and Isha."
+            },
+            {
+                "q": "Is prayer time in Islamabad different from Rawalpindi?",
+                "a": "Due to their extreme proximity, the prayer times for Islamabad and Rawalpindi are virtually identical, usually within seconds of each other."
+            },
+            {
+                "q": "What is the best place for Eid prayer in Islamabad?",
+                "a": "The Faisal Mosque is the most iconic venue for Eid prayers in the capital, though many choose the city's various sector-wise Eidgahs."
+            }
+        ]
+    },
+    "london": {
+        "slug": "london",
+        "name": "London",
+        "state": "England",
+        "country": "United Kingdom",
+        "latitude": 51.5074,
+        "longitude": -0.1278,
+        "method": 3,
+        "timezone": "Europe/London",
+        "muslimPopulation": "~1.3 million",
+        "famousLandmark": "London Central Mosque (Regent's Park)",
+        "insights": "London is one of the most diverse and vibrant Muslim hubs in the Western world. From the historic East London Mosque in Whitechapel to the iconic golden-domed Regent's Park Mosque, the city's Islamic presence is deeply woven into its cultural fabric. London's Muslim community, hailing from every corner of the globe, has created a unique British Islamic identity that is reflected in the city's architecture, cuisine, and public life.",
+        "facts": [
+            "The East London Mosque is one of the oldest and largest mosques in the UK, serving as a major community and educational hub.",
+            "London Central Mosque, with its massive golden dome, was built on land donated by George VI in exchange for land in Cairo for an Anglican cathedral.",
+            "The city's Edgware Road and Whitechapel areas are famous centers for Middle Eastern and South Asian Islamic culture.",
+            "London has over 400 mosques and prayer rooms serving one of the most multi-ethnic Muslim populations in the world.",
+            "During the month of Ramadan, many of London's major landmarks and streets are decorated with festive lights to celebrate with the community."
+        ],
+        "ramadanNote": "Ramadan in London features the 'Open Iftar' project, which hosts communal breaking of fast at iconic locations like Trafalgar Square and Wembley Stadium.",
+        "faqItems": [
+            {
+                "q": "What calculation method is used for London prayer times?",
+                "a": "RuhVerse uses the Muslim World League (MWL) method for London, with Fajr at 18° and Isha at 17°."
+            },
+            {
+                "q": "How are prayer times handled during 'White Nights' in London summer?",
+                "a": "During peak summer at high latitudes like London, twilight may not disappear. In such cases, we follow the 'Nearest Latitude' or '1/7th of the night' rule as per local mosque guidelines."
+            },
+            {
+                "q": "Where is the best place to find Halal food for Iftar in London?",
+                "a": "Streets like Edgware Road, Brick Lane, and the Green Street area in Newham offer hundreds of diverse Halal dining options for Iftar."
+            }
+        ]
+    },
+    "new-york": {
+        "slug": "new-york",
+        "name": "New York",
+        "state": "New York",
+        "country": "USA",
+        "latitude": 40.7128,
+        "longitude": -74.006,
+        "method": 2,
+        "timezone": "America/New_York",
+        "muslimPopulation": "~1.5 million",
+        "famousLandmark": "Islamic Cultural Center of New York (Manhattan)",
+        "insights": "New York City is a true mosaic of the global Muslim Ummah. With mosques in all five boroughs, from the grand purpose-built centers in Manhattan and Queens to the storefront masjids of Brooklyn, the city reflects the incredible diversity of its residents. NYC Muslims have a long history, contributing to the city's social, professional, and cultural life for well over a century.",
+        "facts": [
+            "The Islamic Cultural Center of New York in Upper East Side was the first purpose-built mosque in the city, established in 1991.",
+            "New York City has the largest Muslim population of any city in the United States, representing over 40 different nationalities.",
+            "The city's public school system officially recognizes Eid al-Fitr and Eid al-Adha as holidays, a major milestone for the community.",
+            "Queens is home to some of the most diverse Muslim neighborhoods in the world, including Astoria and Richmond Hill.",
+            "The Muslim Day Parade, held annually in Manhattan since 1985, celebrates the community's heritage and contributions to the city."
+        ],
+        "ramadanNote": "Ramadan in New York is a time of intense community activity — night prayers (Taraweeh) are held in community centers and gymnasiums across the city to accommodate large crowds.",
+        "faqItems": [
+            {
+                "q": "What calculation method is used for New York prayer times?",
+                "a": "RuhVerse uses the Islamic Society of North America (ISNA) method for NYC, with 15° angles for both Fajr and Isha."
+            },
+            {
+                "q": "Are these timings valid for all five boroughs?",
+                "a": "Yes, while there may be a few seconds of difference between Staten Island and the Bronx, these timings are accurate for all of NYC and Jersey City."
+            },
+            {
+                "q": "When is the Eid prayer in NYC?",
+                "a": "Large Eid prayers are often held in major venues like the Javits Center or public parks, usually starting between 7:30 AM and 9:00 AM."
+            }
+        ]
+    },
+    "toronto": {
+        "slug": "toronto",
+        "name": "Toronto",
+        "state": "Ontario",
+        "country": "Canada",
+        "latitude": 43.6532,
+        "longitude": -79.3832,
+        "method": 2,
+        "timezone": "America/Toronto",
+        "muslimPopulation": "~500 thousand",
+        "famousLandmark": "Islamic Foundation of Toronto and Jami Mosque",
+        "insights": "Toronto is the heart of the Canadian Muslim community and one of the most welcoming global cities for the Ummah. From the historic Jami Mosque (a former church) to the modern multi-service complexes of the GTA, Toronto's Muslims play an active role in all sectors of Canadian society. The city is famous for its multicultural 'Eid festivals' and its massive network of Islamic aid organizations.",
+        "facts": [
+            "Jami Mosque on Boustead Ave is Toronto's oldest mosque, founded in 1968, and has served as a cornerstone for the community.",
+            "The Islamic Foundation of Toronto in Scarborough is one of the largest and most comprehensive Islamic centers in North America.",
+            "Toronto hosts the annual 'Reviving the Islamic Spirit' (RIS) convention, one of the largest Islamic gatherings in the West.",
+            "The city's diverse cuisines make it a global destination for Halal street food, from Somali and Afghan to Pakistani and Arab.",
+            "Nearly 8% of Toronto's population identifies as Muslim, making it one of the most concentrated Muslim communities in North America."
+        ],
+        "ramadanNote": "During Ramadan, Toronto's mosques often host interfaith iftars, inviting the wider Canadian community to share in the spirit of the month.",
+        "faqItems": [
+            {
+                "q": "What calculation method is used for Toronto prayer times?",
+                "a": "RuhVerse uses the Islamic Society of North America (ISNA) method for Toronto, which is the standard for the majority of GTA mosques."
+            },
+            {
+                "q": "Is the prayer time in Toronto the same as in Mississauga?",
+                "a": "Mississauga is just west of Toronto; prayer times typically occur 1–2 minutes later than in downtown Toronto."
+            },
+            {
+                "q": "How does the high latitude affect Toronto's Isha time in summer?",
+                "a": "In summer, Isha time can be very late in Toronto. Many local mosques follow the 'Fixed Angle' or '1/7th Night' method to ensure reasonable prayer windows."
+            }
+        ]
+    },
+    "paris": {
+        "slug": "paris",
+        "name": "Paris",
+        "state": "Île-de-France",
+        "country": "France",
+        "latitude": 48.8566,
+        "longitude": 2.3522,
+        "method": 12,
+        "timezone": "Europe/Paris",
+        "muslimPopulation": "~1.5 million",
+        "famousLandmark": "Grande Mosquée de Paris – the oldest and largest mosque in mainland France",
+        "insights": "Paris has a long and complex relationship with Islam, centered around the beautiful Hispano-Moresque architecture of the Great Mosque of Paris. Built in the 1920s to honor Muslim soldiers, the mosque's tranquil gardens and stunning minaret are iconic features of the city. Today, the Muslim community in Paris and its suburbs (the Banlieues) is a vital part of the city's youthful energy and cultural diversity.",
+        "facts": [
+            "The Great Mosque of Paris was built on the site of a former hospital and is famous for its green-tiled minaret and Moroccan-style mosaics.",
+            "During WWII, the Great Mosque served as a refuge for Jews escaping the Nazi occupation, providing them with falsified Muslim identities.",
+            "Paris and its surrounding region have the largest concentration of Muslims in Europe, with over 1.5 million residents.",
+            "The Institut du Monde Arabe (IMA) in the heart of Paris is a world-class cultural center celebrating Arab and Islamic heritage.",
+            "The neighborhood of Barbès in the 18th arrondissement is a major hub for North African Muslim culture and trade."
+        ],
+        "ramadanNote": "Ramadan in Paris is a time for family and charity — the teahouses inside the Great Mosque are popular spots for breaking fast with traditional North African pastries.",
+        "faqItems": [
+            {
+                "q": "Which method is used for Paris prayer timings?",
+                "a": "RuhVerse uses the Union des Organisations Islamiques de France (UOIF) method, which calculates Fajr and Isha at 12°."
+            },
+            {
+                "q": "Are these timings valid for the Paris suburbs (Banlieue)?",
+                "a": "Yes, these timings cover the entire Île-de-France region including Saint-Denis, Argenteuil, and Nanterre with minimal variation."
+            },
+            {
+                "q": "Can tourists visit the Great Mosque of Paris?",
+                "a": "Yes, part of the Great Mosque is open to tourists during the day, featuring a beautiful courtyard, a traditional cafe, and a hammam."
+            }
+        ]
+    },
+    "sydney": {
+        "slug": "sydney",
+        "name": "Sydney",
+        "state": "New South Wales",
+        "country": "Australia",
+        "latitude": -33.8688,
+        "longitude": 151.2093,
+        "method": 3,
+        "timezone": "Australia/Sydney",
+        "muslimPopulation": "~350 thousand",
+        "famousLandmark": "Lakemba Mosque (Masjid Ali Bin Abi Talib)",
+        "insights": "Sydney is home to Australia's largest and oldest Muslim community. The suburb of Lakemba is the heart of Islamic life in the city, famous for its annual Ramadan Night Markets. From the grand Ottoman-style Auburn Gallipoli Mosque to the vibrant multi-ethnic masjids of the Western suburbs, Sydney's Muslims have built a flourishing community that contributes significantly to Australia's multicultural success.",
+        "facts": [
+            "Lakemba Mosque is Australia's largest mosque and a major center for Islamic activities and community outreach.",
+            "The Auburn Gallipoli Mosque was built with an Ottoman architectural style, featuring materials and stones brought directly from Turkey.",
+            "Ramadan in Lakemba attracts over a quarter of a million visitors annually to its night markets, becoming a major Sydney cultural event.",
+            "Sydney's Muslim population is incredibly diverse, with large Lebanese, Turkish, South Asian, and Indonesian communities.",
+            "The first mosque in Sydney was established in Surry Hills in the early 20th century, marking the start of a permanent Islamic presence."
+        ],
+        "ramadanNote": "During Ramadan, Haldon Street in Lakemba transforms into a massive open-air food festival after sunset, serving everything from camel burgers to Lebanese sweets.",
+        "faqItems": [
+            {
+                "q": "What calculation method is used for Sydney prayer times?",
+                "a": "RuhVerse uses the Muslim World League (MWL) method for Sydney, with 18° Fajr and 17° Isha angles."
+            },
+            {
+                "q": "Does Sydney observe Daylight Saving Time for prayer calculations?",
+                "a": "Yes, our system automatically adjusts for Sydney's Daylight Saving Time (AEST/AEDT) to ensure your prayer schedule is always correct."
+            },
+            {
+                "q": "Where is the largest Eid prayer in Sydney?",
+                "a": "The Lakemba Mosque traditionally hosts the largest Eid congregation in Australia, often requiring several shifts to accommodate the thousands of worshippers."
+            }
+        ]
+    },
+    "melbourne": {
+        "slug": "melbourne",
+        "name": "Melbourne",
+        "state": "Victoria",
+        "country": "Australia",
+        "latitude": -37.8136,
+        "longitude": 144.9631,
+        "method": 3,
+        "timezone": "Australia/Melbourne",
+        "muslimPopulation": "~250 thousand",
+        "famousLandmark": "Melbourne Grand Mosque and Islamic Museum of Australia",
+        "insights": "Melbourne is a major center for Islamic art and education in Australia. The city is unique for hosting the Islamic Museum of Australia, which showcases the history and contributions of Muslims to the nation. With diverse communities in areas like Broadmeadows and Tarneit, Melbourne's Islamic life is integrated into the city's reputation as a global cultural capital.",
+        "facts": [
+            "The Melbourne Grand Mosque in Tarneit is one of the largest mega-centers for the community, established to serve the fast-growing Western suburbs.",
+            "Melbourne is home to the Islamic Museum of Australia, the first museum of its kind in the country, fostering intercultural dialogue.",
+            "The Australian Islamic Centre in Newport is a modern architectural masterpiece designed by the renowned Pritzker-winner Glenn Murcutt.",
+            "Victoria's Muslim community holds a 'Grand Iftar' at major venues like the Melbourne Cricket Ground (MCG) to celebrate during Ramadan.",
+            "The city has a long history of Afghan cameliers who played a vital role in exploring the Australian outback during the 19th century."
+        ],
+        "ramadanNote": "Ramadan in Melbourne features 'Ramadan Nights' festivals in the Northern suburbs, where local bakeries and restaurants stay open late for Post-Taraweeh gatherings.",
+        "faqItems": [
+            {
+                "q": "What calculation method is used for Melbourne prayer times?",
+                "a": "RuhVerse uses the Muslim World League (MWL) method for Melbourne, which is the standard followed by the Islamic Council of Victoria."
+            },
+            {
+                "q": "Is prayer time in Melbourne different from Sydney?",
+                "a": "Yes, Melbourne is south and west of Sydney; hence, the prayer times can differ by up to 10–20 minutes depending on the time of year."
+            },
+            {
+                "q": "Can I visit the Islamic Museum of Australia?",
+                "a": "Yes, the museum is open to the general public and offers a fascinating look into Islamic heritage and its place in the Australian context."
+            }
+        ]
+    },
+    "moscow": {
+        "slug": "moscow",
+        "name": "Moscow",
+        "state": "Central Federal District",
+        "country": "Russia",
+        "latitude": 55.7558,
+        "longitude": 37.6173,
+        "method": 3,
+        "timezone": "Europe/Moscow",
+        "muslimPopulation": "~2 million",
+        "famousLandmark": "Moscow Cathedral Mosque – one of the largest in Europe",
+        "insights": "Moscow has one of the largest Muslim populations of any European city, with a history tied to the ancient Tatar communities and the broader Russian Federation. The magnificent Moscow Cathedral Mosque, with its striking golden dome, is the spiritual center for millions. During major holidays like Eid, the streets around the grand mosques fill with thousands of worshippers in a powerful display of faith.",
+        "facts": [
+            "The Moscow Cathedral Mosque was rebuilt in 2015 and is one of the largest and most technically advanced mosques in Europe, with 6 floors.",
+            "Islam is recognized as one of Russia's four traditional religions, and Moscow has been a center for Tatar Muslim culture for centuries.",
+            "The city's 'Historical Mosque' in Zamoskvorechye dates back to the 18th century and is a preserved piece of Moscow's Islamic past.",
+            "Every year, Moscow holds a major 'Ramadan Tent' cultural festival near the Memorial Mosque at Poklonnaya Hill.",
+            "Halal food is widely available across Moscow, reflecting the city's multi-ethnic character and strong ties to Central Asia and the Caucasus."
+        ],
+        "ramadanNote": "During Ramadan, the Grand Mosque of Moscow hosts large communal iftars for thousands of people, and several mosques organize nightly religious lectures.",
+        "faqItems": [
+            {
+                "q": "What calculation method is used for Moscow prayer times?",
+                "a": "RuhVerse uses the Muslim World League (MWL) method for Moscow, appropriate for the city's high latitude (55°N)."
+            },
+            {
+                "q": "How do long summer days affect fasting in Moscow?",
+                "a": "During summer Ramadan at 55°N, fasting hours can be very long (over 18 hours). Local scholars often provide specific fatwas for such conditions."
+            },
+            {
+                "q": "Which is the main mosque in Moscow for Eid prayers?",
+                "a": "The Moscow Cathedral Mosque (near Prospect Mira) is the primary venue, attracting tens of thousands for the national televised Eid prayer."
+            }
+        ]
+    },
+    "berlin": {
+        "slug": "berlin",
+        "name": "Berlin",
+        "state": "Berlin",
+        "country": "Germany",
+        "latitude": 52.52,
+        "longitude": 13.405,
+        "method": 3,
+        "timezone": "Europe/Berlin",
+        "muslimPopulation": "~350 thousand",
+        "famousLandmark": "Şehitlik Mosque - beautiful Ottoman-style mosque in Neukölln",
+        "insights": "Berlin's Muslim community is a vital part of the city's modern identity, predominantly influenced by the Turkish guest-worker generation and more recent refugees. The Şehitlik Mosque, built with classic Ottoman architecture, is one of the city's most beloved landmarks. Berlin's Neukölln and Kreuzberg districts are vibrant centers of Islamic life, where the Adhan is a familiar sound in many community courtyards.",
+        "facts": [
+            "The Şehitlik Mosque was built between 1999 and 2005 on the site of a historic Muslim cemetery dating back to the late 18th century.",
+            "Berlin is home to the 'House of One', a unique interfaith project where a mosque, a synagogue, and a church are being built under one roof.",
+            "The city's Mevlana Mosque and Omar Ibn al-Khattab Mosque are major community hubs for both worship and social welfare.",
+            "Nearly 10% of Berlin's population identifies as Muslim, representing a diverse background from Turkey, the Arab world, and beyond.",
+            "Berlin's Sonnenallee, also known as 'Arab Street', is famous for its vibrant community and excellent selection of traditional Halal food."
+        ],
+        "ramadanNote": "Ramadan in Berlin is marked by long evening gatherings in Neukölln, where the community comes together to share iftar in the city's many restaurants and parks.",
+        "faqItems": [
+            {
+                "q": "Which method is used for Berlin prayer times?",
+                "a": "RuhVerse uses the Muslim World League (MWL) method for Berlin, with Fajr and Isha calculated at 18° and 17° respectively."
+            },
+            {
+                "q": "Is prayer time in Berlin different from Munich?",
+                "a": "Yes, Berlin is much further north and east than Munich; summer days are longer, and sun-based prayer times differ significantly between the two."
+            },
+            {
+                "q": "What is the best way to find a mosque in Berlin?",
+                "a": "Most districts in Berlin have multiple mosques; the Neukölln and Kreuzberg areas have the highest density, with several major Islamic centers."
+            }
+        ]
+    },
+    "madrid": {
+        "slug": "madrid",
+        "name": "Madrid",
+        "state": "Community of Madrid",
+        "country": "Spain",
+        "latitude": 40.4168,
+        "longitude": -3.7038,
+        "method": 3,
+        "timezone": "Europe/Madrid",
+        "muslimPopulation": "~300 thousand",
+        "famousLandmark": "Madrid Central Mosque (Abu-Bakr Mosque)",
+        "insights": "Madrid's Islamic history is ancient; the city was founded by Emir Mohamed I in the 9th century and named 'Mayrit'. Today, the Madrid Central Mosque (Mezquita de Estrecho) serves as the primary hub for the city's growing Muslim community. Madrid preserves its Islamic roots in the remnants of its Arab walls and the Mudéjar architecture that continues to influence the aesthetics of the Spanish capital.",
+        "facts": [
+            "Madrid Central Mosque, inaugurated in 1988, was the first purpose-built mosque in Madrid after the Reconquista era.",
+            "The city's name 'Madrid' is derived from the Arabic 'Majrit', meaning 'place of many springs' or water-channels.",
+            "Emir Mohamed I Park contains the remaining ruins of the original 9th-century Arab Wall that surrounded the Islamic citadel of Mayrit.",
+            "Madrid's Muslim community is incredibly diverse, with large Moroccan, Algerian, and Pakistani populations, alongside Spanish converts.",
+            "The Islamic Cultural Center of Madrid (Mezquita de la M-30) is one of the largest mosques in Europe and a major landmark for the community."
+        ],
+        "ramadanNote": "During Ramadan, Madrid's mosques host public iftars, and the Lavapiés neighborhood becomes a lively spot for after-prayer social gatherings.",
+        "faqItems": [
+            {
+                "q": "What calculation method is used for Madrid Namaz timings?",
+                "a": "RuhVerse uses the Muslim World League (MWL) method for Madrid, which is the standard for most Islamic centers in Spain."
+            },
+            {
+                "q": "Does Madrid observe Daylight Saving Time?",
+                "a": "Yes, our system automatically applies the DST adjustments for Central European Time (CET/CEST) used in Spain."
+            },
+            {
+                "q": "Are there historic Islamic sites to visit in Madrid?",
+                "a": "While most of the city's Islamic buildings were lost, you can visit the ruins of the Arab wall and several Mudéjar-style towers in the old town."
+            }
+        ]
     }
 }

@@ -1266,5 +1266,374 @@
     "aliases": [
       "trivandrum"
     ]
+  },
+  {
+    "name": "Tabriz",
+    "country": "Iran",
+    "state": "East Azerbaijan",
+    "latitude": 38.0962,
+    "longitude": 46.2738,
+    "timezone": "Asia/Tehran"
+  },
+  {
+    "name": "Shiraz",
+    "country": "Iran",
+    "state": "Fars",
+    "latitude": 29.5918,
+    "longitude": 52.5837,
+    "timezone": "Asia/Tehran"
+  },
+  {
+    "name": "Buraidah",
+    "country": "Saudi Arabia",
+    "state": "Al-Qassim",
+    "latitude": 26.326,
+    "longitude": 43.975,
+    "timezone": "Asia/Riyadh"
+  },
+  {
+    "name": "Al Ain",
+    "country": "United Arab Emirates",
+    "state": "Abu Dhabi",
+    "latitude": 24.1302,
+    "longitude": 55.8023,
+    "timezone": "Asia/Dubai"
+  },
+  {
+    "name": "Hebron",
+    "country": "Palestine",
+    "state": "West Bank",
+    "latitude": 31.5326,
+    "longitude": 35.0998,
+    "timezone": "Asia/Hebron"
+  },
+  {
+    "name": "Nablus",
+    "country": "Palestine",
+    "state": "West Bank",
+    "latitude": 32.2211,
+    "longitude": 35.2544,
+    "timezone": "Asia/Hebron"
+  },
+  {
+    "name": "Zarqa",
+    "country": "Jordan",
+    "state": "Zarqa",
+    "latitude": 32.0608,
+    "longitude": 36.1031,
+    "timezone": "Asia/Amman"
+  },
+  {
+    "name": "Irbid",
+    "country": "Jordan",
+    "state": "Irbid",
+    "latitude": 32.551,
+    "longitude": 35.851,
+    "timezone": "Asia/Amman"
+  },
+  {
+    "name": "Surakarta",
+    "country": "Indonesia",
+    "state": "Central Java",
+    "latitude": -7.5666,
+    "longitude": 110.8167,
+    "timezone": "Asia/Jakarta",
+    "aliases": ["solo"]
+  },
+  {
+    "name": "Makassar",
+    "country": "Indonesia",
+    "state": "South Sulawesi",
+    "latitude": -5.1476,
+    "longitude": 119.4327,
+    "timezone": "Asia/Makassar"
+  },
+  {
+    "name": "Palembang",
+    "country": "Indonesia",
+    "state": "South Sumatra",
+    "latitude": -2.9909,
+    "longitude": 104.7567,
+    "timezone": "Asia/Jakarta"
+  },
+  {
+    "name": "Banjarmasin",
+    "country": "Indonesia",
+    "state": "South Kalimantan",
+    "latitude": -3.3166,
+    "longitude": 114.59,
+    "timezone": "Asia/Makassar"
+  },
+  {
+    "name": "Kota Kinabalu",
+    "country": "Malaysia",
+    "state": "Sabah",
+    "latitude": 5.9804,
+    "longitude": 116.0735,
+    "timezone": "Asia/Kuching"
+  },
+  {
+    "name": "Kuching",
+    "country": "Malaysia",
+    "state": "Sarawak",
+    "latitude": 1.5533,
+    "longitude": 110.3592,
+    "timezone": "Asia/Kuching"
+  },
+  {
+    "name": "Davao City",
+    "country": "Philippines",
+    "state": "Davao Region",
+    "latitude": 7.1907,
+    "longitude": 125.4553,
+    "timezone": "Asia/Manila"
+  },
+  {
+    "name": "Zamboanga City",
+    "country": "Philippines",
+    "state": "Zamboanga Peninsula",
+    "latitude": 6.9214,
+    "longitude": 122.079,
+    "timezone": "Asia/Manila"
+  },
+  {
+    "name": "Rajshahi",
+    "country": "Bangladesh",
+    "state": "Rajshahi",
+    "latitude": 24.3636,
+    "longitude": 88.6241,
+    "timezone": "Asia/Dhaka"
+  },
+  {
+    "name": "Khulna",
+    "country": "Bangladesh",
+    "state": "Khulna",
+    "latitude": 22.8456,
+    "longitude": 89.5403,
+    "timezone": "Asia/Dhaka"
+  },
+  {
+    "name": "Faisalabad",
+    "country": "Pakistan",
+    "state": "Punjab",
+    "latitude": 31.4175,
+    "longitude": 73.0791,
+    "timezone": "Asia/Karachi"
+  },
+  {
+    "name": "Rawalpindi",
+    "country": "Pakistan",
+    "state": "Punjab",
+    "latitude": 33.5973,
+    "longitude": 73.0479,
+    "timezone": "Asia/Karachi"
+  },
+  {
+    "name": "Gujranwala",
+    "country": "Pakistan",
+    "state": "Punjab",
+    "latitude": 32.1877,
+    "longitude": 74.1945,
+    "timezone": "Asia/Karachi"
+  },
+  {
+    "name": "Quetta",
+    "country": "Pakistan",
+    "state": "Balochistan",
+    "latitude": 30.1798,
+    "longitude": 66.975,
+    "timezone": "Asia/Karachi"
+  },
+  {
+    "name": "Hyderabad",
+    "country": "Pakistan",
+    "state": "Sindh",
+    "latitude": 25.396,
+    "longitude": 68.3578,
+    "timezone": "Asia/Karachi"
+  },
+  {
+    "name": "Herat",
+    "country": "Afghanistan",
+    "state": "Herat",
+    "latitude": 34.3419,
+    "longitude": 62.2031,
+    "timezone": "Asia/Kabul"
+  },
+  {
+    "name": "Mazar-i-Sharif",
+    "country": "Afghanistan",
+    "state": "Balkh",
+    "latitude": 36.7069,
+    "longitude": 67.1123,
+    "timezone": "Asia/Kabul"
+  },
+  {
+    "name": "Nagpur",
+    "country": "India",
+    "state": "Maharashtra",
+    "latitude": 21.1458,
+    "longitude": 79.0882,
+    "timezone": "Asia/Kolkata"
+  },
+  {
+    "name": "Indore",
+    "country": "India",
+    "state": "Madhya Pradesh",
+    "latitude": 22.7196,
+    "longitude": 75.8577,
+    "timezone": "Asia/Kolkata"
+  },
+  {
+    "name": "Bhopal",
+    "country": "India",
+    "state": "Madhya Pradesh",
+    "latitude": 23.2599,
+    "longitude": 77.4126,
+    "timezone": "Asia/Kolkata"
+  },
+  {
+    "name": "Ludhiana",
+    "country": "India",
+    "state": "Punjab",
+    "latitude": 30.901,
+    "longitude": 75.8573,
+    "timezone": "Asia/Kolkata"
+  },
+  {
+    "name": "Agra",
+    "country": "India",
+    "state": "Uttar Pradesh",
+    "latitude": 27.1767,
+    "longitude": 78.0081,
+    "timezone": "Asia/Kolkata"
+  },
+  {
+    "name": "Varanasi",
+    "country": "India",
+    "state": "Uttar Pradesh",
+    "latitude": 25.3176,
+    "longitude": 82.9739,
+    "timezone": "Asia/Kolkata"
+  },
+  {
+    "name": "Nashik",
+    "country": "India",
+    "state": "Maharashtra",
+    "latitude": 19.9975,
+    "longitude": 73.7898,
+    "timezone": "Asia/Kolkata"
+  },
+  {
+    "name": "Ibadan",
+    "country": "Nigeria",
+    "state": "Oyo",
+    "latitude": 7.3775,
+    "longitude": 3.947,
+    "timezone": "Africa/Lagos"
+  },
+  {
+    "name": "Kaduna",
+    "country": "Nigeria",
+    "state": "Kaduna",
+    "latitude": 10.5105,
+    "longitude": 7.4165,
+    "timezone": "Africa/Lagos"
+  },
+  {
+    "name": "Port Harcourt",
+    "country": "Nigeria",
+    "state": "Rivers",
+    "latitude": 4.8156,
+    "longitude": 7.0498,
+    "timezone": "Africa/Lagos"
+  },
+  {
+    "name": "Mombasa",
+    "country": "Kenya",
+    "state": "Mombasa",
+    "latitude": -4.0435,
+    "longitude": 39.6682,
+    "timezone": "Africa/Nairobi"
+  },
+  {
+    "name": "Kisumu",
+    "country": "Kenya",
+    "state": "Kisumu",
+    "latitude": -0.0917,
+    "longitude": 34.768,
+    "timezone": "Africa/Nairobi"
+  },
+  {
+    "name": "Arusha",
+    "country": "Tanzania",
+    "state": "Arusha",
+    "latitude": -3.3731,
+    "longitude": 36.6853,
+    "timezone": "Africa/Dar_es_Salaam"
+  },
+  {
+    "name": "Zanzibar City",
+    "country": "Tanzania",
+    "state": "Zanzibar",
+    "latitude": -6.1659,
+    "longitude": 39.2026,
+    "timezone": "Africa/Zanzibar"
+  },
+  {
+    "name": "Kumasi",
+    "country": "Ghana",
+    "state": "Ashanti",
+    "latitude": 6.6666,
+    "longitude": -1.6163,
+    "timezone": "Africa/Accra"
+  },
+  {
+    "name": "Tamale",
+    "country": "Ghana",
+    "state": "Northern",
+    "latitude": 9.4075,
+    "longitude": -0.8533,
+    "timezone": "Africa/Accra"
+  },
+  {
+    "name": "Touba",
+    "country": "Senegal",
+    "state": "Diourbel",
+    "latitude": 14.8642,
+    "longitude": -15.875,
+    "timezone": "Africa/Dakar"
+  },
+  {
+    "name": "Leicester",
+    "country": "United Kingdom",
+    "state": "England",
+    "latitude": 52.6369,
+    "longitude": -1.1398,
+    "timezone": "Europe/London"
+  },
+  {
+    "name": "Bradford",
+    "country": "United Kingdom",
+    "state": "England",
+    "latitude": 53.7938,
+    "longitude": -1.7515,
+    "timezone": "Europe/London"
+  },
+  {
+    "name": "Rotterdam",
+    "country": "Netherlands",
+    "state": "South Holland",
+    "latitude": 51.9225,
+    "longitude": 4.4792,
+    "timezone": "Europe/Amsterdam"
+  },
+  {
+    "name": "Lyon",
+    "country": "France",
+    "state": "Auvergne-Rhone-Alpes",
+    "latitude": 45.764,
+    "longitude": 4.8357,
+    "timezone": "Europe/Paris"
   }
 ]
