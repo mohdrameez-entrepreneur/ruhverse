@@ -1424,6 +1424,13 @@ body.dark-mode .faq-item p {
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
 }
 
+.quran-mobile-auth-slot {
+    display: none;
+    gap: 0.45rem;
+    margin-left: 0.6rem;
+    align-items: center;
+}
+
 .quran-toolbar h1 {
     font-size: clamp(1.2rem, 5vw, 1.8rem);
     color: var(--emerald);
@@ -2309,6 +2316,30 @@ body.dark-mode .auth-error {
         flex-direction: row;
         gap: 0.5rem;
         justify-content: space-between;
+    }
+
+    .quran-mobile-auth-slot {
+        display: inline-flex;
+    }
+
+    .quran-mobile-auth-slot .premium-login-btn {
+        min-width: 72px;
+        min-height: 32px;
+        padding: 0.3rem 0.68rem;
+    }
+
+    .quran-mobile-auth-slot .premium-login-main {
+        font-size: 0.8rem;
+    }
+
+    .quran-mobile-auth-slot .bookmarks-toggle-btn {
+        min-height: 32px;
+        padding: 0.28rem 0.46rem;
+        border-radius: 10px;
+    }
+
+    .quran-mobile-auth-slot .bookmarks-toggle-text {
+        font-size: 0.7rem;
     }
 
     .pagination-controls {

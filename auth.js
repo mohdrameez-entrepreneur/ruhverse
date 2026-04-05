@@ -13,6 +13,7 @@
   const ui = {
     authBtn: null,
     bookmarkToggleBtn: null,
+    mobileAuthSlot: null,
     bookmarksCountBadge: null,
     bookmarksBackdrop: null,
     bookmarksPanel: null,
@@ -33,6 +34,7 @@
     form: null,
     toast: null
   };
+  let viewportBindingAttached = false;
 
   document.addEventListener('DOMContentLoaded', () => {
     if (!document.body.classList.contains('quran-page-body')) return;
@@ -96,13 +98,21 @@
       bookmarksBtn.className = 'bookmarks-toggle-btn';
       bookmarksBtn.type = 'button';
       bookmarksBtn.innerHTML = `
-        <span class="bookmarks-toggle-icon" aria-hidden="true">🔖</span>
+        <span class="bookmarks-toggle-icon" aria-hidden="true">&#128278;</span>
         <span class="bookmarks-toggle-text">Bookmarks</span>
         <span class="bookmarks-toggle-count" id="bookmarks-toggle-count">0</span>
       `;
       bookmarksBtn.title = 'Open bookmarks';
       bookmarksBtn.setAttribute('aria-expanded', 'false');
       controls.appendChild(bookmarksBtn);
+    }
+
+    const toolbarLead = document.querySelector('.quran-toolbar > div');
+    if (toolbarLead && !document.getElementById('quran-mobile-auth-slot')) {
+      const slot = document.createElement('div');
+      slot.id = 'quran-mobile-auth-slot';
+      slot.className = 'quran-mobile-auth-slot';
+      toolbarLead.appendChild(slot);
     }
     let panel = document.getElementById('bookmarks-panel');
     if (!panel) {
@@ -169,6 +179,7 @@
 
     ui.authBtn = document.getElementById('auth-toggle-btn');
     ui.bookmarkToggleBtn = document.getElementById('bookmarks-toggle-btn');
+    ui.mobileAuthSlot = document.getElementById('quran-mobile-auth-slot');
     ui.bookmarksCountBadge = document.getElementById('bookmarks-toggle-count');
     ui.bookmarksBackdrop = document.getElementById('bookmarks-backdrop');
     ui.bookmarksPanel = document.getElementById('bookmarks-panel');
@@ -188,11 +199,19 @@
     ui.errorText = document.getElementById('auth-error');
     ui.form = document.getElementById('auth-form');
     ui.toast = document.getElementById('auth-toast');
+    placeQuranAuthControlsForViewport();
   }
 
   function bindUiEvents() {
+    if (!viewportBindingAttached) {
+      window.addEventListener('resize', placeQuranAuthControlsForViewport);
+      window.addEventListener('orientationchange', placeQuranAuthControlsForViewport);
+      viewportBindingAttached = true;
+    }
+
     if (ui.authBtn) {
-      ui.authBtn.addEventListener('click', async () => {
+      ui.authBtn.addEventListener('click', async (event) => {
+        event.stopPropagation();
         if (state.user) {
           logout();
           showToast('Logged out.');
@@ -204,7 +223,8 @@
     }
 
     if (ui.bookmarkToggleBtn && ui.bookmarksPanel) {
-      ui.bookmarkToggleBtn.addEventListener('click', () => {
+      ui.bookmarkToggleBtn.addEventListener('click', (event) => {
+        event.stopPropagation();
         if (ui.bookmarksPanel.classList.contains('open')) {
           closeBookmarksPanel();
         } else {
@@ -550,6 +570,7 @@
 
   function openBookmarksPanel() {
     if (!ui.bookmarksPanel) return;
+    closeMobileSidebarIfNeeded();
     if (ui.bookmarksPanel.parentElement !== document.body) {
       document.body.appendChild(ui.bookmarksPanel);
     }
@@ -742,6 +763,7 @@
 
   function openModal(optionalHint) {
     if (!ui.modal) return;
+    closeMobileSidebarIfNeeded();
     if (optionalHint && ui.modalHint) ui.modalHint.textContent = optionalHint;
     ui.modal.style.display = 'flex';
     syncBodyOverlayState();
@@ -763,6 +785,27 @@
       return;
     }
     localStorage.setItem(TOKEN_KEY, state.token);
+  }
+
+  function placeQuranAuthControlsForViewport() {
+    const controls = document.querySelector('.sidebar-controls');
+    const authBtn = document.getElementById('auth-toggle-btn');
+    const bookmarksBtn = document.getElementById('bookmarks-toggle-btn');
+    if (!authBtn || !bookmarksBtn) return;
+
+    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+    const target = isMobile ? ui.mobileAuthSlot : controls;
+    if (!target) return;
+
+    if (authBtn.parentElement !== target) target.appendChild(authBtn);
+    if (bookmarksBtn.parentElement !== target) target.appendChild(bookmarksBtn);
+  }
+
+  function closeMobileSidebarIfNeeded() {
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
+    if (!window.matchMedia('(max-width: 768px)').matches) return;
+    sidebar.classList.remove('active');
   }
 
   async function apiRequest(url, options = {}) {
