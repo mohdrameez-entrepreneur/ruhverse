@@ -2,6 +2,35 @@ const express = require('express');
 const fetch = require('node-fetch');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
+
+function loadDotEnvFile(filePath = path.join(__dirname, '.env')) {
+  if (!fs.existsSync(filePath)) return;
+  try {
+    const raw = fs.readFileSync(filePath, 'utf8');
+    raw.split(/\r?\n/).forEach((line) => {
+      const trimmed = String(line || '').trim();
+      if (!trimmed || trimmed.startsWith('#')) return;
+      const eq = trimmed.indexOf('=');
+      if (eq <= 0) return;
+      const key = trimmed.slice(0, eq).trim();
+      let value = trimmed.slice(eq + 1).trim();
+      if (
+        (value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'"))
+      ) {
+        value = value.slice(1, -1);
+      }
+      if (key && process.env[key] === undefined) {
+        process.env[key] = value;
+      }
+    });
+  } catch (err) {
+    console.warn('Unable to load .env file:', err.message);
+  }
+}
+
+loadDotEnvFile();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -13,9 +42,20 @@ const API_CHAPTER_INFO = 'https://api.quran.com/api/v4/chapters';
 const TEMPLATE_PATH = path.join(__dirname, 'quran.html');
 const BLOGS_DIR = path.join(__dirname, 'Blog Pages');
 const QURAN_TEMPLATE = fs.readFileSync(TEMPLATE_PATH, 'utf8');
+const AUTH_DB_PATH = path.join(__dirname, 'data', 'auth_db.json');
 const SURAH_PROFILES_PATH = path.join(__dirname, 'data', 'surah_profiles.json');
 const CITY_PROFILES_PATH = path.join(__dirname, 'data', 'city_profiles.json');
 const WORLD_CITY_SEED_PATH = path.join(__dirname, 'data', 'world_cities_seed.json');
+const SESSION_SECRET = process.env.SESSION_SECRET || 'ruhverse-dev-session-secret-change-in-production';
+const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 14; // 14 days
+const EMAIL_VERIFICATION_TTL_MS = 1000 * 60 * 60 * 24; // 24 hours
+const SUPABASE_URL = normalizeWhitespace(process.env.SUPABASE_URL || '').replace(/\/+$/, '');
+const SUPABASE_ANON_KEY = normalizeWhitespace(process.env.SUPABASE_ANON_KEY || '');
+const SUPABASE_SERVICE_ROLE_KEY = normalizeWhitespace(process.env.SUPABASE_SERVICE_ROLE_KEY || '');
+const SUPABASE_AUTH_URL = SUPABASE_URL ? `${SUPABASE_URL}/auth/v1` : '';
+const SUPABASE_REST_URL = SUPABASE_URL ? `${SUPABASE_URL}/rest/v1` : '';
+const SUPABASE_ENABLED = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
+const SUPABASE_ADMIN_ENABLED = Boolean(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY);
 const BISMILLAH = 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ';
 
 let quranCache = null;
@@ -40,6 +80,17 @@ const SITEMAP_CITY_CHUNK_SIZE = 45000;
 let cityPrayerTemplate = null;
 let cityProfiles = {};
 let worldCitySeeds = [];
+
+app.use(express.json({ limit: '256kb' }));
+
+if (SUPABASE_ENABLED) {
+  console.info('[Auth] Supabase mode enabled (auth + bookmarks + progress).');
+  if (!SUPABASE_ADMIN_ENABLED) {
+    console.warn('[Auth] SUPABASE_SERVICE_ROLE_KEY missing. Using user-token RLS mode for data operations.');
+  }
+} else {
+  console.warn('[Auth] Supabase env vars missing. Falling back to local auth_db.json mode.');
+}
 
 try {
   surahProfiles = JSON.parse(fs.readFileSync(SURAH_PROFILES_PATH, 'utf8'));
@@ -105,6 +156,525 @@ function slugifyCityName(name) {
 function toNumber(value, fallback = 0) {
   const n = Number(value);
   return Number.isFinite(n) ? n : fallback;
+}
+
+function ensureAuthDbFile() {
+  const dir = path.dirname(AUTH_DB_PATH);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  if (!fs.existsSync(AUTH_DB_PATH)) {
+    fs.writeFileSync(AUTH_DB_PATH, JSON.stringify({ users: [] }, null, 2), 'utf8');
+  }
+}
+
+function readAuthDb() {
+  ensureAuthDbFile();
+  try {
+    const parsed = JSON.parse(fs.readFileSync(AUTH_DB_PATH, 'utf8'));
+    if (!parsed || !Array.isArray(parsed.users)) return { users: [] };
+    return parsed;
+  } catch (_) {
+    return { users: [] };
+  }
+}
+
+function writeAuthDb(db) {
+  ensureAuthDbFile();
+  const safeDb = db && Array.isArray(db.users) ? db : { users: [] };
+  fs.writeFileSync(AUTH_DB_PATH, JSON.stringify(safeDb, null, 2), 'utf8');
+}
+
+function base64UrlEncode(value) {
+  return Buffer.from(String(value), 'utf8')
+    .toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/g, '');
+}
+
+function base64UrlDecode(value) {
+  const normalized = String(value || '').replace(/-/g, '+').replace(/_/g, '/');
+  const padded = normalized + '='.repeat((4 - (normalized.length % 4)) % 4);
+  return Buffer.from(padded, 'base64').toString('utf8');
+}
+
+function buildSessionToken(user) {
+  const payload = {
+    uid: user.id,
+    exp: Date.now() + SESSION_TTL_MS
+  };
+  const payloadRaw = base64UrlEncode(JSON.stringify(payload));
+  const signature = crypto.createHmac('sha256', SESSION_SECRET).update(payloadRaw).digest('hex');
+  return `${payloadRaw}.${signature}`;
+}
+
+function verifySessionToken(tokenRaw) {
+  const token = normalizeWhitespace(tokenRaw || '');
+  const parts = token.split('.');
+  if (parts.length !== 2) return null;
+
+  const payloadRaw = parts[0];
+  const suppliedSig = parts[1];
+  const expectedSig = crypto.createHmac('sha256', SESSION_SECRET).update(payloadRaw).digest('hex');
+  const suppliedBuf = Buffer.from(suppliedSig, 'utf8');
+  const expectedBuf = Buffer.from(expectedSig, 'utf8');
+
+  if (suppliedBuf.length !== expectedBuf.length || !crypto.timingSafeEqual(suppliedBuf, expectedBuf)) {
+    return null;
+  }
+
+  try {
+    const payload = JSON.parse(base64UrlDecode(payloadRaw));
+    if (!payload || !payload.uid || !payload.exp || payload.exp < Date.now()) return null;
+    return payload;
+  } catch (_) {
+    return null;
+  }
+}
+
+function createPasswordHash(password) {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto.scryptSync(password, salt, 64).toString('hex');
+  return `${salt}:${hash}`;
+}
+
+function verifyPassword(password, passwordHash) {
+  const parts = String(passwordHash || '').split(':');
+  if (parts.length !== 2) return false;
+
+  const salt = parts[0];
+  const expectedHash = parts[1];
+  const actualHash = crypto.scryptSync(String(password || ''), salt, 64).toString('hex');
+  const expectedBuf = Buffer.from(expectedHash, 'hex');
+  const actualBuf = Buffer.from(actualHash, 'hex');
+
+  if (expectedBuf.length !== actualBuf.length) return false;
+  return crypto.timingSafeEqual(expectedBuf, actualBuf);
+}
+
+function getTokenFromRequest(req) {
+  const authHeader = String(req.headers.authorization || '');
+  if (authHeader.toLowerCase().startsWith('bearer ')) {
+    return authHeader.slice(7).trim();
+  }
+  return '';
+}
+
+function sanitizeUser(user) {
+  const username = getDisplayName(user);
+  const fullNameRaw = user?.fullName || user?.full_name || user?.user_metadata?.full_name || '';
+  const createdAtRaw = user?.createdAt || user?.created_at || '';
+  return {
+    id: user.id,
+    email: normalizeEmail(user.email),
+    username,
+    fullName: normalizeFullName(fullNameRaw),
+    emailVerified: isUserEmailVerified(user),
+    createdAt: createdAtRaw || new Date().toISOString()
+  };
+}
+
+function normalizeEmail(email) {
+  return normalizeWhitespace(email || '').toLowerCase();
+}
+
+function normalizeUsername(username) {
+  return normalizeWhitespace(username || '').slice(0, 40);
+}
+
+function normalizeFullName(fullName) {
+  return normalizeWhitespace(fullName || '').slice(0, 80);
+}
+
+function getDisplayName(user) {
+  const explicit = normalizeUsername(user?.username || user?.user_metadata?.username || '');
+  if (explicit) return explicit;
+
+  const emailLocal = String(user?.email || '').split('@')[0] || '';
+  const fromEmail = normalizeWhitespace(emailLocal.replace(/[._-]+/g, ' ')).slice(0, 40);
+  return fromEmail || 'Member';
+}
+
+function isUserEmailVerified(user) {
+  if (typeof user?.emailVerified === 'boolean') return user.emailVerified;
+  if (Object.prototype.hasOwnProperty.call(user || {}, 'email_confirmed_at')
+    || Object.prototype.hasOwnProperty.call(user || {}, 'confirmed_at')) {
+    return Boolean(user?.email_confirmed_at || user?.confirmed_at);
+  }
+  // Keep old users (before verification support) usable.
+  return true;
+}
+
+function buildVerificationTokenBundle() {
+  const rawToken = crypto.randomBytes(32).toString('hex');
+  const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+  return {
+    rawToken,
+    tokenHash,
+    expiresAt: new Date(Date.now() + EMAIL_VERIFICATION_TTL_MS).toISOString(),
+    sentAt: new Date().toISOString()
+  };
+}
+
+async function sendEmailVerificationMessage({ email, username, verifyUrl }) {
+  const resendApiKey = String(process.env.RESEND_API_KEY || '').trim();
+  const from = String(process.env.AUTH_EMAIL_FROM || 'RuhVerse <no-reply@ruhverse.online>').trim();
+
+  if (!resendApiKey) {
+    console.warn('RESEND_API_KEY is missing. Email confirmation link logged to console.');
+    console.info(`[Verify Email] ${email}: ${verifyUrl}`);
+    return { sent: false, provider: 'console' };
+  }
+
+  const safeName = escapeHtml(username || 'there');
+  const html = `
+    <div style="font-family:Arial,sans-serif;line-height:1.6;color:#1f2937">
+      <h2 style="margin:0 0 12px;color:#1A4D2E">Confirm Your RuhVerse Account</h2>
+      <p>Assalamu alaikum ${safeName},</p>
+      <p>Please confirm your email to activate your account and protect RuhVerse from fake signups.</p>
+      <p>
+        <a href="${verifyUrl}" style="display:inline-block;background:#1A4D2E;color:#fff;text-decoration:none;padding:10px 16px;border-radius:8px">
+          Confirm Email
+        </a>
+      </p>
+      <p>This link expires in 24 hours.</p>
+      <p>If you did not request this account, you can safely ignore this email.</p>
+    </div>
+  `;
+
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${resendApiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        from,
+        to: [email],
+        subject: 'Confirm your RuhVerse account',
+        html
+      })
+    });
+
+    if (!response.ok) {
+      const detail = await response.text().catch(() => '');
+      throw new Error(`Resend request failed (${response.status}): ${detail.slice(0, 200)}`);
+    }
+
+    return { sent: true, provider: 'resend' };
+  } catch (err) {
+    console.error('Failed to send verification email:', err.message);
+    console.info(`[Verify Email Fallback] ${email}: ${verifyUrl}`);
+    return { sent: false, provider: 'console_fallback' };
+  }
+}
+
+function clipText(value, maxLength) {
+  return String(value || '').trim().slice(0, maxLength);
+}
+
+function getSupabaseApiKey(useServiceRole = false) {
+  if (useServiceRole && SUPABASE_SERVICE_ROLE_KEY) return SUPABASE_SERVICE_ROLE_KEY;
+  return SUPABASE_ANON_KEY;
+}
+
+function toSupabaseErrorMessage(payload, fallback) {
+  return (
+    payload?.msg ||
+    payload?.message ||
+    payload?.error_description ||
+    payload?.error ||
+    fallback
+  );
+}
+
+function isSupabaseEmailDeliveryError(message) {
+  const text = normalizeWhitespace(message || '').toLowerCase();
+  return text.includes('error sending confirmation email')
+    || text.includes('error sending confirmation mail')
+    || text.includes('error sending email')
+    || text.includes('smtp');
+}
+
+async function supabaseRequest(url, options = {}) {
+  const method = options.method || 'GET';
+  const useServiceRole = Boolean(options.useServiceRole);
+  const token = normalizeWhitespace(options.token || '');
+  const apiKey = getSupabaseApiKey(useServiceRole);
+
+  if (!SUPABASE_ENABLED || !SUPABASE_ANON_KEY || !apiKey) {
+    const err = new Error('Supabase credentials are not configured.');
+    err.status = 500;
+    throw err;
+  }
+
+  const headers = { ...(options.headers || {}) };
+  headers.apikey = apiKey;
+  headers.Authorization = token ? `Bearer ${token}` : `Bearer ${apiKey}`;
+
+  if (options.body !== undefined && !headers['Content-Type']) {
+    headers['Content-Type'] = 'application/json';
+  }
+
+  const response = await fetch(url, {
+    method,
+    headers,
+    body: options.body !== undefined ? JSON.stringify(options.body) : undefined
+  });
+
+  const text = await response.text().catch(() => '');
+  let payload = null;
+  if (text) {
+    try {
+      payload = JSON.parse(text);
+    } catch (_) {
+      payload = text;
+    }
+  }
+
+  if (!response.ok) {
+    const fallback = `Supabase request failed (${response.status}).`;
+    const error = new Error(
+      typeof payload === 'object' && payload
+        ? toSupabaseErrorMessage(payload, fallback)
+        : fallback
+    );
+    error.status = response.status;
+    error.payload = payload;
+    throw error;
+  }
+
+  return {
+    payload,
+    response
+  };
+}
+
+async function supabaseAuthRequest(pathname, options = {}) {
+  const cleanPath = pathname.startsWith('/') ? pathname : `/${pathname}`;
+  return supabaseRequest(`${SUPABASE_AUTH_URL}${cleanPath}`, options);
+}
+
+async function supabaseRestRequest(pathname, options = {}) {
+  const cleanPath = pathname.startsWith('/') ? pathname : `/${pathname}`;
+  return supabaseRequest(`${SUPABASE_REST_URL}${cleanPath}`, options);
+}
+
+async function supabaseAdminGenerateSignupLink({ email, password, username, fullName, redirectTo }) {
+  if (!SUPABASE_ADMIN_ENABLED) {
+    const err = new Error('Supabase admin key is not configured.');
+    err.status = 500;
+    throw err;
+  }
+  const redirect = normalizeWhitespace(redirectTo || '');
+  const body = {
+    type: 'signup',
+    email,
+    password,
+    data: {
+      username,
+      full_name: fullName
+    }
+  };
+  if (redirect) body.redirect_to = redirect;
+
+  const { payload } = await supabaseAuthRequest('/admin/generate_link', {
+    method: 'POST',
+    useServiceRole: true,
+    body
+  });
+
+  const raw = payload || {};
+  const normalizedUser = raw?.user || (raw?.id ? {
+    id: raw.id,
+    email: raw.email,
+    user_metadata: raw.user_metadata || {}
+  } : null);
+  const actionLink = normalizeWhitespace(
+    raw?.action_link || raw?.properties?.action_link || ''
+  );
+
+  return {
+    raw,
+    user: normalizedUser,
+    actionLink
+  };
+}
+
+async function getSupabaseAuthUser(token) {
+  const { payload } = await supabaseAuthRequest('/user', { token });
+  if (!payload || !payload.id) {
+    const err = new Error('Invalid session');
+    err.status = 401;
+    throw err;
+  }
+  return payload;
+}
+
+async function getSupabaseProfile(userId, token = '') {
+  const select = encodeURIComponent('id,email,username,full_name,created_at');
+  const filter = encodeURIComponent(userId);
+  const { payload } = await supabaseRestRequest(`/profiles?select=${select}&id=eq.${filter}&limit=1`, {
+    useServiceRole: !token,
+    token
+  });
+  return Array.isArray(payload) ? payload[0] || null : null;
+}
+
+function buildProfileUpsertRow(authUser, fallback = {}) {
+  const id = normalizeWhitespace(authUser?.id || fallback?.id || '');
+  if (!id) return null;
+  const username = normalizeUsername(
+    fallback?.username || authUser?.user_metadata?.username || ''
+  );
+  const fullName = normalizeFullName(
+    fallback?.fullName || authUser?.user_metadata?.full_name || username
+  );
+  return {
+    id,
+    email: normalizeEmail(authUser?.email || fallback?.email || ''),
+    username,
+    full_name: fullName
+  };
+}
+
+async function upsertSupabaseProfile(row, options = {}) {
+  if (!row || !row.id) return null;
+  const token = normalizeWhitespace(options.token || '');
+  const canUseServiceRole = Boolean(options.useServiceRole && SUPABASE_ADMIN_ENABLED);
+  if (!token && !canUseServiceRole) return null;
+
+  const { payload } = await supabaseRestRequest('/profiles?on_conflict=id', {
+    method: 'POST',
+    token,
+    useServiceRole: canUseServiceRole,
+    headers: { Prefer: 'resolution=merge-duplicates,return=representation' },
+    body: [row]
+  });
+  return Array.isArray(payload) ? payload[0] || null : null;
+}
+
+async function ensureSupabaseProfile(authUser, options = {}) {
+  const token = normalizeWhitespace(options.token || '');
+  const fallback = {
+    id: authUser?.id,
+    email: authUser?.email,
+    username: options.fallbackUsername || '',
+    fullName: options.fallbackFullName || ''
+  };
+  const row = buildProfileUpsertRow(authUser, fallback);
+  if (!row) return null;
+
+  const existing = await getSupabaseProfile(row.id, token).catch(() => null);
+  if (existing) return existing;
+
+  const upserted = await upsertSupabaseProfile(row, {
+    token,
+    useServiceRole: Boolean(options.preferServiceRole)
+  }).catch(() => null);
+  if (upserted) return upserted;
+
+  return getSupabaseProfile(row.id, token).catch(() => null);
+}
+
+function mapSupabaseBookmarkRow(row) {
+  return {
+    surahNumber: Number(row?.surah_number) || 1,
+    ayahNumber: Number(row?.ayah_number) || 1,
+    note: clipText(row?.note || '', 1200),
+    createdAt: row?.created_at || new Date().toISOString()
+  };
+}
+
+function mapSupabaseProgressRow(row) {
+  return {
+    lastSurah: Number(row?.last_surah) || 1,
+    lastAyah: Number(row?.last_ayah) || 1,
+    updatedAt: row?.updated_at || new Date().toISOString()
+  };
+}
+
+async function requireAuth(req, res, next) {
+  const token = getTokenFromRequest(req);
+  if (!token) {
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
+
+  if (SUPABASE_ENABLED) {
+    try {
+      const authUser = await getSupabaseAuthUser(token);
+      if (!isUserEmailVerified(authUser)) {
+        res.status(401).json({ error: 'Please verify your email before logging in.' });
+        return;
+      }
+
+      let profile = null;
+      try {
+        profile = await ensureSupabaseProfile(authUser, {
+          token,
+          preferServiceRole: true
+        });
+      } catch (_) {
+        profile = null;
+      }
+
+      req.authToken = token;
+      req.authUserRaw = authUser;
+      req.authUser = {
+        id: authUser.id,
+        email: normalizeEmail(authUser.email),
+        username: normalizeUsername(profile?.username || authUser?.user_metadata?.username || ''),
+        fullName: normalizeFullName(profile?.full_name || authUser?.user_metadata?.full_name || ''),
+        emailVerified: true,
+        createdAt: authUser.created_at || profile?.created_at || new Date().toISOString()
+      };
+      next();
+      return;
+    } catch (_) {
+      res.status(401).json({ error: 'Invalid session' });
+      return;
+    }
+  }
+
+  const session = verifySessionToken(token);
+  if (!session) {
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
+
+  const db = readAuthDb();
+  const user = db.users.find((u) => u.id === session.uid);
+  if (!user) {
+    res.status(401).json({ error: 'Invalid session' });
+    return;
+  }
+  if (!isUserEmailVerified(user)) {
+    res.status(401).json({ error: 'Email is not verified.' });
+    return;
+  }
+
+  req.authDb = db;
+  req.authUser = user;
+  next();
+}
+
+function normalizeBookmarkInput(raw) {
+  const surahNumber = Number(raw?.surahNumber);
+  const ayahNumber = Number(raw?.ayahNumber);
+  if (!Number.isInteger(surahNumber) || surahNumber < 1 || surahNumber > 114) return null;
+  if (!Number.isInteger(ayahNumber) || ayahNumber < 1 || ayahNumber > 286) return null;
+  const note = clipText(
+    raw?.note || raw?.textTranslation || raw?.textArabic || '',
+    1200
+  );
+
+  return {
+    surahNumber,
+    ayahNumber,
+    surahName: clipText(raw?.surahName, 120),
+    note
+  };
 }
 
 const INSIGHT_TEMPLATES = {
@@ -792,6 +1362,7 @@ window.__INITIAL_SURAH_INDEX = ${initialSurahIndex};
     .replace('<!--SSR_OG_DESCRIPTION-->Read the Holy Quran online with translations, beautiful recitations, and a premium 3D interface on RuhVerse.', escapeHtml(pageDescription))
     .replace('<!--SSR_OG_URL-->https://ruhverse.online/quran.html', escapeHtml(canonical))
     .replace('<!--SSR_OG_IMAGE-->https://ruhverse.online/assets/Gemini_Generated_Image_1z0kzx1z0kzx1z0k.jpg', escapeHtml(ogImage))
+    .replace('<!--SSR_TWITTER_URL-->https://ruhverse.online/quran.html', escapeHtml(canonical))
     .replace('<!--SSR_TWITTER_TITLE-->Read Quran Online - RuhVerse', escapeHtml(pageTitle))
     .replace('<!--SSR_TWITTER_DESCRIPTION-->Read the Holy Quran online with translations, beautiful recitations, and a premium 3D interface on RuhVerse.', escapeHtml(pageDescription))
     .replace('<!--SSR_TWITTER_IMAGE-->https://ruhverse.online/assets/Gemini_Generated_Image_1z0kzx1z0kzx1z0k.jpg', escapeHtml(ogImage))
@@ -846,6 +1417,7 @@ async function serveQuranPage(req, res, initialSurahIndex, canonicalPathOverride
       .replace('<!--SSR_OG_DESCRIPTION-->Read the Holy Quran online with translations, beautiful recitations, and a premium 3D interface on RuhVerse.', 'Read the Holy Quran online with translations, beautiful recitations, and a premium 3D interface on RuhVerse.')
       .replace('<!--SSR_OG_URL-->https://ruhverse.online/quran.html', `${PUBLIC_BASE_URL}${canonicalPath}`)
       .replace('<!--SSR_OG_IMAGE-->https://ruhverse.online/assets/Gemini_Generated_Image_1z0kzx1z0kzx1z0k.jpg', `${PUBLIC_BASE_URL}/assets/Gemini_Generated_Image_1z0kzx1z0kzx1z0k.jpg`)
+      .replace('<!--SSR_TWITTER_URL-->https://ruhverse.online/quran.html', `${PUBLIC_BASE_URL}${canonicalPath}`)
       .replace('<!--SSR_TWITTER_TITLE-->Read Quran Online - RuhVerse', 'Read Quran Online - RuhVerse')
       .replace('<!--SSR_TWITTER_DESCRIPTION-->Read the Holy Quran online with translations, beautiful recitations, and a premium 3D interface on RuhVerse.', 'Read the Holy Quran online with translations, beautiful recitations, and a premium 3D interface on RuhVerse.')
       .replace('<!--SSR_TWITTER_IMAGE-->https://ruhverse.online/assets/Gemini_Generated_Image_1z0kzx1z0kzx1z0k.jpg', `${PUBLIC_BASE_URL}/assets/Gemini_Generated_Image_1z0kzx1z0kzx1z0k.jpg`)
@@ -857,6 +1429,7 @@ async function serveQuranPage(req, res, initialSurahIndex, canonicalPathOverride
 app.get('/api/quran-data', async (req, res) => {
   try {
     const data = await getQuranData();
+    res.setHeader('Cache-Control', 'public, max-age=900, stale-while-revalidate=3600');
     let chapterMetaMap = {};
     try {
       chapterMetaMap = await getChapterMetaMap();
@@ -878,6 +1451,7 @@ app.get('/api/surah-info/:surahNumber(\\d+)', async (req, res) => {
 
   try {
     const data = await getQuranData();
+    res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
     const chapterMetaMap = await getChapterMetaMap().catch(() => ({}));
     const surahAr = data.quranArabic[surahNumber - 1];
     const surahEn = data.quranEnglish[surahNumber - 1];
@@ -900,7 +1474,7 @@ app.get('/api/surah-info/:surahNumber(\\d+)', async (req, res) => {
   }
 });
 
-// ── Qibla Finder page ──
+// -- Qibla Finder page --
 app.get('/qibla', (req, res) => {
   const qiblaPath = path.join(__dirname, 'qibla.html');
   if (!fs.existsSync(qiblaPath)) {
@@ -944,11 +1518,851 @@ app.get('/api/cities', (req, res) => {
       longitude: city.longitude
     }));
 
+  res.setHeader('Cache-Control', 'public, max-age=1800, stale-while-revalidate=86400');
   res.json({
     total: filtered.length,
     returned: items.length,
     items
   });
+});
+
+app.post('/api/auth/register', async (req, res) => {
+  const username = normalizeUsername(req.body?.username);
+  const fullName = normalizeFullName(req.body?.fullName || username);
+  const email = normalizeEmail(req.body?.email);
+  const password = String(req.body?.password || '');
+
+  if (username.length < 2 || username.length > 40) {
+    res.status(400).json({ error: 'Username must be between 2 and 40 characters.' });
+    return;
+  }
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    res.status(400).json({ error: 'Enter a valid email address.' });
+    return;
+  }
+
+  if (password.length < 6 || password.length > 200) {
+    res.status(400).json({ error: 'Password must be between 6 and 200 characters.' });
+    return;
+  }
+
+  if (SUPABASE_ENABLED) {
+    try {
+      const redirectToRaw = `${PUBLIC_BASE_URL}/verify-email`;
+      const redirectTo = encodeURIComponent(redirectToRaw);
+      const hasResendApiKey = Boolean(String(process.env.RESEND_API_KEY || '').trim());
+
+      if (SUPABASE_ADMIN_ENABLED && hasResendApiKey) {
+        try {
+          const adminPayload = await supabaseAdminGenerateSignupLink({
+            email,
+            password,
+            username,
+            fullName,
+            redirectTo: redirectToRaw
+          });
+
+          const authUser = adminPayload?.user;
+          const actionLink = normalizeWhitespace(adminPayload?.actionLink || '');
+          if (!actionLink) {
+            throw new Error('Could not create verification email link.');
+          }
+
+          const profile = authUser?.id
+            ? await ensureSupabaseProfile(authUser, {
+              preferServiceRole: true,
+              fallbackUsername: username,
+              fallbackFullName: fullName
+            }).catch(() => null)
+            : null;
+
+          await sendEmailVerificationMessage({
+            email,
+            username: username || getDisplayName({ email }),
+            verifyUrl: actionLink
+          });
+
+          const user = sanitizeUser({
+            ...authUser,
+            email,
+            username: profile?.username || username || authUser?.user_metadata?.username || '',
+            full_name: profile?.full_name || fullName || authUser?.user_metadata?.full_name || '',
+            emailVerified: false
+          });
+
+          res.status(201).json({
+            requiresEmailVerification: true,
+            user,
+            message: 'Email verification sent. Please check your email.'
+          });
+          return;
+        } catch (adminErr) {
+          console.warn('Admin verification-link flow failed. Falling back to standard signup:', adminErr.message);
+        }
+      }
+
+      const { payload } = await supabaseAuthRequest(`/signup?redirect_to=${redirectTo}`, {
+        method: 'POST',
+        body: {
+          email,
+          password,
+          data: {
+            username,
+            full_name: fullName
+          },
+          options: {
+            data: {
+              username,
+              full_name: fullName
+            }
+          }
+        }
+      });
+
+      const authUser = payload?.user || (payload?.id ? payload : null);
+      if (!authUser?.id) {
+        res.status(201).json({
+          requiresEmailVerification: true,
+          user: sanitizeUser({
+            id: '',
+            email,
+            username,
+            full_name: fullName,
+            emailVerified: false,
+            created_at: new Date().toISOString()
+          }),
+          message: 'Email verification sent. Please check your email.'
+        });
+        return;
+      }
+
+      const token = normalizeWhitespace(payload?.access_token || payload?.session?.access_token || '');
+      const requiresEmailVerification = !isUserEmailVerified(authUser);
+      const profile = await ensureSupabaseProfile(authUser, {
+        token,
+        fallbackUsername: username,
+        fallbackFullName: fullName,
+        preferServiceRole: true
+      }).catch(() => null);
+      const user = sanitizeUser({
+        ...authUser,
+        email,
+        username: profile?.username || username || authUser?.user_metadata?.username || '',
+        full_name: profile?.full_name || fullName || authUser?.user_metadata?.full_name || '',
+        emailVerified: Boolean(authUser?.email_confirmed_at)
+      });
+
+      res.status(201).json({
+        requiresEmailVerification,
+        user,
+        token: !requiresEmailVerification ? (token || undefined) : undefined,
+        message: requiresEmailVerification
+          ? 'Email verification sent. Please check your email.'
+          : 'Account created successfully.'
+      });
+
+      // Best effort resend for providers that delay first email delivery.
+      if (requiresEmailVerification) {
+        await supabaseAuthRequest(`/resend?redirect_to=${redirectTo}`, {
+          method: 'POST',
+          body: {
+            type: 'signup',
+            email
+          }
+        }).catch(() => null);
+      }
+      return;
+    } catch (err) {
+      const message = String(err?.message || 'Could not create account.');
+      if (isSupabaseEmailDeliveryError(message)) {
+        res.status(503).json({
+          error: 'Account could not send verification email right now. Please try again in a minute.'
+        });
+        return;
+      }
+      const isConflict = /already registered|already exists|exists/i.test(message);
+      if (isConflict) {
+        try {
+          const redirectTo = encodeURIComponent(`${PUBLIC_BASE_URL}/verify-email`);
+          await supabaseAuthRequest(`/resend?redirect_to=${redirectTo}`, {
+            method: 'POST',
+            body: {
+              type: 'signup',
+              email
+            }
+          });
+
+          res.status(202).json({
+            requiresEmailVerification: true,
+            message: 'Email already registered but not verified. We have sent a fresh verification link.'
+          });
+          return;
+        } catch (_) {
+          res.status(409).json({ error: 'This email is already registered. Please login.' });
+          return;
+        }
+      }
+
+      // Recovery path: if signup may have completed but a follow-up step failed,
+      // resend verification and return a success-style message.
+      try {
+        const redirectTo = encodeURIComponent(`${PUBLIC_BASE_URL}/verify-email`);
+        await supabaseAuthRequest(`/resend?redirect_to=${redirectTo}`, {
+          method: 'POST',
+          body: {
+            type: 'signup',
+            email
+          }
+        });
+        res.status(202).json({
+          requiresEmailVerification: true,
+          message: 'Email verification sent. Please check your email.'
+        });
+        return;
+      } catch (_) {
+        // Keep original error below.
+      }
+
+      if (/could not create account|create account right now/i.test(message)) {
+        res.status(202).json({
+          requiresEmailVerification: true,
+          message: 'Email verification may already be sent. Please check your inbox and spam folder.'
+        });
+        return;
+      }
+
+      res.status(err?.status || 400).json({ error: message });
+      return;
+    }
+  }
+
+  const db = readAuthDb();
+  const existing = db.users.find((u) => normalizeEmail(u.email) === email);
+  const { rawToken, tokenHash, expiresAt, sentAt } = buildVerificationTokenBundle();
+  const verifyUrl = `${PUBLIC_BASE_URL}/verify-email?token=${encodeURIComponent(rawToken)}`;
+
+  if (existing) {
+    if (isUserEmailVerified(existing)) {
+      res.status(409).json({ error: 'This email is already registered. Please login.' });
+      return;
+    }
+
+    existing.username = username || existing.username || '';
+    existing.fullName = fullName || existing.fullName || '';
+    existing.emailVerification = { tokenHash, expiresAt, sentAt };
+    existing.emailVerified = false;
+    writeAuthDb(db);
+
+    sendEmailVerificationMessage({
+      email: existing.email,
+      username: existing.username || getDisplayName(existing),
+      verifyUrl
+    }).catch(() => null);
+
+    res.status(202).json({
+      requiresEmailVerification: true,
+      user: sanitizeUser(existing),
+      message: 'Email already registered but not verified. We have sent a fresh verification link.'
+    });
+    return;
+  }
+
+  const nowIso = new Date().toISOString();
+  const user = {
+    id: crypto.randomUUID(),
+    username,
+    fullName,
+    email,
+    passwordHash: createPasswordHash(password),
+    emailVerified: false,
+    emailVerification: { tokenHash, expiresAt, sentAt },
+    createdAt: nowIso,
+    userProgress: {
+      lastSurah: 1,
+      lastAyah: 1,
+      updatedAt: nowIso
+    },
+    bookmarks: []
+  };
+
+  db.users.push(user);
+  writeAuthDb(db);
+
+  sendEmailVerificationMessage({
+    email: user.email,
+    username: user.username || getDisplayName(user),
+    verifyUrl
+  }).catch(() => null);
+
+  res.status(201).json({
+    requiresEmailVerification: true,
+    user: sanitizeUser(user),
+    message: 'Account created. Please verify your email before logging in.'
+  });
+});
+
+app.post('/api/auth/verify-email', async (req, res) => {
+  if (SUPABASE_ENABLED) {
+    const tokenHash = normalizeWhitespace(req.body?.tokenHash || req.body?.token_hash || '');
+    const token = normalizeWhitespace(req.body?.token || '');
+    const type = normalizeWhitespace(req.body?.type || 'signup') || 'signup';
+    if (!tokenHash && !token) {
+      res.status(400).json({ error: 'Verification token is required.' });
+      return;
+    }
+
+    try {
+      const { payload } = await supabaseAuthRequest('/verify', {
+        method: 'POST',
+        body: tokenHash
+          ? { type, token_hash: tokenHash }
+          : { type, token }
+      });
+
+      const user = sanitizeUser(payload?.user || {});
+      const token = normalizeWhitespace(payload?.access_token || payload?.session?.access_token || '');
+      res.json({
+        user,
+        token,
+        message: 'Email verified successfully.'
+      });
+      return;
+    } catch (err) {
+      res.status(err?.status || 400).json({ error: String(err?.message || 'Could not verify email.') });
+      return;
+    }
+  }
+
+  const tokenRaw = normalizeWhitespace(req.body?.token || '');
+  if (!tokenRaw) {
+    res.status(400).json({ error: 'Verification token is required.' });
+    return;
+  }
+
+  const tokenHash = crypto.createHash('sha256').update(tokenRaw).digest('hex');
+  const db = readAuthDb();
+  const user = db.users.find((u) => {
+    const meta = u?.emailVerification || {};
+    return String(meta.tokenHash || '') === tokenHash;
+  });
+
+  if (!user) {
+    res.status(400).json({ error: 'Invalid verification token.' });
+    return;
+  }
+
+  const expiresAtRaw = user?.emailVerification?.expiresAt || '';
+  const expiresAtMs = Date.parse(expiresAtRaw);
+  if (!Number.isFinite(expiresAtMs) || expiresAtMs < Date.now()) {
+    res.status(400).json({ error: 'Verification link has expired. Please register again to get a new link.' });
+    return;
+  }
+
+  user.emailVerified = true;
+  delete user.emailVerification;
+  writeAuthDb(db);
+
+  res.json({
+    user: sanitizeUser(user),
+    token: buildSessionToken(user),
+    message: 'Email verified successfully.'
+  });
+});
+
+app.post('/api/auth/resend-verification', async (req, res) => {
+  const email = normalizeEmail(req.body?.email);
+  if (!email) {
+    res.status(400).json({ error: 'Email is required.' });
+    return;
+  }
+
+  if (SUPABASE_ENABLED) {
+    try {
+      const redirectTo = encodeURIComponent(`${PUBLIC_BASE_URL}/verify-email`);
+      await supabaseAuthRequest(`/resend?redirect_to=${redirectTo}`, {
+        method: 'POST',
+        body: {
+          type: 'signup',
+          email
+        }
+      });
+      res.status(202).json({ message: 'Verification email sent. Please check your inbox.' });
+      return;
+    } catch (err) {
+      const message = String(err?.message || 'Could not resend verification email.');
+      if (isSupabaseEmailDeliveryError(message)) {
+        res.status(503).json({ error: 'Verification email could not be delivered right now. Please try again shortly.' });
+        return;
+      }
+      res.status(err?.status || 400).json({ error: message });
+      return;
+    }
+  }
+
+  const db = readAuthDb();
+  const user = db.users.find((u) => normalizeEmail(u.email) === email);
+  if (!user) {
+    res.status(404).json({ error: 'No account found for this email.' });
+    return;
+  }
+  if (isUserEmailVerified(user)) {
+    res.status(409).json({ error: 'This account is already verified. Please login.' });
+    return;
+  }
+
+  const { rawToken, tokenHash, expiresAt, sentAt } = buildVerificationTokenBundle();
+  user.emailVerification = { tokenHash, expiresAt, sentAt };
+  user.emailVerified = false;
+  writeAuthDb(db);
+
+  const verifyUrl = `${PUBLIC_BASE_URL}/verify-email?token=${encodeURIComponent(rawToken)}`;
+  sendEmailVerificationMessage({
+    email: user.email,
+    username: user.username || getDisplayName(user),
+    verifyUrl
+  }).catch(() => null);
+
+  res.status(202).json({ message: 'Verification email sent. Please check your inbox.' });
+});
+
+app.post('/api/auth/login', async (req, res) => {
+  const email = normalizeEmail(req.body?.email);
+  const password = String(req.body?.password || '');
+
+  if (!email || !password) {
+    res.status(400).json({ error: 'Email and password are required.' });
+    return;
+  }
+
+  if (SUPABASE_ENABLED) {
+    try {
+      const { payload } = await supabaseAuthRequest('/token?grant_type=password', {
+        method: 'POST',
+        body: { email, password }
+      });
+
+      const token = normalizeWhitespace(payload?.access_token || '');
+      if (!token) {
+        throw new Error('Login succeeded but no session token was returned.');
+      }
+
+      const authUser = payload?.user || {};
+      if (!isUserEmailVerified(authUser)) {
+        res.status(403).json({ error: 'Please verify your email before logging in.' });
+        return;
+      }
+      const profile = await ensureSupabaseProfile(authUser, {
+        token,
+        preferServiceRole: true
+      }).catch(() => null);
+      const user = sanitizeUser({
+        ...authUser,
+        username: profile?.username || authUser?.user_metadata?.username || '',
+        full_name: profile?.full_name || authUser?.user_metadata?.full_name || ''
+      });
+
+      res.json({ user, token });
+      return;
+    } catch (err) {
+      const message = String(err?.message || 'Invalid email or password.');
+      const emailConfirmationError = /email not confirmed|email confirmation/i.test(message);
+      res.status(emailConfirmationError ? 403 : (err?.status || 401)).json({
+        error: emailConfirmationError ? 'Please verify your email before logging in.' : message
+      });
+      return;
+    }
+  }
+
+  const db = readAuthDb();
+  const user = db.users.find((u) => normalizeEmail(u.email) === email);
+  if (!user || !verifyPassword(password, user.passwordHash)) {
+    res.status(401).json({ error: 'Invalid email or password.' });
+    return;
+  }
+  if (!isUserEmailVerified(user)) {
+    res.status(403).json({ error: 'Please verify your email before logging in.' });
+    return;
+  }
+
+  res.json({
+    user: sanitizeUser(user),
+    token: buildSessionToken(user)
+  });
+});
+
+app.get('/api/auth/me', requireAuth, async (req, res) => {
+  if (SUPABASE_ENABLED) {
+    try {
+      const userId = encodeURIComponent(req.authUser.id);
+      const { payload, response } = await supabaseRestRequest(`/bookmarks?select=id&user_id=eq.${userId}`, {
+        token: req.authToken,
+        headers: {
+          Prefer: 'count=exact',
+          Range: '0-0'
+        }
+      });
+      const contentRange = String(response?.headers?.get('content-range') || '');
+      const totalCount = Number(contentRange.split('/')[1]);
+      const count = Number.isFinite(totalCount) ? totalCount : (Array.isArray(payload) ? payload.length : 0);
+      res.json({
+        user: sanitizeUser(req.authUser),
+        bookmarksCount: count
+      });
+      return;
+    } catch (_) {
+      res.json({
+        user: sanitizeUser(req.authUser),
+        bookmarksCount: 0
+      });
+      return;
+    }
+  }
+
+  res.json({
+    user: sanitizeUser(req.authUser),
+    bookmarksCount: Array.isArray(req.authUser.bookmarks) ? req.authUser.bookmarks.length : 0
+  });
+});
+
+app.post('/api/auth/logout', (req, res) => {
+  res.status(204).end();
+});
+
+app.get('/verify-email', (req, res) => {
+  const token = normalizeWhitespace(req.query.token || '');
+  const verificationMode = SUPABASE_ENABLED ? 'supabase' : 'legacy';
+
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email Verification | RuhVerse</title>
+  <style>
+    body{font-family:Arial,sans-serif;background:#f7faf8;color:#163426;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;padding:1rem}
+    .card{max-width:520px;width:100%;background:#fff;border:1px solid #d8e8df;border-radius:14px;padding:1.4rem 1.2rem;box-shadow:0 18px 40px rgba(22,52,38,.08)}
+    h1{margin:0 0 .6rem;font-size:1.35rem;color:#1A4D2E}
+    p{margin:.3rem 0 .8rem;line-height:1.6}
+    .muted{color:#5f7a6b;font-size:.95rem}
+    .error{color:#8b1f1f}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Confirming your email...</h1>
+    <p id="status">Please wait while we verify your account.</p>
+    <p class="muted">After confirmation, you can sign in normally on RuhVerse.</p>
+  </div>
+  <script>
+    (async function () {
+      const statusEl = document.getElementById('status');
+      const mode = ${JSON.stringify(verificationMode)};
+      const query = new URLSearchParams(window.location.search);
+      const hash = new URLSearchParams((window.location.hash || '').replace(/^#/, ''));
+      const queryToken = ${JSON.stringify(token)} || query.get('token') || '';
+      const tokenHash = query.get('token_hash') || '';
+      const verifyType = query.get('type') || 'signup';
+      const hashAccessToken = hash.get('access_token') || '';
+      const urlError = query.get('error_description') || hash.get('error_description') || '';
+
+      if (urlError) {
+        statusEl.textContent = urlError;
+        statusEl.className = 'error';
+        return;
+      }
+
+      if (mode === 'supabase') {
+        try {
+          if (hashAccessToken) {
+            localStorage.setItem('ruhverse_auth_token', hashAccessToken);
+            statusEl.textContent = 'Email verified successfully. Redirecting to home...';
+            setTimeout(() => { window.location.href = '/index.html?verified=1'; }, 1200);
+            return;
+          }
+
+          if (!tokenHash) {
+            if (queryToken) {
+              const res = await fetch('/api/auth/verify-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: queryToken, type: verifyType })
+              });
+              const data = await res.json().catch(() => ({}));
+              if (!res.ok) throw new Error(data.error || 'Could not verify email.');
+              if (data.token) {
+                localStorage.setItem('ruhverse_auth_token', data.token);
+              }
+              statusEl.textContent = 'Email verified successfully. Redirecting to home...';
+              setTimeout(() => { window.location.href = '/index.html?verified=1'; }, 1200);
+              return;
+            }
+            statusEl.textContent = 'Email confirmed. You can now login on RuhVerse.';
+            setTimeout(() => { window.location.href = '/index.html?auth=login&verified=1'; }, 1600);
+            return;
+          }
+
+          const res = await fetch('/api/auth/verify-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tokenHash, type: verifyType })
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.error || 'Could not verify email.');
+
+          if (data.token) {
+            localStorage.setItem('ruhverse_auth_token', data.token);
+          }
+          statusEl.textContent = 'Email verified successfully. Redirecting to home...';
+          setTimeout(() => { window.location.href = '/index.html?verified=1'; }, 1200);
+          return;
+        } catch (err) {
+          statusEl.textContent = err.message || 'Verification failed.';
+          statusEl.className = 'error';
+          return;
+        }
+      }
+
+      if (!queryToken) {
+        statusEl.textContent = 'Verification token is missing.';
+        statusEl.className = 'error';
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/auth/verify-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: queryToken })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'Could not verify email.');
+
+        if (data.token) {
+          localStorage.setItem('ruhverse_auth_token', data.token);
+        }
+
+        statusEl.textContent = 'Email verified successfully. Redirecting to home...';
+        setTimeout(() => { window.location.href = '/index.html?verified=1'; }, 1200);
+      } catch (err) {
+        statusEl.textContent = err.message || 'Verification failed.';
+        statusEl.className = 'error';
+      }
+    })();
+  </script>
+</body>
+</html>`);
+});
+
+app.get('/api/bookmarks', requireAuth, async (req, res) => {
+  if (SUPABASE_ENABLED) {
+    try {
+      const userId = encodeURIComponent(req.authUser.id);
+      const { payload } = await supabaseRestRequest(
+        `/bookmarks?select=surah_number,ayah_number,note,created_at&user_id=eq.${userId}&order=created_at.desc`,
+        { token: req.authToken }
+      );
+      const bookmarks = Array.isArray(payload) ? payload.map(mapSupabaseBookmarkRow) : [];
+      res.json({ bookmarks });
+      return;
+    } catch (err) {
+      res.status(err?.status || 500).json({ error: String(err?.message || 'Failed to load bookmarks.') });
+      return;
+    }
+  }
+
+  const bookmarks = Array.isArray(req.authUser.bookmarks) ? req.authUser.bookmarks : [];
+  const sorted = bookmarks
+    .slice()
+    .sort((a, b) => String(b.createdAt || b.updatedAt || '').localeCompare(String(a.createdAt || a.updatedAt || '')));
+
+  res.json({ bookmarks: sorted });
+});
+
+app.post('/api/bookmarks', requireAuth, async (req, res) => {
+  const normalized = normalizeBookmarkInput(req.body);
+  if (!normalized) {
+    res.status(400).json({ error: 'Provide valid surahNumber and ayahNumber.' });
+    return;
+  }
+
+  if (SUPABASE_ENABLED) {
+    try {
+      const { payload } = await supabaseRestRequest('/bookmarks?on_conflict=user_id,surah_number,ayah_number', {
+        method: 'POST',
+        token: req.authToken,
+        headers: { Prefer: 'resolution=merge-duplicates,return=representation' },
+        body: [{
+          user_id: req.authUser.id,
+          surah_number: normalized.surahNumber,
+          ayah_number: normalized.ayahNumber,
+          note: normalized.note || null
+        }]
+      });
+
+      const row = Array.isArray(payload) ? payload[0] : null;
+      res.status(201).json({
+        bookmark: row ? mapSupabaseBookmarkRow(row) : {
+          ...normalized,
+          createdAt: new Date().toISOString()
+        }
+      });
+      return;
+    } catch (err) {
+      res.status(err?.status || 500).json({ error: String(err?.message || 'Could not save bookmark.') });
+      return;
+    }
+  }
+
+  const db = req.authDb;
+  const user = req.authUser;
+  if (!Array.isArray(user.bookmarks)) user.bookmarks = [];
+
+  const nowIso = new Date().toISOString();
+  const existingIdx = user.bookmarks.findIndex(
+    (x) => x.surahNumber === normalized.surahNumber && x.ayahNumber === normalized.ayahNumber
+  );
+
+  if (existingIdx >= 0) {
+    user.bookmarks[existingIdx] = {
+      ...user.bookmarks[existingIdx],
+      ...normalized
+    };
+  } else {
+    user.bookmarks.push({
+      ...normalized,
+      createdAt: nowIso
+    });
+  }
+
+  writeAuthDb(db);
+  const bookmark = user.bookmarks.find(
+    (x) => x.surahNumber === normalized.surahNumber && x.ayahNumber === normalized.ayahNumber
+  );
+  res.status(201).json({ bookmark });
+});
+
+app.delete('/api/bookmarks/:surahNumber/:ayahNumber', requireAuth, async (req, res) => {
+  const surahNumber = Number(req.params.surahNumber);
+  const ayahNumber = Number(req.params.ayahNumber);
+  if (!Number.isInteger(surahNumber) || !Number.isInteger(ayahNumber)) {
+    res.status(400).json({ error: 'Invalid bookmark key.' });
+    return;
+  }
+
+  if (SUPABASE_ENABLED) {
+    try {
+      const userId = encodeURIComponent(req.authUser.id);
+      await supabaseRestRequest(
+        `/bookmarks?user_id=eq.${userId}&surah_number=eq.${surahNumber}&ayah_number=eq.${ayahNumber}`,
+        {
+          method: 'DELETE',
+          token: req.authToken
+        }
+      );
+      res.status(204).end();
+      return;
+    } catch (err) {
+      res.status(err?.status || 500).json({ error: String(err?.message || 'Could not delete bookmark.') });
+      return;
+    }
+  }
+
+  const db = req.authDb;
+  const user = req.authUser;
+  if (!Array.isArray(user.bookmarks)) user.bookmarks = [];
+  const before = user.bookmarks.length;
+  user.bookmarks = user.bookmarks.filter(
+    (x) => !(x.surahNumber === surahNumber && x.ayahNumber === ayahNumber)
+  );
+
+  if (user.bookmarks.length !== before) {
+    writeAuthDb(db);
+  }
+
+  res.status(204).end();
+});
+
+app.get('/api/user-progress', requireAuth, async (req, res) => {
+  if (SUPABASE_ENABLED) {
+    try {
+      const userId = encodeURIComponent(req.authUser.id);
+      const { payload } = await supabaseRestRequest(
+        `/user_progress?select=last_surah,last_ayah,updated_at&user_id=eq.${userId}&limit=1`,
+        { token: req.authToken }
+      );
+      const row = Array.isArray(payload) ? payload[0] : null;
+      const progress = row
+        ? mapSupabaseProgressRow(row)
+        : {
+          lastSurah: 1,
+          lastAyah: 1,
+          updatedAt: req.authUser?.createdAt || new Date().toISOString()
+        };
+      res.json({ progress });
+      return;
+    } catch (err) {
+      res.status(err?.status || 500).json({ error: String(err?.message || 'Failed to load reading progress.') });
+      return;
+    }
+  }
+
+  const progress = req.authUser?.userProgress || {
+    lastSurah: 1,
+    lastAyah: 1,
+    updatedAt: req.authUser?.createdAt || new Date().toISOString()
+  };
+  res.json({ progress });
+});
+
+app.post('/api/user-progress', requireAuth, async (req, res) => {
+  const lastSurah = Number(req.body?.lastSurah);
+  const lastAyah = Number(req.body?.lastAyah);
+  if (!Number.isInteger(lastSurah) || lastSurah < 1 || lastSurah > 114) {
+    res.status(400).json({ error: 'Provide a valid lastSurah (1-114).' });
+    return;
+  }
+  if (!Number.isInteger(lastAyah) || lastAyah < 1 || lastAyah > 286) {
+    res.status(400).json({ error: 'Provide a valid lastAyah (1-286).' });
+    return;
+  }
+
+  if (SUPABASE_ENABLED) {
+    try {
+      const { payload } = await supabaseRestRequest('/user_progress?on_conflict=user_id', {
+        method: 'POST',
+        token: req.authToken,
+        headers: { Prefer: 'resolution=merge-duplicates,return=representation' },
+        body: [{
+          user_id: req.authUser.id,
+          last_surah: lastSurah,
+          last_ayah: lastAyah,
+          updated_at: new Date().toISOString()
+        }]
+      });
+      const row = Array.isArray(payload) ? payload[0] : null;
+      res.status(201).json({
+        progress: row
+          ? mapSupabaseProgressRow(row)
+          : { lastSurah, lastAyah, updatedAt: new Date().toISOString() }
+      });
+      return;
+    } catch (err) {
+      res.status(err?.status || 500).json({ error: String(err?.message || 'Could not save reading progress.') });
+      return;
+    }
+  }
+
+  const db = req.authDb;
+  const user = req.authUser;
+  user.userProgress = {
+    lastSurah,
+    lastAyah,
+    updatedAt: new Date().toISOString()
+  };
+  writeAuthDb(db);
+  res.status(201).json({ progress: user.userProgress });
 });
 
 function getSitemapLastMod() {
@@ -1146,9 +2560,11 @@ app.get('/sitemap-core.xml', async (req, res) => {
   try {
     const urls = await getCoreSitemapUrls();
     res.set('Content-Type', 'application/xml; charset=utf-8');
+    res.set('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
     res.send(buildSitemapUrlset(urls, getLatestSitemapLastMod(urls, fallbackLastmod)));
   } catch (_) {
     res.set('Content-Type', 'application/xml; charset=utf-8');
+    res.set('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
     const fallbackUrls = getStaticSitemapUrls();
     res.send(buildSitemapUrlset(fallbackUrls, getLatestSitemapLastMod(fallbackUrls, fallbackLastmod)));
   }
@@ -1157,6 +2573,7 @@ app.get('/sitemap-core.xml', async (req, res) => {
 app.get('/sitemap-blogs.xml', (req, res) => {
   const urls = getBlogSitemapUrls();
   res.set('Content-Type', 'application/xml; charset=utf-8');
+  res.set('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
   res.send(buildSitemapUrlset(urls, getLatestSitemapLastMod(urls)));
 });
 
@@ -1169,11 +2586,13 @@ app.get('/sitemap-cities-:chunk(\\d+).xml', (req, res) => {
 
   if (!chunkUrls.length) {
     res.status(404).set('Content-Type', 'application/xml; charset=utf-8');
+    res.set('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
     res.send(buildSitemapUrlset([], fallbackLastmod));
     return;
   }
 
   res.set('Content-Type', 'application/xml; charset=utf-8');
+  res.set('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
   res.send(buildSitemapUrlset(chunkUrls, getLatestSitemapLastMod(chunkUrls, fallbackLastmod)));
 });
 
@@ -1206,6 +2625,7 @@ app.get('/sitemap.xml', (req, res) => {
   }
 
   res.set('Content-Type', 'application/xml; charset=utf-8');
+  res.set('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
   res.send(buildSitemapIndex(entries, getLatestSitemapLastMod(entries, fallbackLastmod)));
 });
 
@@ -1320,7 +2740,7 @@ app.get('/quran/:surahSlug/:surahNumber(\\d+)', async (req, res) => {
   }
 });
 
-// ─── City Prayer Times SSR ─────────────────────────────────────────────────
+// -- City Prayer Times SSR -------------------------------------------------
 
 function getTodayIstIsoDate() {
   return new Intl.DateTimeFormat('en-CA', { timeZone: IST_TIME_ZONE }).format(new Date());
@@ -1470,7 +2890,7 @@ function renderPrayerCardsHtml(timings) {
 }
 
 function renderCityFactsHtml(facts) {
-  const icons = ['🕌', '📜', '🍽️', '🌙', '✨'];
+  const icons = ['Prayer', 'Heritage', 'Ramadan', 'Moon', 'Insight'];
   return (facts || []).map((fact, i) => `
     <div class="city-fact-card">
       <span class="city-fact-icon">${icons[i % icons.length]}</span>
@@ -1537,7 +2957,7 @@ function renderRamadanNoteHtml(note) {
   if (!note) return '';
   return `
     <div class="ramadan-note-banner">
-      <span class="ramadan-icon">🌙</span>
+      <span class="ramadan-icon">Ramadan</span>
       <div>
         <h4>Ramadan in This City</h4>
         <p>${escapeHtml(note)}</p>
@@ -1653,14 +3073,14 @@ function renderCityPage(template, cityProfile, prayerData, ramadanCalendar) {
   const pageKeywords = Array.from(keywordSet).join(', ');
 
   const heroTitle = `Namaz Times in ${cityProfile.name}`;
-  const heroSubtitle = `Official Salah schedule for ${cityProfile.name}, ${regionName}. Timings for Fajr, Zohr, Asr, Magrib, and Isha calculated using the University of Islamic Sciences (Karachi) method at coordinates ${cityProfile.latitude}° N, ${cityProfile.longitude}° E.`;
+  const heroSubtitle = `Official Salah schedule for ${cityProfile.name}, ${regionName}. Timings for Fajr, Zohr, Asr, Magrib, and Isha calculated using the University of Islamic Sciences (Karachi) method at coordinates ${cityProfile.latitude} deg N, ${cityProfile.longitude} deg E.`;
   const locationLabel = `${cityProfile.name}, ${regionName} (${cityProfile.timezone || IST_TIME_ZONE})`;
   const insightsHeading = `Islam & the Muslim Community in ${cityProfile.name}`;
 
   const chipsHtml = [
-    `<span class="city-meta-chip">📍 ${escapeHtml(regionName)}</span>`,
-    `<span class="city-meta-chip">🕌 ${escapeHtml(cityProfile.muslimPopulation || '')} Muslims</span>`,
-    `<span class="city-meta-chip">📅 ${escapeHtml(date)}</span>`
+    `<span class="city-meta-chip">Region: ${escapeHtml(regionName)}</span>`,
+    `<span class="city-meta-chip">Community: ${escapeHtml(cityProfile.muslimPopulation || '')} Muslims</span>`,
+    `<span class="city-meta-chip">Date: ${escapeHtml(date)}</span>`
   ].join('');
 
   const insightsHtml = `
@@ -1697,6 +3117,7 @@ window.__SSR_CITY = ${JSON.stringify({
     .replace('<!--SSR_OG_DESCRIPTION-->Accurate daily Namaz timings on RuhVerse.', escapeHtml(pageDescription))
     .replace('<!--SSR_OG_URL-->https://ruhverse.online/namaz-times', escapeHtml(canonical))
     .replace('<!--SSR_OG_IMAGE-->https://ruhverse.online/assets/Gemini_Generated_Image_1z0kzx1z0kzx1z0k.jpg', escapeHtml(ogImage))
+    .replace('<!--SSR_TWITTER_URL-->https://ruhverse.online/namaz-times', escapeHtml(canonical))
     .replace('<!--SSR_TWITTER_TITLE-->Namaz Times - RuhVerse', escapeHtml(pageTitle))
     .replace('<!--SSR_TWITTER_DESCRIPTION-->Accurate daily Namaz timings on RuhVerse.', escapeHtml(pageDescription))
     .replace('<!--SSR_TWITTER_IMAGE-->https://ruhverse.online/assets/Gemini_Generated_Image_1z0kzx1z0kzx1z0k.jpg', escapeHtml(ogImage))
@@ -1765,7 +3186,7 @@ app.get('/namaz-times/:citySlug', async (req, res) => {
   await serveCityPage(req, res, cityProfile);
 });
 
-// ─── Static files should be served after SSR routes ──────────────────────────
+// -- Static files should be served after SSR routes ------------------------
 app.use(express.static(path.join(__dirname), {
   etag: true,
   lastModified: true,
@@ -1776,7 +3197,12 @@ app.use(express.static(path.join(__dirname), {
       return;
     }
 
-    if (/\.(css|js|mjs|jpg|jpeg|png|webp|svg|ico|woff2?|ttf|otf)$/i.test(filePath)) {
+    if (/\.(css|js|mjs)$/i.test(filePath)) {
+      res.setHeader('Cache-Control', 'public, max-age=300, must-revalidate');
+      return;
+    }
+
+    if (/\.(jpg|jpeg|png|webp|svg|ico|woff2?|ttf|otf)$/i.test(filePath)) {
       res.setHeader('Cache-Control', 'public, max-age=604800, stale-while-revalidate=86400');
     }
   }

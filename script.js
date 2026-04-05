@@ -13,6 +13,7 @@ function initApp() {
         // Home page logic
         try {
             setupNavigation();
+            setupHomeAuth();
             setupTimers();
             loadRamadanCalendar();
             loadDailyInsights();
@@ -698,6 +699,12 @@ async function loadSurah(index, keepAudio = false, forceReload = false) {
     // But allow forced reload during auto-play transitions
     if (!forceReload && currentSurahIndex === index && document.querySelector('.verse-block .ayah-arabic')) {
         highlightSurahInList(index);
+        document.dispatchEvent(new CustomEvent('ruhverse:surah-rendered', {
+            detail: {
+                surahNumber: quranArabic[index]?.number || (index + 1),
+                surahName: quranArabic[index]?.englishName || ''
+            }
+        }));
         return;
     }
 
@@ -802,12 +809,20 @@ async function loadSurah(index, keepAudio = false, forceReload = false) {
     else container.classList.remove('show-translation');
 
     updatePaginationUI();
+    document.dispatchEvent(new CustomEvent('ruhverse:surah-rendered', {
+        detail: {
+            surahNumber: surahAr.number,
+            surahName: surahAr.englishName
+        }
+    }));
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     // Close sidebar on mobile
     const sidebar = document.getElementById('sidebar');
     if (window.innerWidth <= 768 && sidebar) sidebar.classList.remove('active');
 }
+
+window.loadSurah = loadSurah;
 
 function updateQuranUrl(index) {
     if (!window.history || !window.history.replaceState) return;
@@ -875,8 +890,305 @@ function setupNavigation() {
     const hamburger = document.getElementById('hamburger-btn');
     const overlay = document.getElementById('nav-overlay');
     const closeBtn = document.getElementById('close-nav');
-    if (hamburger) hamburger.addEventListener('click', () => overlay.classList.toggle('active'));
-    if (closeBtn) closeBtn.addEventListener('click', () => overlay.classList.remove('active'));
+    if (hamburger && overlay) {
+        hamburger.addEventListener('click', () => overlay.classList.toggle('active'));
+    }
+    if (closeBtn && overlay) {
+        closeBtn.addEventListener('click', () => overlay.classList.remove('active'));
+    }
+    if (overlay) {
+        overlay.querySelectorAll('a, button').forEach((el) => {
+            el.addEventListener('click', () => overlay.classList.remove('active'));
+        });
+    }
+}
+
+function setupHomeAuth() {
+    const modal = document.getElementById('home-auth-modal');
+    if (!modal) return;
+
+    const tokenKey = 'ruhverse_auth_token';
+    const openers = Array.from(document.querySelectorAll('[data-auth-open]'));
+    const closeBtn = document.getElementById('home-auth-close');
+    const titleEl = document.getElementById('home-auth-title');
+    const hintEl = document.getElementById('home-auth-hint');
+    const form = document.getElementById('home-auth-form');
+    const usernameInput = document.getElementById('home-auth-username');
+    const emailInput = document.getElementById('home-auth-email');
+    const passwordInput = document.getElementById('home-auth-password');
+    const submitBtn = document.getElementById('home-auth-submit');
+    const switchBtn = document.getElementById('home-auth-switch-btn');
+    const switchHint = document.getElementById('home-auth-switch-hint');
+    const errorEl = document.getElementById('home-auth-error');
+    const toast = document.getElementById('home-auth-toast');
+
+    const state = {
+        mode: 'login',
+        toastTimer: 0
+    };
+
+    function setError(message) {
+        if (errorEl) errorEl.textContent = String(message || '');
+    }
+
+    function showToast(message, isError = false) {
+        if (!toast) return;
+        toast.textContent = String(message || '');
+        toast.classList.toggle('error', isError);
+        toast.classList.add('show');
+        window.clearTimeout(state.toastTimer);
+        state.toastTimer = window.setTimeout(() => {
+            toast.classList.remove('show');
+        }, 2200);
+    }
+
+    function setMode(nextMode) {
+        state.mode = nextMode === 'register' ? 'register' : 'login';
+        const isRegister = state.mode === 'register';
+        if (usernameInput) {
+            usernameInput.hidden = !isRegister;
+            usernameInput.required = isRegister;
+            usernameInput.disabled = !isRegister;
+            if (!isRegister) usernameInput.value = '';
+        }
+        if (isRegister) {
+            if (titleEl) titleEl.textContent = 'Create Your RuhVerse Account';
+            if (hintEl) hintEl.textContent = 'Register once to save Quran bookmarks. You must verify your email before login.';
+            if (submitBtn) submitBtn.textContent = 'Create Account';
+            if (switchHint) switchHint.textContent = 'Already have an account?';
+            if (switchBtn) switchBtn.textContent = 'Login';
+        } else {
+            if (titleEl) titleEl.textContent = 'Login to Continue Your Journey';
+            if (hintEl) hintEl.textContent = 'Sign in to sync your Quran bookmarks and reading progress.';
+            if (submitBtn) submitBtn.textContent = 'Login';
+            if (switchHint) switchHint.textContent = 'Do not have an account?';
+            if (switchBtn) switchBtn.textContent = 'Create one';
+        }
+        setError('');
+    }
+
+    function openModal(mode = 'login') {
+        setMode(mode);
+        modal.style.display = 'flex';
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('modal-open');
+        window.setTimeout(() => {
+            if (emailInput) emailInput.focus();
+        }, 20);
+    }
+
+    function closeModal() {
+        modal.style.display = 'none';
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('modal-open');
+        if (form) form.reset();
+        setError('');
+    }
+
+    function setSubmitBusy(isBusy) {
+        if (!submitBtn) return;
+        submitBtn.disabled = Boolean(isBusy);
+    }
+
+    async function authRequest(path, payload, token) {
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers.Authorization = `Bearer ${token}`;
+        const response = await fetch(path, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(payload || {})
+        });
+        const data = await response.json().catch(() => null);
+        if (!response.ok) {
+            throw new Error(data?.error || `Request failed (${response.status})`);
+        }
+        return data;
+    }
+
+    async function meRequest(token) {
+        const response = await fetch('/api/auth/me', {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await response.json().catch(() => null);
+        if (!response.ok) {
+            throw new Error(data?.error || `Request failed (${response.status})`);
+        }
+        return data;
+    }
+
+    function truncateName(value, max = 16) {
+        const clean = String(value || '').trim();
+        if (!clean) return '';
+        return clean.length > max ? `${clean.slice(0, max)}...` : clean;
+    }
+
+    function resolveDisplayName(user) {
+        const explicit = String(user?.username || '').trim();
+        if (explicit) return explicit;
+        const email = String(user?.email || '').trim();
+        return String(email.split('@')[0] || '').trim();
+    }
+
+    function setLoginButtonState(user) {
+        const isLoggedIn = Boolean(user && (user.username || user.email));
+        const displayName = truncateName(resolveDisplayName(user));
+        openers.forEach((btn) => {
+            const sub = btn.querySelector('.premium-login-sub');
+            const main = btn.querySelector('.premium-login-main');
+            if (isLoggedIn) {
+                btn.classList.add('is-logged-in');
+                if (sub) sub.textContent = 'Signed In';
+                if (main) main.textContent = displayName || 'Account';
+                btn.setAttribute('aria-label', `Account logged in as ${displayName || 'member'}`);
+            } else {
+                btn.classList.remove('is-logged-in');
+                if (sub) sub.textContent = btn.classList.contains('nav-login-mobile') ? 'Member Access' : 'RuhVerse';
+                if (main) main.textContent = 'Login';
+                btn.setAttribute('aria-label', 'Open login');
+            }
+        });
+    }
+
+    async function bootstrapSession() {
+        const token = localStorage.getItem(tokenKey);
+        if (!token) {
+            setLoginButtonState(null);
+            return;
+        }
+        try {
+            const me = await meRequest(token);
+            setLoginButtonState(me?.user || null);
+        } catch (_) {
+            localStorage.removeItem(tokenKey);
+            setLoginButtonState(null);
+        }
+    }
+
+    openers.forEach((btn) => {
+        btn.addEventListener('click', (event) => {
+            event.preventDefault();
+            openModal('login');
+        });
+    });
+
+    if (switchBtn) {
+        switchBtn.addEventListener('click', () => {
+            setMode(state.mode === 'login' ? 'register' : 'login');
+        });
+    }
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeModal);
+    }
+
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) closeModal();
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && modal.style.display === 'flex') {
+            closeModal();
+        }
+    });
+
+    if (form) {
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            setError('');
+            const email = String(emailInput?.value || '').trim();
+            const password = String(passwordInput?.value || '');
+            const username = String(usernameInput?.value || '').trim();
+
+            if (!email || !password) {
+                setError('Email and password are required.');
+                return;
+            }
+            if (state.mode === 'register' && username.length < 2) {
+                setError('Username must be at least 2 characters.');
+                return;
+            }
+
+            setSubmitBusy(true);
+            try {
+                const route = state.mode === 'register' ? '/api/auth/register' : '/api/auth/login';
+                const payload = state.mode === 'register'
+                    ? { username, email, password }
+                    : { email, password };
+                const result = await authRequest(route, payload);
+
+                if (state.mode === 'register') {
+                    if (result?.requiresEmailVerification) {
+                        closeModal();
+                        showToast(result?.message || 'Email verification sent. Please check your email.');
+                        return;
+                    }
+                    if (result?.token) {
+                        localStorage.setItem(tokenKey, result.token);
+                        setLoginButtonState(result?.user || { username, email });
+                        closeModal();
+                        showToast(result?.message || 'Account created and login successful.');
+                        return;
+                    }
+                    closeModal();
+                    showToast(result?.message || 'Email verification sent. Please check your email.');
+                    return;
+                }
+
+                if (!result?.token) {
+                    throw new Error('Login succeeded but no session token was returned.');
+                }
+
+                localStorage.setItem(tokenKey, result.token);
+                setLoginButtonState(result?.user || { username, email });
+                closeModal();
+                showToast('Login successful.');
+            } catch (error) {
+                let message = error?.message || 'Authentication failed.';
+                if (/sending confirmation|confirmation email|smtp/i.test(message)) {
+                    message = 'Account created, but verification email could not be delivered yet. Please try again in a minute.';
+                }
+                if (state.mode === 'register' && /could not create account|create account right now/i.test(message) && email) {
+                    try {
+                        const resend = await authRequest('/api/auth/resend-verification', { email });
+                        closeModal();
+                        showToast(resend?.message || 'Email verification sent. Please check your email.');
+                        return;
+                    } catch (_) {
+                        closeModal();
+                        showToast('Email verification may already be sent. Please check your inbox and spam folder.');
+                        return;
+                    }
+                }
+                let helper = '';
+                if (
+                    state.mode === 'login' &&
+                    /verify your email|email not confirmed|email confirmation/i.test(message) &&
+                    email
+                ) {
+                    authRequest('/api/auth/resend-verification', { email }).catch(() => null);
+                    helper = ' We sent a fresh verification email.';
+                }
+                const finalMessage = `${message}${helper}`;
+                setError(finalMessage);
+                showToast(finalMessage, true);
+            } finally {
+                setSubmitBusy(false);
+            }
+        });
+    }
+
+    bootstrapSession().catch(() => {
+        setLoginButtonState(null);
+    });
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('verified') === '1') {
+        showToast('Email verified. You can now log in.');
+        params.delete('verified');
+        const query = params.toString();
+        const cleanUrl = `${window.location.pathname}${query ? `?${query}` : ''}${window.location.hash || ''}`;
+        window.history.replaceState({}, '', cleanUrl);
+    }
 }
 
 function setupTimers() {

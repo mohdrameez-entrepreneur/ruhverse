@@ -14,6 +14,7 @@
         content="find inner peace islam, read quran online, spiritual healing quran, accurate namaz times, exact qibla finder, muslim faith renewal, daily islamic inspiration, ruhverse">
     <meta name="author" content="Mohd Rameez">
     <meta name="robots" content="index, follow, max-image-preview:large">
+    <meta name="theme-color" content="#1a4d2e">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
@@ -72,9 +73,67 @@
       ]
     }
     </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How can I read Quran online on RuhVerse?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Open the Quran section on RuhVerse to read the Holy Quran with English translation in a calm, distraction-free interface."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How accurate are the prayer times on RuhVerse?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "RuhVerse prayer times are location-based and update with city-level calculations so Muslims can follow daily Namaz timings with confidence."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I find Qibla direction from any country?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. RuhVerse Qibla Finder uses live geolocation and compass direction to help you locate the direction of Makkah from anywhere in the world."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does RuhVerse include Ramadan reminders and countdown?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "RuhVerse includes a Ramadan countdown and related guidance so you can prepare for fasting, prayer routines, and key Islamic dates."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What are Daily Insights on RuhVerse?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Daily Insights are short reflections and beneficial Islamic facts refreshed regularly to support faith, consistency, and mindful worship."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why create a login on RuhVerse?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Logging in helps you sync Quran bookmarks and reading progress so your spiritual journey continues seamlessly across sessions."
+          }
+        }
+      ]
+    }
+    </script>
 
     <link rel="icon" type="image/jpg" href="assets/Gemini_Generated_Image_1z0kzx1z0kzx1z0k.jpg">
     <link rel="canonical" href="https://ruhverse.online/" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;500&family=Playfair+Display:wght@400;600;700&display=swap"
         rel="stylesheet">
@@ -103,7 +162,11 @@
             <li><a href="/blog">Blog</a></li>
         </ul>
 
-        <div style="display: flex; gap: 1rem; align-items: center;">
+        <div class="nav-actions">
+            <button type="button" class="premium-login-btn nav-login-desktop" data-auth-open="login" aria-controls="home-auth-modal" aria-label="Open login">
+                <span class="premium-login-sub">RuhVerse</span>
+                <span class="premium-login-main">Login</span>
+            </button>
             <span class="moon-icon" id="night-mode-toggle">&#9790;</span> <!-- Simple representation -->
             <div class="hamburger" id="hamburger-btn">
                 <span></span><span></span><span></span>
@@ -121,6 +184,12 @@
             <li><a href="#ramadan">Ramadan Hub</a></li>
             <li><a href="#insights">Daily Insights</a></li>
             <li><a href="/blog">Blog</a></li>
+            <li class="nav-mobile-login">
+                <button type="button" class="premium-login-btn nav-login-mobile" data-auth-open="login" aria-controls="home-auth-modal" aria-label="Open login">
+                    <span class="premium-login-sub">Member Access</span>
+                    <span class="premium-login-main">Login</span>
+                </button>
+            </li>
         </ul>
     </div>
 
@@ -396,6 +465,65 @@
             <div class="slider-nav" id="slider-nav"></div>
         </div>
     </section>
+
+    <section id="faq" class="faq-section">
+        <div class="container">
+            <div class="faq-shell">
+                <div class="faq-header">
+                    <p class="faq-overline">RuhVerse Guidance</p>
+                    <h2 class="section-title">Faith Questions, Clear Answers</h2>
+                    <p class="faq-subtitle">Everything essential about Quran reading, prayer times, Qibla direction, Ramadan preparation, and daily spiritual consistency on RuhVerse.</p>
+                </div>
+                <div class="faq-grid">
+                    <details class="faq-item" open>
+                        <summary>How can I read Quran online with translation on RuhVerse?</summary>
+                        <p>Open the Quran section to read Surahs with clear English translation in a calm, distraction-free layout designed for daily reflection and understanding.</p>
+                    </details>
+                    <details class="faq-item">
+                        <summary>Are RuhVerse prayer times accurate for my city?</summary>
+                        <p>Yes. RuhVerse can detect your location or let you search a city to show daily Namaz timings and the next Salah countdown for better routine and punctuality.</p>
+                    </details>
+                    <details class="faq-item">
+                        <summary>How does the RuhVerse Qibla Finder work?</summary>
+                        <p>The Qibla Finder uses your location and compass orientation to guide you toward Makkah with a fast, mobile-friendly direction experience.</p>
+                    </details>
+                    <details class="faq-item">
+                        <summary>Does RuhVerse provide Ramadan support?</summary>
+                        <p>RuhVerse includes Ramadan countdown support and related reminders so you can prepare your worship rhythm and fasting schedule in advance.</p>
+                    </details>
+                    <details class="faq-item">
+                        <summary>What is included in Daily Insights?</summary>
+                        <p>Daily Insights offers short Islamic reflections and meaningful reminders that refresh regularly to help keep your iman focused and consistent.</p>
+                    </details>
+                    <details class="faq-item">
+                        <summary>Why should I log in to RuhVerse?</summary>
+                        <p>Logging in allows you to sync Quran bookmarks and reading progress, so your learning journey remains connected each time you return.</p>
+                    </details>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="modal home-auth-modal" id="home-auth-modal" aria-hidden="true">
+        <div class="modal-content home-auth-content">
+            <button type="button" class="home-auth-close" id="home-auth-close" aria-label="Close login dialog">&times;</button>
+            <p class="home-auth-tag">RuhVerse Member Access</p>
+            <h3 id="home-auth-title">Login to Continue Your Journey</h3>
+            <p id="home-auth-hint" class="home-auth-hint">Sign in to sync your Quran bookmarks and reading progress.</p>
+            <form id="home-auth-form" class="home-auth-form" autocomplete="on">
+                <input id="home-auth-username" class="home-auth-input" type="text" placeholder="Choose a username" minlength="2" maxlength="40" hidden disabled>
+                <input id="home-auth-email" class="home-auth-input" type="email" placeholder="Enter your email" required>
+                <input id="home-auth-password" class="home-auth-input" type="password" placeholder="Enter your password" required minlength="6">
+                <button id="home-auth-submit" class="home-auth-submit" type="submit">Login</button>
+            </form>
+            <p class="home-auth-switch-row">
+                <span id="home-auth-switch-hint">Do not have an account?</span>
+                <button id="home-auth-switch-btn" class="home-auth-switch-btn" type="button">Create one</button>
+            </p>
+            <p id="home-auth-error" class="home-auth-error" role="alert" aria-live="polite"></p>
+        </div>
+    </div>
+    <div id="home-auth-toast" class="auth-toast"></div>
 
     <!-- Footer Section -->
     <footer class="site-footer">
