@@ -58,6 +58,8 @@ const SUPABASE_ENABLED = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 const SUPABASE_ADMIN_ENABLED = Boolean(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY);
 
 const SUPABASE_HTTP_TIMEOUT_MS = Math.max(3000, Number(process.env.SUPABASE_HTTP_TIMEOUT_MS) || 15000);
+const IS_HOSTED_RUNTIME = Boolean(process.env.VERCEL || process.env.AWS_REGION);
+const FILE_AUTH_DISABLED = Boolean(IS_HOSTED_RUNTIME && !SUPABASE_ENABLED);
 const BISMILLAH = 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ';
 
 let quranCache = null;
@@ -92,6 +94,9 @@ if (SUPABASE_ENABLED) {
   }
 } else {
   console.warn('[Auth] Supabase env vars missing. Falling back to local auth_db.json mode.');
+}
+if (FILE_AUTH_DISABLED) {
+  console.error('[Auth] Hosted runtime detected without Supabase env. File-based auth is disabled.');
 }
 
 try {
@@ -183,6 +188,14 @@ function writeAuthDb(db) {
   ensureAuthDbFile();
   const safeDb = db && Array.isArray(db.users) ? db : { users: [] };
   fs.writeFileSync(AUTH_DB_PATH, JSON.stringify(safeDb, null, 2), 'utf8');
+}
+
+function rejectUnconfiguredHostedAuth(res) {
+  if (!FILE_AUTH_DISABLED) return false;
+  res.status(503).json({
+    error: 'Authentication is not configured on this deployment. Please set SUPABASE_URL, SUPABASE_ANON_KEY, and SUPABASE_SERVICE_ROLE_KEY in hosting environment variables, then redeploy.'
+  });
+  return true;
 }
 
 function base64UrlEncode(value) {
@@ -1546,6 +1559,8 @@ app.get('/api/cities', (req, res) => {
 });
 
 app.post('/api/auth/register', async (req, res) => {
+  if (rejectUnconfiguredHostedAuth(res)) return;
+
   const username = normalizeUsername(req.body?.username);
   const fullName = normalizeFullName(req.body?.fullName || username);
   const email = normalizeEmail(req.body?.email);
@@ -1822,6 +1837,8 @@ app.post('/api/auth/register', async (req, res) => {
 });
 
 app.post('/api/auth/verify-email', async (req, res) => {
+  if (rejectUnconfiguredHostedAuth(res)) return;
+
   if (SUPABASE_ENABLED) {
     const tokenHash = normalizeWhitespace(req.body?.tokenHash || req.body?.token_hash || '');
     const token = normalizeWhitespace(req.body?.token || '');
@@ -1890,6 +1907,8 @@ app.post('/api/auth/verify-email', async (req, res) => {
 });
 
 app.post('/api/auth/resend-verification', async (req, res) => {
+  if (rejectUnconfiguredHostedAuth(res)) return;
+
   const email = normalizeEmail(req.body?.email);
   if (!email) {
     res.status(400).json({ error: 'Email is required.' });
@@ -1946,6 +1965,8 @@ app.post('/api/auth/resend-verification', async (req, res) => {
 });
 
 app.post('/api/auth/login', async (req, res) => {
+  if (rejectUnconfiguredHostedAuth(res)) return;
+
   const email = normalizeEmail(req.body?.email);
   const password = String(req.body?.password || '');
 
@@ -2051,6 +2072,8 @@ app.post('/api/auth/logout', (req, res) => {
 app.get('/api/auth/status', (req, res) => {
   res.json({
     mode: SUPABASE_ENABLED ? 'supabase' : 'local',
+    hostedRuntime: IS_HOSTED_RUNTIME,
+    fileAuthDisabled: FILE_AUTH_DISABLED,
     supabaseConfigured: Boolean(SUPABASE_URL && SUPABASE_ANON_KEY),
     supabaseAdminConfigured: Boolean(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY),
     emailProviderConfigured: Boolean(String(process.env.RESEND_API_KEY || '').trim()),
