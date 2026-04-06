@@ -155,6 +155,33 @@ function normalizeWhitespace(value) {
   return String(value || '').replace(/\s+/g, ' ').trim();
 }
 
+function getAuthPublicBaseUrl(req) {
+  const configured = String(PUBLIC_BASE_URL || '').trim().replace(/\/+$/, '');
+  const configuredLooksLocal =
+    /:\/\/localhost(?::\d+)?$/i.test(configured) ||
+    /:\/\/127\.0\.0\.1(?::\d+)?$/i.test(configured);
+  if (configured && !configuredLooksLocal) {
+    return configured;
+  }
+
+  const forwardedProto = String(req?.headers?.['x-forwarded-proto'] || '')
+    .split(',')[0]
+    .trim()
+    .toLowerCase();
+  const forwardedHostRaw = String(req?.headers?.['x-forwarded-host'] || req?.headers?.host || '')
+    .split(',')[0]
+    .trim();
+  const safeHost = /^[a-z0-9.-]+(?::\d+)?$/i.test(forwardedHostRaw) ? forwardedHostRaw : '';
+  const proto = forwardedProto === 'http' || forwardedProto === 'https' ? forwardedProto : 'https';
+
+  if (safeHost) return `${proto}://${safeHost}`;
+  return configured || 'https://ruhverse.online';
+}
+
+function buildVerifyEmailUrl(req, rawToken) {
+  return `${getAuthPublicBaseUrl(req)}/verify-email?token=${encodeURIComponent(rawToken)}`;
+}
+
 function slugifyCityName(name) {
   const cityPart = String(name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
   return cityPart || '';
@@ -1565,6 +1592,8 @@ app.post('/api/auth/register', async (req, res) => {
   const fullName = normalizeFullName(req.body?.fullName || username);
   const email = normalizeEmail(req.body?.email);
   const password = String(req.body?.password || '');
+  const verifyRedirectUrl = `${getAuthPublicBaseUrl(req)}/verify-email`;
+  const verifyRedirectParam = encodeURIComponent(verifyRedirectUrl);
 
   if (username.length < 2 || username.length > 40) {
     res.status(400).json({ error: 'Username must be between 2 and 40 characters.' });
@@ -1583,8 +1612,6 @@ app.post('/api/auth/register', async (req, res) => {
 
   if (SUPABASE_ENABLED) {
     try {
-      const redirectToRaw = `${PUBLIC_BASE_URL}/verify-email`;
-      const redirectTo = encodeURIComponent(redirectToRaw);
       const hasResendApiKey = Boolean(String(process.env.RESEND_API_KEY || '').trim());
 
       if (SUPABASE_ADMIN_ENABLED && hasResendApiKey) {
@@ -1594,7 +1621,7 @@ app.post('/api/auth/register', async (req, res) => {
             password,
             username,
             fullName,
-            redirectTo: redirectToRaw
+            redirectTo: verifyRedirectUrl
           });
 
           const authUser = adminPayload?.user;
@@ -1636,7 +1663,7 @@ app.post('/api/auth/register', async (req, res) => {
         }
       }
 
-      const { payload } = await supabaseAuthRequest(`/signup?redirect_to=${redirectTo}`, {
+      const { payload } = await supabaseAuthRequest(`/signup?redirect_to=${verifyRedirectParam}`, {
         method: 'POST',
         body: {
           email,
@@ -1646,6 +1673,7 @@ app.post('/api/auth/register', async (req, res) => {
             full_name: fullName
           },
           options: {
+            emailRedirectTo: verifyRedirectUrl,
             data: {
               username,
               full_name: fullName
@@ -1698,11 +1726,14 @@ app.post('/api/auth/register', async (req, res) => {
 
       // Best effort resend for providers that delay first email delivery.
       if (requiresEmailVerification) {
-        await supabaseAuthRequest(`/resend?redirect_to=${redirectTo}`, {
+        await supabaseAuthRequest(`/resend?redirect_to=${verifyRedirectParam}`, {
           method: 'POST',
           body: {
             type: 'signup',
-            email
+            email,
+            options: {
+              emailRedirectTo: verifyRedirectUrl
+            }
           }
         }).catch(() => null);
       }
@@ -1718,12 +1749,14 @@ app.post('/api/auth/register', async (req, res) => {
       const isConflict = /already registered|already exists|exists/i.test(message);
       if (isConflict) {
         try {
-          const redirectTo = encodeURIComponent(`${PUBLIC_BASE_URL}/verify-email`);
-          await supabaseAuthRequest(`/resend?redirect_to=${redirectTo}`, {
+          await supabaseAuthRequest(`/resend?redirect_to=${verifyRedirectParam}`, {
             method: 'POST',
             body: {
               type: 'signup',
-              email
+              email,
+              options: {
+                emailRedirectTo: verifyRedirectUrl
+              }
             }
           });
 
@@ -1741,12 +1774,14 @@ app.post('/api/auth/register', async (req, res) => {
       // Recovery path: if signup may have completed but a follow-up step failed,
       // resend verification and return a success-style message.
       try {
-        const redirectTo = encodeURIComponent(`${PUBLIC_BASE_URL}/verify-email`);
-        await supabaseAuthRequest(`/resend?redirect_to=${redirectTo}`, {
+        await supabaseAuthRequest(`/resend?redirect_to=${verifyRedirectParam}`, {
           method: 'POST',
           body: {
             type: 'signup',
-            email
+            email,
+            options: {
+              emailRedirectTo: verifyRedirectUrl
+            }
           }
         });
         res.status(202).json({
@@ -1774,7 +1809,7 @@ app.post('/api/auth/register', async (req, res) => {
   const db = readAuthDb();
   const existing = db.users.find((u) => normalizeEmail(u.email) === email);
   const { rawToken, tokenHash, expiresAt, sentAt } = buildVerificationTokenBundle();
-  const verifyUrl = `${PUBLIC_BASE_URL}/verify-email?token=${encodeURIComponent(rawToken)}`;
+  const verifyUrl = buildVerifyEmailUrl(req, rawToken);
 
   if (existing) {
     if (isUserEmailVerified(existing)) {
@@ -1917,12 +1952,16 @@ app.post('/api/auth/resend-verification', async (req, res) => {
 
   if (SUPABASE_ENABLED) {
     try {
-      const redirectTo = encodeURIComponent(`${PUBLIC_BASE_URL}/verify-email`);
-      await supabaseAuthRequest(`/resend?redirect_to=${redirectTo}`, {
+      const verifyRedirectUrl = `${getAuthPublicBaseUrl(req)}/verify-email`;
+      const verifyRedirectParam = encodeURIComponent(verifyRedirectUrl);
+      await supabaseAuthRequest(`/resend?redirect_to=${verifyRedirectParam}`, {
         method: 'POST',
         body: {
           type: 'signup',
-          email
+          email,
+          options: {
+            emailRedirectTo: verifyRedirectUrl
+          }
         }
       });
       res.status(202).json({ message: 'Verification email sent. Please check your inbox.' });
@@ -1954,7 +1993,7 @@ app.post('/api/auth/resend-verification', async (req, res) => {
   user.emailVerified = false;
   writeAuthDb(db);
 
-  const verifyUrl = `${PUBLIC_BASE_URL}/verify-email?token=${encodeURIComponent(rawToken)}`;
+  const verifyUrl = buildVerifyEmailUrl(req, rawToken);
   sendEmailVerificationMessage({
     email: user.email,
     username: user.username || getDisplayName(user),
