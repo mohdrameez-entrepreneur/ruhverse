@@ -947,6 +947,7 @@ function setupHomeAuth() {
         const isRegister = state.mode === 'register';
         if (usernameInput) {
             usernameInput.hidden = !isRegister;
+            usernameInput.style.display = isRegister ? '' : 'none';
             usernameInput.required = isRegister;
             usernameInput.disabled = !isRegister;
             if (!isRegister) usernameInput.value = '';

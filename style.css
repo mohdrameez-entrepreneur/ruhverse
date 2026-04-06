@@ -2314,12 +2314,27 @@ body.dark-mode .auth-error {
     .quran-toolbar {
         padding: 1rem;
         flex-direction: row;
+        flex-wrap: wrap;
         gap: 0.5rem;
         justify-content: space-between;
     }
 
+    .quran-toolbar>div:first-child {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 0.45rem !important;
+    }
+
+    .quran-toolbar h1 {
+        max-width: calc(100% - 230px);
+        font-size: 1rem;
+    }
+
     .quran-mobile-auth-slot {
         display: inline-flex;
+        margin-left: auto;
+        flex-shrink: 0;
     }
 
     .quran-mobile-auth-slot .premium-login-btn {
@@ -2340,6 +2355,11 @@ body.dark-mode .auth-error {
 
     .quran-mobile-auth-slot .bookmarks-toggle-text {
         font-size: 0.7rem;
+    }
+
+    .view-options {
+        width: 100%;
+        justify-content: flex-end;
     }
 
     .pagination-controls {
@@ -3594,10 +3614,28 @@ body.dark-mode .hub-card--pak {
 
     .quran-toolbar>div:first-child {
         width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem !important;
     }
 
     .quran-toolbar h1 {
-        max-width: calc(100vw - 7.5rem);
+        max-width: calc(100% - 188px);
+        font-size: 0.95rem;
+    }
+
+    .quran-mobile-auth-slot .premium-login-btn {
+        min-width: 64px;
+        padding: 0.28rem 0.58rem;
+    }
+
+    .quran-mobile-auth-slot .bookmarks-toggle-btn {
+        min-height: 30px;
+        padding: 0.25rem 0.34rem;
+    }
+
+    .quran-mobile-auth-slot .bookmarks-toggle-text {
+        display: none;
     }
 
     .quran-text-container {

@@ -107,7 +107,7 @@
       controls.appendChild(bookmarksBtn);
     }
 
-    const toolbarLead = document.querySelector('.quran-toolbar > div');
+    const toolbarLead = document.querySelector('.quran-toolbar > div') || document.querySelector('.quran-toolbar');
     if (toolbarLead && !document.getElementById('quran-mobile-auth-slot')) {
       const slot = document.createElement('div');
       slot.id = 'quran-mobile-auth-slot';
@@ -739,6 +739,7 @@
     const isRegister = state.authMode === 'register';
     if (ui.usernameInput) {
       ui.usernameInput.hidden = !isRegister;
+      ui.usernameInput.style.display = isRegister ? '' : 'none';
       ui.usernameInput.required = isRegister;
       ui.usernameInput.disabled = !isRegister;
       if (!isRegister) ui.usernameInput.value = '';
