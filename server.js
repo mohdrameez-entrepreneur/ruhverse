@@ -56,6 +56,8 @@ const SUPABASE_AUTH_URL = SUPABASE_URL ? `${SUPABASE_URL}/auth/v1` : '';
 const SUPABASE_REST_URL = SUPABASE_URL ? `${SUPABASE_URL}/rest/v1` : '';
 const SUPABASE_ENABLED = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 const SUPABASE_ADMIN_ENABLED = Boolean(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY);
+
+const SUPABASE_HTTP_TIMEOUT_MS = Math.max(3000, Number(process.env.SUPABASE_HTTP_TIMEOUT_MS) || 15000);
 const BISMILLAH = 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ';
 
 let quranCache = null;
@@ -416,11 +418,28 @@ async function supabaseRequest(url, options = {}) {
     headers['Content-Type'] = 'application/json';
   }
 
-  const response = await fetch(url, {
-    method,
-    headers,
-    body: options.body !== undefined ? JSON.stringify(options.body) : undefined
-  });
+  const controller = new AbortController();
+  const timeoutHandle = setTimeout(() => controller.abort(), SUPABASE_HTTP_TIMEOUT_MS);
+  let response;
+  try {
+    response = await fetch(url, {
+      method,
+      headers,
+      body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+      signal: controller.signal
+    });
+  } catch (err) {
+    const isAbort = String(err?.name || '').toLowerCase() === 'aborterror';
+    const error = new Error(
+      isAbort
+        ? `Authentication service timed out after ${SUPABASE_HTTP_TIMEOUT_MS}ms.`
+        : `Could not reach authentication service. ${String(err?.message || '').trim()}`
+    );
+    error.status = isAbort ? 504 : 503;
+    throw error;
+  } finally {
+    clearTimeout(timeoutHandle);
+  }
 
   const text = await response.text().catch(() => '');
   let payload = null;
@@ -2027,6 +2046,16 @@ app.get('/api/auth/me', requireAuth, async (req, res) => {
 
 app.post('/api/auth/logout', (req, res) => {
   res.status(204).end();
+});
+
+app.get('/api/auth/status', (req, res) => {
+  res.json({
+    mode: SUPABASE_ENABLED ? 'supabase' : 'local',
+    supabaseConfigured: Boolean(SUPABASE_URL && SUPABASE_ANON_KEY),
+    supabaseAdminConfigured: Boolean(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY),
+    emailProviderConfigured: Boolean(String(process.env.RESEND_API_KEY || '').trim()),
+    publicBaseUrl: PUBLIC_BASE_URL
+  });
 });
 
 app.get('/verify-email', (req, res) => {

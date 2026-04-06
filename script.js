@@ -994,11 +994,22 @@ function setupHomeAuth() {
     async function authRequest(path, payload, token) {
         const headers = { 'Content-Type': 'application/json' };
         if (token) headers.Authorization = `Bearer ${token}`;
-        const response = await fetch(path, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify(payload || {})
-        });
+        const controller = new AbortController();
+        const timeoutHandle = window.setTimeout(() => controller.abort(), 15000);
+        let response;
+        try {
+            response = await fetch(path, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify(payload || {}),
+                signal: controller.signal
+            });
+        } catch (error) {
+            const isAbort = String(error?.name || '').toLowerCase() === 'aborterror';
+            throw new Error(isAbort ? 'Request timed out. Please try again.' : `Network error: ${String(error?.message || 'Unable to reach server.')}`);
+        } finally {
+            window.clearTimeout(timeoutHandle);
+        }
         const data = await response.json().catch(() => null);
         if (!response.ok) {
             throw new Error(data?.error || `Request failed (${response.status})`);

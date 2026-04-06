@@ -817,11 +817,22 @@
     if (options.body) headers['Content-Type'] = 'application/json';
     if (withAuth && state.token) headers.Authorization = `Bearer ${state.token}`;
 
-    const res = await fetch(url, {
-      method,
-      headers,
-      body: options.body ? JSON.stringify(options.body) : undefined
-    });
+    const controller = new AbortController();
+    const timeoutHandle = window.setTimeout(() => controller.abort(), 15000);
+    let res;
+    try {
+      res = await fetch(url, {
+        method,
+        headers,
+        body: options.body ? JSON.stringify(options.body) : undefined,
+        signal: controller.signal
+      });
+    } catch (err) {
+      const isAbort = String(err?.name || '').toLowerCase() === 'aborterror';
+      throw new Error(isAbort ? 'Request timed out. Please try again.' : `Network error: ${String(err?.message || 'Unable to reach server.')}`);
+    } finally {
+      window.clearTimeout(timeoutHandle);
+    }
 
     let payload = null;
     const contentType = String(res.headers.get('content-type') || '');
