@@ -2568,6 +2568,12 @@ function getBlogSitemapUrls() {
       changefreq: 'monthly',
       priority: '0.66',
       lastmod: getFileSitemapLastMod(resolveBlogFilePath('is-music-haram.html'))
+    },
+    {
+      loc: `${PUBLIC_BASE_URL}/why-girlfriend-boyfriend-is-haram-in-islam`,
+      changefreq: 'monthly',
+      priority: '0.66',
+      lastmod: getFileSitemapLastMod(resolveBlogFilePath('why-girlfriend-boyfriend-is-haram-in-islam.html'))
     }
   ];
 }
@@ -2738,6 +2744,10 @@ app.get(['/is-trading-halal', '/is-trading-halal.html'], (req, res) => {
 
 app.get(['/is-music-haram', '/is-music-haram.html'], (req, res) => {
   sendBlogPage(res, 'is-music-haram.html');
+});
+
+app.get(['/why-girlfriend-boyfriend-is-haram-in-islam', '/why-girlfriend-boyfriend-is-haram-in-islam.html'], (req, res) => {
+  sendBlogPage(res, 'why-girlfriend-boyfriend-is-haram-in-islam.html');
 });
 
 app.get('/prayer-times-city.html', (req, res) => {
