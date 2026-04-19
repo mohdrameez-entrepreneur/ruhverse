@@ -2693,15 +2693,20 @@ app.get('/sitemap-cities-:chunk(\\d+).xml', (req, res) => {
   res.send(buildSitemapUrlset(chunkUrls, getLatestSitemapLastMod(chunkUrls, fallbackLastmod)));
 });
 
-app.get('/sitemap.xml', (req, res) => {
+app.get('/sitemap.xml', async (req, res) => {
   const fallbackLastmod = getSitemapLastMod();
-  const staticUrls = getStaticSitemapUrls();
+  let coreUrls;
+  try {
+    coreUrls = await getCoreSitemapUrls();
+  } catch (_) {
+    coreUrls = getStaticSitemapUrls();
+  }
   const blogUrls = getBlogSitemapUrls();
   const cityUrls = getCitySitemapUrls();
   const entries = [
     {
       loc: `${PUBLIC_BASE_URL}/sitemap-core.xml`,
-      lastmod: getLatestSitemapLastMod(staticUrls, fallbackLastmod)
+      lastmod: getLatestSitemapLastMod(coreUrls, fallbackLastmod)
     },
     {
       loc: `${PUBLIC_BASE_URL}/sitemap-blogs.xml`,
