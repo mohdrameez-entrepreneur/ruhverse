@@ -172,14 +172,32 @@ function getAuthPublicBaseUrl(req) {
     .split(',')[0]
     .trim();
   const safeHost = /^[a-z0-9.-]+(?::\d+)?$/i.test(forwardedHostRaw) ? forwardedHostRaw : '';
+  const safeHostName = safeHost.split(':')[0].toLowerCase();
+  const safeHostLooksLocal = safeHostName === 'localhost' || safeHostName === '127.0.0.1';
   const proto = forwardedProto === 'http' || forwardedProto === 'https' ? forwardedProto : 'https';
 
-  if (safeHost) return `${proto}://${safeHost}`;
+  if (safeHost && !safeHostLooksLocal) return `${proto}://${safeHost}`;
   return configured || 'https://ruhverse.online';
 }
 
 function buildVerifyEmailUrl(req, rawToken) {
   return `${getAuthPublicBaseUrl(req)}/verify-email?token=${encodeURIComponent(rawToken)}`;
+}
+
+function normalizeVerificationActionUrl(req, actionUrl) {
+  const raw = normalizeWhitespace(actionUrl || '');
+  if (!raw) return '';
+  try {
+    const parsed = new URL(raw);
+    const host = parsed.hostname.toLowerCase();
+    if (host === 'localhost' || host === '127.0.0.1') {
+      const publicBase = getAuthPublicBaseUrl(req);
+      return `${publicBase}${parsed.pathname}${parsed.search}${parsed.hash}`;
+    }
+    return parsed.toString();
+  } catch (_) {
+    return raw;
+  }
 }
 
 function slugifyCityName(name) {
@@ -1625,7 +1643,7 @@ app.post('/api/auth/register', async (req, res) => {
           });
 
           const authUser = adminPayload?.user;
-          const actionLink = normalizeWhitespace(adminPayload?.actionLink || '');
+          const actionLink = normalizeVerificationActionUrl(req, adminPayload?.actionLink || '');
           if (!actionLink) {
             throw new Error('Could not create verification email link.');
           }
@@ -2570,6 +2588,12 @@ function getBlogSitemapUrls() {
       lastmod: getFileSitemapLastMod(resolveBlogFilePath('is-music-haram.html'))
     },
     {
+      loc: `${PUBLIC_BASE_URL}/is-ai-haram`,
+      changefreq: 'monthly',
+      priority: '0.66',
+      lastmod: getFileSitemapLastMod(resolveBlogFilePath('is-ai-haram.html'))
+    },
+    {
       loc: `${PUBLIC_BASE_URL}/why-girlfriend-boyfriend-is-haram-in-islam`,
       changefreq: 'monthly',
       priority: '0.66',
@@ -2749,6 +2773,10 @@ app.get(['/is-trading-halal', '/is-trading-halal.html'], (req, res) => {
 
 app.get(['/is-music-haram', '/is-music-haram.html'], (req, res) => {
   sendBlogPage(res, 'is-music-haram.html');
+});
+
+app.get(['/is-ai-haram', '/is-ai-haram.html'], (req, res) => {
+  sendBlogPage(res, 'is-ai-haram.html');
 });
 
 app.get(['/why-girlfriend-boyfriend-is-haram-in-islam', '/why-girlfriend-boyfriend-is-haram-in-islam.html'], (req, res) => {
