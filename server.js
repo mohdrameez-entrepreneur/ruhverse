@@ -2147,6 +2147,15 @@ app.get('/verify-email', (req, res) => {
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D26HFHH54J"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-D26HFHH54J');
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Email Verification | RuhVerse</title>
   <style>
