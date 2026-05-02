@@ -2607,6 +2607,12 @@ function getBlogSitemapUrls() {
       changefreq: 'monthly',
       priority: '0.66',
       lastmod: getFileSitemapLastMod(resolveBlogFilePath('why-girlfriend-boyfriend-is-haram-in-islam.html'))
+    },
+    {
+      loc: `${PUBLIC_BASE_URL}/why-prophet-marry-aisha`,
+      changefreq: 'monthly',
+      priority: '0.67',
+      lastmod: getFileSitemapLastMod(resolveBlogFilePath('Why-Prophet-marry-aisha.html'))
     }
   ];
 }
@@ -2790,6 +2796,16 @@ app.get(['/is-ai-haram', '/is-ai-haram.html'], (req, res) => {
 
 app.get(['/why-girlfriend-boyfriend-is-haram-in-islam', '/why-girlfriend-boyfriend-is-haram-in-islam.html'], (req, res) => {
   sendBlogPage(res, 'why-girlfriend-boyfriend-is-haram-in-islam.html');
+});
+
+app.get([
+  '/why-prophet-marry-aisha',
+  '/why-prophet-marry-aisha/',
+  '/why-prophet-marry-aisha.html',
+  '/Why-Prophet-marry-aisha',
+  '/Why-Prophet-marry-aisha.html'
+], (req, res) => {
+  sendBlogPage(res, 'Why-Prophet-marry-aisha.html');
 });
 
 app.get('/prayer-times-city.html', (req, res) => {
