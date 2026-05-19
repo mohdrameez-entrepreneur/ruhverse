@@ -1,6 +1,5 @@
 User-agent: *
 Allow: /
-Disallow: /prayer-times-city.html
 
 # Sitemap Location
 Sitemap: https://ruhverse.online/sitemap.xml

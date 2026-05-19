@@ -2613,6 +2613,12 @@ function getBlogSitemapUrls() {
       changefreq: 'monthly',
       priority: '0.67',
       lastmod: getFileSitemapLastMod(resolveBlogFilePath('Why-Prophet-marry-aisha.html'))
+    },
+    {
+      loc: `${PUBLIC_BASE_URL}/is-birthday-haram`,
+      changefreq: 'monthly',
+      priority: '0.66',
+      lastmod: getFileSitemapLastMod(resolveBlogFilePath('Is-Birthday-Haram.html'))
     }
   ];
 }
@@ -2806,6 +2812,16 @@ app.get([
   '/Why-Prophet-marry-aisha.html'
 ], (req, res) => {
   sendBlogPage(res, 'Why-Prophet-marry-aisha.html');
+});
+
+app.get([
+  '/is-birthday-haram',
+  '/is-birthday-haram/',
+  '/is-birthday-haram.html',
+  '/Is-Birthday-Haram',
+  '/Is-Birthday-Haram.html'
+], (req, res) => {
+  sendBlogPage(res, 'Is-Birthday-Haram.html');
 });
 
 app.get('/prayer-times-city.html', (req, res) => {
