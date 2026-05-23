@@ -146,7 +146,7 @@ function updateClientSeo(surahAr, surahIntro) {
     );
     const canonicalPath = buildSurahPath(surahAr);
     const canonicalUrl = `${window.location.origin}${canonicalPath}`;
-    const ogImage = `${window.location.origin}/assets/Gemini_Generated_Image_1z0kzx1z0kzx1z0k.jpg`;
+    const ogImage = `${window.location.origin}/assets/RuhVerse.jpg`;
 
     document.title = title;
 

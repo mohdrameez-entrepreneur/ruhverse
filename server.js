@@ -926,6 +926,15 @@ function buildSurahPath(surah) {
   return `/quran/${slug}/${surah.number}`;
 }
 
+function getFallbackSurahCanonicalPath(surahNumber) {
+  const num = Number(surahNumber);
+  if (!Number.isInteger(num) || num < 1 || num > 114) return '/quran/surah/1';
+  const profile = surahProfiles?.[num] || surahProfiles?.[String(num)] || null;
+  const profileName = normalizeWhitespace(profile?.english_name || profile?.englishName || '');
+  if (!profileName) return `/quran/surah/${num}`;
+  return `/quran/${slugifySurahName(profileName)}/${num}`;
+}
+
 function truncateForMeta(text, maxLength = 160) {
   const clean = normalizeWhitespace(text);
   if (clean.length <= maxLength) return clean;
@@ -1394,7 +1403,7 @@ function renderQuranPage(templateHtml, data, initialSurahIndex, canonicalPath, i
     250
   );
   const canonical = `${PUBLIC_BASE_URL}${canonicalPath}`;
-  const ogImage = `${PUBLIC_BASE_URL}/assets/Gemini_Generated_Image_1z0kzx1z0kzx1z0k.jpg`;
+  const ogImage = `${PUBLIC_BASE_URL}/assets/RuhVerse.jpg`;
   const currentTitle = `${surahAr.number}. ${surahAr.englishName}`;
   const structuredData = JSON.stringify({
     '@context': 'https://schema.org',
@@ -1438,11 +1447,11 @@ window.__INITIAL_SURAH_INDEX = ${initialSurahIndex};
     .replace('<!--SSR_OG_TITLE-->Read Quran Online - RuhVerse', escapeHtml(pageTitle))
     .replace('<!--SSR_OG_DESCRIPTION-->Read the Holy Quran online with translations, beautiful recitations, and a premium 3D interface on RuhVerse.', escapeHtml(pageDescription))
     .replace('<!--SSR_OG_URL-->https://ruhverse.online/quran.html', escapeHtml(canonical))
-    .replace('<!--SSR_OG_IMAGE-->https://ruhverse.online/assets/Gemini_Generated_Image_1z0kzx1z0kzx1z0k.jpg', escapeHtml(ogImage))
+    .replace('<!--SSR_OG_IMAGE-->https://ruhverse.online/assets/RuhVerse.jpg', escapeHtml(ogImage))
     .replace('<!--SSR_TWITTER_URL-->https://ruhverse.online/quran.html', escapeHtml(canonical))
     .replace('<!--SSR_TWITTER_TITLE-->Read Quran Online - RuhVerse', escapeHtml(pageTitle))
     .replace('<!--SSR_TWITTER_DESCRIPTION-->Read the Holy Quran online with translations, beautiful recitations, and a premium 3D interface on RuhVerse.', escapeHtml(pageDescription))
-    .replace('<!--SSR_TWITTER_IMAGE-->https://ruhverse.online/assets/Gemini_Generated_Image_1z0kzx1z0kzx1z0k.jpg', escapeHtml(ogImage))
+    .replace('<!--SSR_TWITTER_IMAGE-->https://ruhverse.online/assets/RuhVerse.jpg', escapeHtml(ogImage))
     .replace('<!--SSR_STRUCTURED_DATA-->', `<script type="application/ld+json">${structuredData}</script>`)
     .replace('<!--SSR_CURRENT_SURAH_TITLE-->Al-Fatihah', escapeHtml(currentTitle))
     .replace('<!--SSR_SURAH_LIST-->', renderSurahListHtml(quranArabic, initialSurahIndex))
@@ -1450,8 +1459,13 @@ window.__INITIAL_SURAH_INDEX = ${initialSurahIndex};
     .replace('<!--SSR_DATA-->', ssrData);
 }
 
+function applyIndexingHeaders(res) {
+  res.set('X-Robots-Tag', 'index, follow, max-image-preview:large');
+}
+
 async function serveQuranPage(req, res, initialSurahIndex, canonicalPathOverride) {
   const templateHtml = QURAN_TEMPLATE;
+  applyIndexingHeaders(res);
 
   try {
     const data = await getQuranData();
@@ -1493,11 +1507,11 @@ async function serveQuranPage(req, res, initialSurahIndex, canonicalPathOverride
       .replace('<!--SSR_OG_TITLE-->Read Quran Online - RuhVerse', 'Read Quran Online - RuhVerse')
       .replace('<!--SSR_OG_DESCRIPTION-->Read the Holy Quran online with translations, beautiful recitations, and a premium 3D interface on RuhVerse.', 'Read the Holy Quran online with translations, beautiful recitations, and a premium 3D interface on RuhVerse.')
       .replace('<!--SSR_OG_URL-->https://ruhverse.online/quran.html', `${PUBLIC_BASE_URL}${canonicalPath}`)
-      .replace('<!--SSR_OG_IMAGE-->https://ruhverse.online/assets/Gemini_Generated_Image_1z0kzx1z0kzx1z0k.jpg', `${PUBLIC_BASE_URL}/assets/Gemini_Generated_Image_1z0kzx1z0kzx1z0k.jpg`)
+      .replace('<!--SSR_OG_IMAGE-->https://ruhverse.online/assets/RuhVerse.jpg', `${PUBLIC_BASE_URL}/assets/RuhVerse.jpg`)
       .replace('<!--SSR_TWITTER_URL-->https://ruhverse.online/quran.html', `${PUBLIC_BASE_URL}${canonicalPath}`)
       .replace('<!--SSR_TWITTER_TITLE-->Read Quran Online - RuhVerse', 'Read Quran Online - RuhVerse')
       .replace('<!--SSR_TWITTER_DESCRIPTION-->Read the Holy Quran online with translations, beautiful recitations, and a premium 3D interface on RuhVerse.', 'Read the Holy Quran online with translations, beautiful recitations, and a premium 3D interface on RuhVerse.')
-      .replace('<!--SSR_TWITTER_IMAGE-->https://ruhverse.online/assets/Gemini_Generated_Image_1z0kzx1z0kzx1z0k.jpg', `${PUBLIC_BASE_URL}/assets/Gemini_Generated_Image_1z0kzx1z0kzx1z0k.jpg`)
+      .replace('<!--SSR_TWITTER_IMAGE-->https://ruhverse.online/assets/RuhVerse.jpg', `${PUBLIC_BASE_URL}/assets/RuhVerse.jpg`)
       .replace('<!--SSR_STRUCTURED_DATA-->', '');
     res.send(fallback);
   }
@@ -2688,13 +2702,23 @@ function sendBlogPage(res, fileName) {
 
 async function getCoreSitemapUrls() {
   const staticUrls = getStaticSitemapUrls();
-  const data = await getQuranData();
-  const surahUrls = data.quranArabic.map((surah) => ({
-    loc: `${PUBLIC_BASE_URL}${buildSurahPath(surah)}`,
-    changefreq: 'monthly',
-    priority: '0.8'
-  }));
-  return staticUrls.concat(surahUrls);
+  try {
+    const data = await getQuranData();
+    const surahUrls = data.quranArabic.map((surah) => ({
+      loc: `${PUBLIC_BASE_URL}${buildSurahPath(surah)}`,
+      changefreq: 'monthly',
+      priority: '0.8'
+    }));
+    return staticUrls.concat(surahUrls);
+  } catch (_) {
+    const surahUrls = Array.from({ length: 114 }, (_, idx) => idx + 1).map((num) => ({
+      loc: `${PUBLIC_BASE_URL}${getFallbackSurahCanonicalPath(num)}`,
+      changefreq: 'monthly',
+      priority: '0.8',
+      lastmod: getFileSitemapLastMod(path.join(__dirname, 'quran.html'), SURAH_PROFILES_PATH)
+    }));
+    return staticUrls.concat(surahUrls);
+  }
 }
 
 app.get('/sitemap-core.xml', async (req, res) => {
@@ -2849,7 +2873,7 @@ app.get(['/quran.html', '/quran'], async (req, res) => {
     const data = await getQuranData();
     res.redirect(301, buildSurahPath(data.quranArabic[0]));
   } catch (_) {
-    await serveQuranPage(req, res, 0);
+    res.redirect(301, getFallbackSurahCanonicalPath(1));
   }
 });
 
@@ -2866,7 +2890,7 @@ app.get('/quran/surah/:surahNumber(\\d+)', async (req, res) => {
     res.redirect(301, buildSurahPath(surah));
   } catch (_) {
     const index = surahNumber - 1;
-    await serveQuranPage(req, res, index, `/quran/surah/${surahNumber}`);
+    await serveQuranPage(req, res, index, getFallbackSurahCanonicalPath(surahNumber));
   }
 });
 
@@ -2911,7 +2935,7 @@ app.get('/quran/:surahSlug/:surahNumber(\\d+)', async (req, res) => {
 
     await serveQuranPage(req, res, surahNumber - 1, canonicalPath);
   } catch (_) {
-    await serveQuranPage(req, res, surahNumber - 1, `/quran/surah/${surahNumber}`);
+    await serveQuranPage(req, res, surahNumber - 1, getFallbackSurahCanonicalPath(surahNumber));
   }
 });
 
@@ -3038,12 +3062,12 @@ function buildCityStructuredData(cityProfile) {
     headline: `Namaz Timings in ${cityProfile.name}, ${cityProfile.country || 'India'} Today | Fajr, Zohr, Asr, Magrib, Isha | RuhVerse`,
     description: `Accurate daily Namaz timings in ${cityProfile.name}, ${cityProfile.country || 'India'} with Fajr, Zohr, Asr, Magrib, and Isha times.`,
     url: canonical,
-    image: [`${PUBLIC_BASE_URL}/assets/Gemini_Generated_Image_1z0kzx1z0kzx1z0k.jpg`],
+    image: [`${PUBLIC_BASE_URL}/assets/RuhVerse.jpg`],
     author: { '@type': 'Organization', name: 'RuhVerse' },
     publisher: {
       '@type': 'Organization',
       name: 'RuhVerse',
-      logo: { '@type': 'ImageObject', url: `${PUBLIC_BASE_URL}/assets/Gemini_Generated_Image_1z0kzx1z0kzx1z0k.jpg` }
+      logo: { '@type': 'ImageObject', url: `${PUBLIC_BASE_URL}/assets/RuhVerse.jpg` }
     },
     mainEntityOfPage: canonical,
     inLanguage: 'en'
@@ -3204,7 +3228,7 @@ function renderCityPage(template, cityProfile, prayerData, ramadanCalendar) {
   const { timings, date } = prayerData;
   const citySlug = cityProfile.slug;
   const canonical = `${PUBLIC_BASE_URL}/namaz-times/${citySlug}`;
-  const ogImage = `${PUBLIC_BASE_URL}/assets/Gemini_Generated_Image_1z0kzx1z0kzx1z0k.jpg`;
+  const ogImage = `${PUBLIC_BASE_URL}/assets/RuhVerse.jpg`;
   const countryName = cityProfile.country || 'India';
   const regionName = [cityProfile.state, countryName].filter(Boolean).join(', ');
   const cityCountryLabel = `${cityProfile.name}, ${countryName}`;
@@ -3291,11 +3315,11 @@ window.__SSR_CITY = ${JSON.stringify({
     .replace('<!--SSR_OG_TITLE-->Namaz Times - RuhVerse', escapeHtml(pageTitle))
     .replace('<!--SSR_OG_DESCRIPTION-->Accurate daily Namaz timings on RuhVerse.', escapeHtml(pageDescription))
     .replace('<!--SSR_OG_URL-->https://ruhverse.online/namaz-times', escapeHtml(canonical))
-    .replace('<!--SSR_OG_IMAGE-->https://ruhverse.online/assets/Gemini_Generated_Image_1z0kzx1z0kzx1z0k.jpg', escapeHtml(ogImage))
+    .replace('<!--SSR_OG_IMAGE-->https://ruhverse.online/assets/RuhVerse.jpg', escapeHtml(ogImage))
     .replace('<!--SSR_TWITTER_URL-->https://ruhverse.online/namaz-times', escapeHtml(canonical))
     .replace('<!--SSR_TWITTER_TITLE-->Namaz Times - RuhVerse', escapeHtml(pageTitle))
     .replace('<!--SSR_TWITTER_DESCRIPTION-->Accurate daily Namaz timings on RuhVerse.', escapeHtml(pageDescription))
-    .replace('<!--SSR_TWITTER_IMAGE-->https://ruhverse.online/assets/Gemini_Generated_Image_1z0kzx1z0kzx1z0k.jpg', escapeHtml(ogImage))
+    .replace('<!--SSR_TWITTER_IMAGE-->https://ruhverse.online/assets/RuhVerse.jpg', escapeHtml(ogImage))
     .replace('<!--SSR_STRUCTURED_DATA-->', structuredData)
     .replace('<!--SSR_CITY_CHIPS-->', chipsHtml)
     .replace('<!--SSR_CITY_HERO_TITLE-->Prayer Times', escapeHtml(heroTitle))
@@ -3318,6 +3342,8 @@ async function serveCityPage(req, res, cityProfile) {
     res.status(500).send('City prayer template not found.');
     return;
   }
+
+  applyIndexingHeaders(res);
 
   const ramadanPromise = getCityRamadanCalendar(cityProfile).catch((err) => {
     console.warn(`City Ramadan calendar failed for ${cityProfile.slug}:`, err.message);
