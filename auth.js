@@ -43,6 +43,7 @@
     });
   });
 
+  // Bootstraps auth + bookmark UI state when the Quran page loads.
   async function initAuthAndBookmarks() {
     ensureScaffold();
     bindUiEvents();
@@ -65,6 +66,7 @@
     });
   }
 
+  // Opens login/register modal when `?auth=login|register` is present in the URL.
   function handleAuthIntentFromQuery() {
     const params = new URLSearchParams(window.location.search);
     const authIntent = String(params.get('auth') || '').trim().toLowerCase();
@@ -80,6 +82,7 @@
     openModal();
   }
 
+  // Ensures required auth/bookmark DOM nodes exist before binding behavior.
   function ensureScaffold() {
     const controls = document.querySelector('.sidebar-controls');
     if (controls && !document.getElementById('auth-toggle-btn')) {
@@ -202,6 +205,7 @@
     placeQuranAuthControlsForViewport();
   }
 
+  // Wires all auth, modal, bookmark, and keyboard event handlers.
   function bindUiEvents() {
     if (!viewportBindingAttached) {
       window.addEventListener('resize', placeQuranAuthControlsForViewport);
@@ -402,6 +406,7 @@
     }
   }
 
+  // Restores an existing session token and loads user bookmarks.
   async function bootstrapSession() {
     if (!state.token) {
       state.user = null;
@@ -418,6 +423,7 @@
     }
   }
 
+  // Calls register API and returns server payload for auth flow handling.
   async function register(username, email, password) {
     return apiRequest('/api/auth/register', {
       method: 'POST',
@@ -426,6 +432,7 @@
     });
   }
 
+  // Logs in, persists token, and refreshes UI/bookmark state.
   async function login(email, password) {
     const data = await apiRequest('/api/auth/login', {
       method: 'POST',
@@ -441,6 +448,7 @@
     syncBookmarkButtons();
   }
 
+  // Clears local session state and resets authenticated UI.
   function logout() {
     state.user = null;
     state.bookmarks = [];
@@ -451,6 +459,7 @@
     syncBookmarkButtons();
   }
 
+  // Fetches bookmarks for the signed-in user.
   async function fetchBookmarks() {
     if (!state.user || !state.token) {
       state.bookmarks = [];
@@ -460,12 +469,14 @@
     state.bookmarks = Array.isArray(data.bookmarks) ? data.bookmarks : [];
   }
 
+  // Trims long display names so the auth button text stays compact.
   function truncateName(value, max = 16) {
     const clean = String(value || '').trim();
     if (!clean) return '';
     return clean.length > max ? `${clean.slice(0, max)}...` : clean;
   }
 
+  // Resolves best display name (username first, then email prefix).
   function getDisplayName(user) {
     const explicit = String(user?.username || '').trim();
     if (explicit) return explicit;
@@ -473,6 +484,7 @@
     return String(email.split('@')[0] || '').trim() || 'Member';
   }
 
+  // Updates login button text/style based on current auth state.
   function updateAuthUi() {
     if (!ui.authBtn) return;
     const sub = ui.authBtn.querySelector('.premium-login-sub');
@@ -491,6 +503,7 @@
     }
   }
 
+  // Renders bookmark list, empty states, and logged-in status text.
   function renderBookmarksPanel() {
     if (!ui.bookmarksList || !ui.bookmarksStatus || !ui.bookmarksEmpty) return;
     updateBookmarkToggleUi();
@@ -552,6 +565,7 @@
     ui.bookmarksList.appendChild(fragment);
   }
 
+  // Updates bookmark counter badge and toggle button visual state.
   function updateBookmarkToggleUi() {
     if (!ui.bookmarkToggleBtn) return;
     const count = Array.isArray(state.bookmarks) ? state.bookmarks.length : 0;
@@ -562,12 +576,14 @@
     ui.bookmarkToggleBtn.classList.toggle('has-items', count > 0);
   }
 
+  // Locks/unlocks body scrolling when modal or bookmarks panel is open.
   function syncBodyOverlayState() {
     const authOpen = ui.modal?.style.display === 'flex';
     const bookmarksOpen = ui.bookmarksPanel?.classList.contains('open');
     document.body.classList.toggle('modal-open', Boolean(authOpen || bookmarksOpen));
   }
 
+  // Opens bookmark side panel and backdrop.
   function openBookmarksPanel() {
     if (!ui.bookmarksPanel) return;
     closeMobileSidebarIfNeeded();
@@ -581,6 +597,7 @@
     syncBodyOverlayState();
   }
 
+  // Closes bookmark side panel and backdrop.
   function closeBookmarksPanel() {
     if (!ui.bookmarksPanel) return;
     ui.bookmarksPanel.classList.remove('open');
@@ -590,6 +607,7 @@
     syncBodyOverlayState();
   }
 
+  // Injects bookmark action buttons into rendered ayah blocks.
   function decorateVerseBlocksForBookmarks() {
     const surahMeta = getCurrentSurahMeta();
     if (!surahMeta.number) return;
@@ -624,6 +642,7 @@
     syncBookmarkButtons();
   }
 
+  // Syncs each verse button with saved/unsaved bookmark state.
   function syncBookmarkButtons() {
     const buttons = document.querySelectorAll('.bookmark-btn');
     buttons.forEach((button) => {
@@ -635,6 +654,7 @@
     });
   }
 
+  // Applies saved/unsaved icon state and accessibility labels to a bookmark button.
   function applyBookmarkButtonVisual(button, isSaved) {
     button.classList.toggle('is-saved', Boolean(isSaved));
     button.innerHTML = '<span class="bookmark-btn-icon" aria-hidden="true">&#128278;</span>';
@@ -642,6 +662,7 @@
     button.title = isSaved ? 'Remove bookmark' : 'Save bookmark';
   }
 
+  // Handles add/remove bookmark actions from verse controls.
   async function onBookmarkButtonClick(button, verseBlock) {
     const surahNumber = Number(button.getAttribute('data-surah'));
     const ayahNumber = Number(button.getAttribute('data-ayah'));
@@ -682,6 +703,7 @@
     }
   }
 
+  // Reads current surah number/name from event state or page title.
   function getCurrentSurahMeta() {
     if (state.currentSurah.number) return state.currentSurah;
     const titleEl = document.getElementById('current-surah-title');
@@ -691,6 +713,7 @@
     return { number: Number(match[1]), name: String(match[2] || '').trim() };
   }
 
+  // Extracts plain Arabic ayah text from a verse block.
   function getArabicText(block) {
     if (!(block instanceof HTMLElement)) return '';
     const arabic = block.querySelector('.ayah-arabic');
@@ -700,16 +723,19 @@
     return String(clone.textContent || '').replace(/\s+/g, ' ').trim();
   }
 
+  // Extracts plain translation text from a verse block.
   function getTranslationText(block) {
     if (!(block instanceof HTMLElement)) return '';
     const translation = block.querySelector('.ayah-translation');
     return String(translation?.textContent || '').replace(/\s+/g, ' ').trim();
   }
 
+  // Returns whether a specific surah+ayah pair is saved.
   function isBookmarked(surahNumber, ayahNumber) {
     return state.bookmarks.some((x) => x.surahNumber === surahNumber && x.ayahNumber === ayahNumber);
   }
 
+  // Inserts or updates a bookmark in local in-memory state.
   function upsertBookmark(bookmark) {
     const idx = state.bookmarks.findIndex(
       (x) => x.surahNumber === bookmark.surahNumber && x.ayahNumber === bookmark.ayahNumber
@@ -718,6 +744,7 @@
     else state.bookmarks.push(bookmark);
   }
 
+  // Navigates to a bookmarked ayah and highlights it briefly.
   async function jumpToBookmark(surahNumber, ayahNumber) {
     if (!Number.isInteger(surahNumber) || !Number.isInteger(ayahNumber)) return;
     if (typeof window.loadSurah === 'function') {
@@ -732,6 +759,7 @@
     }, 80);
   }
 
+  // Toggles modal copy/fields between login and register modes.
   function setAuthMode(mode) {
     state.authMode = mode === 'register' ? 'register' : 'login';
     if (!ui.modalTitle || !ui.submitBtn || !ui.switchBtn || !ui.switchHint || !ui.modalHint) return;
@@ -762,6 +790,7 @@
     if (ui.errorText) ui.errorText.textContent = '';
   }
 
+  // Opens auth modal and optionally overrides the helper hint text.
   function openModal(optionalHint) {
     if (!ui.modal) return;
     closeMobileSidebarIfNeeded();
@@ -771,6 +800,7 @@
     setTimeout(() => ui.emailInput?.focus(), 20);
   }
 
+  // Closes auth modal and resets form/error state.
   function closeModal() {
     if (!ui.modal) return;
     ui.modal.style.display = 'none';
@@ -780,6 +810,7 @@
     setAuthMode(state.authMode);
   }
 
+  // Syncs auth token to localStorage.
   function persistToken() {
     if (!state.token) {
       localStorage.removeItem(TOKEN_KEY);
@@ -788,6 +819,7 @@
     localStorage.setItem(TOKEN_KEY, state.token);
   }
 
+  // Repositions auth controls for desktop sidebar vs mobile toolbar.
   function placeQuranAuthControlsForViewport() {
     const controls = document.querySelector('.sidebar-controls');
     const authBtn = document.getElementById('auth-toggle-btn');
@@ -802,6 +834,7 @@
     if (bookmarksBtn.parentElement !== target) target.appendChild(bookmarksBtn);
   }
 
+  // Closes the mobile surah sidebar before opening overlays.
   function closeMobileSidebarIfNeeded() {
     const sidebar = document.getElementById('sidebar');
     if (!sidebar) return;
@@ -809,6 +842,7 @@
     sidebar.classList.remove('active');
   }
 
+  // Wrapper around fetch with auth header, timeout, JSON parsing, and normalized errors.
   async function apiRequest(url, options = {}) {
     const method = options.method || 'GET';
     const withAuth = options.auth !== false;
@@ -848,6 +882,7 @@
     return payload;
   }
 
+  // Shows a short-lived toast message for success/error feedback.
   function showToast(message, isError = false) {
     if (!ui.toast) return;
     ui.toast.textContent = String(message || '');

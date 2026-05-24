@@ -2,6 +2,12 @@
 <html lang="en">
 
 <head>
+    <!--
+      Qibla page architecture (high level):
+      1) Static HTML defines containers (status, compass, bearing, orientation badge).
+      2) qibla.js populates/updates those containers from GPS + orientation sensors.
+      3) theme.js + script.js provide shared site behavior (theme, navbar, mobile menu).
+    -->
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-D26HFHH54J"></script>
     <script>
@@ -13,11 +19,11 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Accurate Qibla Finder: Find the Exact Kaaba Direction Instantly</title>
+    <title>Qibla Finder Online: Accurate Kaaba Direction by GPS & Compass | RuhVerse</title>
     <meta name="description"
-        content="Never doubt your prayer direction again. Use our highly precise, GPS-powered Qibla Finder to instantly locate the exact direction of Makkah from anywhere.">
+        content="Find accurate Qibla direction instantly using GPS and compass. Locate the Kaaba from any city worldwide for daily Salah with confidence.">
     <meta name="keywords"
-        content="exact qibla finder, find kaaba direction instantly, accurate namaz direction, precise qibla compass, where is makkah, pray in right direction, ruhverse qibla">
+        content="qibla finder online, accurate qibla direction, kaaba direction from my location, mecca direction compass, namaz direction tool, gps qibla compass, ruhverse qibla">
     <meta name="robots" content="index, follow, max-image-preview:large">
     <meta name="theme-color" content="#1a4d2e">
     <meta name="author" content="Mohd Rameez">
@@ -26,17 +32,17 @@
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="RuhVerse">
     <meta property="og:url" content="https://ruhverse.online/qibla">
-    <meta property="og:title" content="Accurate Qibla Finder: Find the Exact Kaaba Direction Instantly">
+    <meta property="og:title" content="Qibla Finder Online: Accurate Kaaba Direction by GPS & Compass | RuhVerse">
     <meta property="og:description"
-        content="Never doubt your prayer direction again. Use our highly precise, GPS-powered Qibla Finder to instantly locate the exact direction of Makkah from anywhere.">
+        content="Find accurate Qibla direction instantly using GPS and compass. Locate the Kaaba from any city worldwide for daily Salah with confidence.">
     <meta property="og:image" content="https://ruhverse.online/assets/RuhVerse.jpg">
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://ruhverse.online/qibla">
-    <meta name="twitter:title" content="Accurate Qibla Finder: Find the Exact Kaaba Direction Instantly">
+    <meta name="twitter:title" content="Qibla Finder Online: Accurate Kaaba Direction by GPS & Compass | RuhVerse">
     <meta name="twitter:description"
-        content="Never doubt your prayer direction again. Use our highly precise, GPS-powered Qibla Finder to instantly locate the exact direction of Makkah from anywhere.">
+        content="Find accurate Qibla direction instantly using GPS and compass. Locate the Kaaba from any city worldwide for daily Salah with confidence.">
     <meta name="twitter:image"
         content="https://ruhverse.online/assets/RuhVerse.jpg">
 
@@ -47,7 +53,7 @@
       "@type": "WebApplication",
       "name": "Qibla Finder",
       "url": "https://ruhverse.online/qibla",
-      "description": "Find the Qibla direction from anywhere using GPS. Powered by RuhVerse.",
+      "description": "Find accurate Kaaba direction from anywhere using live GPS and compass orientation. Powered by RuhVerse.",
       "applicationCategory": "UtilityApplication",
       "operatingSystem": "Any",
       "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
@@ -64,6 +70,13 @@
         href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;500&family=Playfair+Display:wght@400;600;700&display=swap"
         rel="stylesheet">
 
+    <!--
+      CSS architecture:
+      - qibla-hero / qibla-card: page layout shells
+      - compass-* classes: interactive compass visualization
+      - orient-* classes: sensor status indicator
+      - qibla-info-* classes: explanatory tiles
+    -->
     <style>
         /* ── Hero ── */
         .qibla-hero {
@@ -402,6 +415,19 @@
             .compass-wrapper { width: 220px; height: 220px; }
             .bearing-value { font-size: 2.4rem; }
         }
+
+        /* Top utility navigation */
+        .qibla-top-nav {
+            max-width: 1100px;
+            margin: 1.1rem auto 0;
+            padding: 0 1.5rem;
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        .breadcrumb-nav{margin-bottom:1rem;font-size:.85rem}
+        .breadcrumb-list{list-style:none;margin:0;padding:0;display:flex;gap:.5rem;flex-wrap:wrap}
+        .breadcrumb-sep,.breadcrumb-current{color:var(--text-muted)}
     </style>
 
     <script>
@@ -414,6 +440,12 @@
 <body>
 
     <!-- ── Navbar (identical to homepage) ── -->
+    <!--
+      Shared navbar shell:
+      - Desktop links in .nav-links
+      - Mobile overlay links in #nav-overlay
+      - Interactions are handled by script.js (setupNavigation).
+    -->
     <nav class="navbar has-mobile-menu">
         <a href="/index.html" class="logo">
             <img src="/assets/RuhVerse.jpg" alt="RuhVerse Logo" width="40" height="40" decoding="async">
@@ -451,6 +483,22 @@
         </ul>
     </div>
 
+    <div class="qibla-top-nav">
+        <nav aria-label="Breadcrumb" class="breadcrumb-nav">
+            <ol itemscope itemtype="https://schema.org/BreadcrumbList" class="breadcrumb-list">
+                <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                    <a href="/" itemprop="item"><span itemprop="name">Home</span></a>
+                    <meta itemprop="position" content="1">
+                </li>
+                <li class="breadcrumb-sep">&gt;</li>
+                <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem" class="breadcrumb-current">
+                    <span itemprop="name">Qibla Finder</span>
+                    <meta itemprop="position" content="2">
+                </li>
+            </ol>
+        </nav>
+    </div>
+
     <!-- Hero -->
     <section class="qibla-hero">
         <h1>Qibla Finder</h1>
@@ -458,6 +506,12 @@
     </section>
 
     <!-- Main Compass Card -->
+    <!--
+      Core Qibla runtime panel:
+      - qibla.js toggles visibility/text of the elements below.
+      - Status flow: idle -> detecting -> success/error.
+      - Compass flow: hidden -> shown after location is available.
+    -->
     <div class="qibla-card">
 
         <p class="qibla-status" id="qibla-status">Tap below to detect your location</p>
@@ -469,6 +523,11 @@
         <div class="qibla-spinner" id="qibla-spinner"></div>
 
         <!-- Compass -->
+        <!--
+          Compass rendering model:
+          - .compass-needle rotates to computed Qibla bearing.
+          - .compass-rose counter-rotates using phone heading for live movement.
+        -->
         <div class="compass-wrapper" id="compass-wrapper" style="display:none;">
             <div class="compass-rose" id="compass-rose">
                 <span class="cardinal N">N</span>
@@ -496,12 +555,14 @@
         </div>
 
         <!-- Orientation badge -->
+        <!-- Sensor health indicator updated by qibla.js -->
         <div class="orient-badge" id="orient-badge" style="display:none;">
             <span class="orient-dot" id="orient-dot"></span>
             <span id="orient-text">Compass: checking…</span>
         </div>
 
         <!-- Coords -->
+        <!-- Debug coordinates used in bearing computation -->
         <div class="coords-strip" id="coords-strip" style="display:none;">
             <div>Lat: <span id="disp-lat">–</span></div>
             <div>Lng: <span id="disp-lng">–</span></div>
@@ -581,6 +642,12 @@
         </div>
     </footer>
 
+    <!--
+      Script load order:
+      1) theme.js -> applies dark mode state first.
+      2) script.js -> shared site interactions (nav/mobile menu).
+      3) qibla.js -> page-specific GPS + orientation compass logic.
+    -->
     <script src="/theme.js"></script>
     <script src="/script.js"></script>
     <script src="/qibla.js"></script>

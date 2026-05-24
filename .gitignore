@@ -5,3 +5,5 @@ npm-debug.log*
 data/auth_db.json
 data/Random.txt
 AGENT.md
+CODEBASE_DEBUG_COMMENTS.md
+NEARBY_MOSQUES_DATAFLOW.txt

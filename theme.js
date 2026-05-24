@@ -1,7 +1,9 @@
 (() => {
+    // Shared theme manager used across all pages.
     const STORAGE_KEY = 'ruhverse-theme';
     const DARK_VALUE = 'dark';
 
+    // Read persisted theme from localStorage (safe in restricted environments).
     function readStoredTheme() {
         try {
             return localStorage.getItem(STORAGE_KEY) === DARK_VALUE;
@@ -10,6 +12,7 @@
         }
     }
 
+    // Persist or clear the dark theme preference.
     function persistTheme(isDark) {
         try {
             if (isDark) {
@@ -22,10 +25,12 @@
         }
     }
 
+    // Current source of truth is the `dark-mode` class on body.
     function getCurrentThemeState() {
         return document.body.classList.contains('dark-mode');
     }
 
+    // Keep every known theme toggle button/icon in sync.
     function updateToggleVisuals(isDark) {
         const toggles = document.querySelectorAll('[data-theme-toggle], #night-mode-toggle');
         toggles.forEach((toggle) => {
@@ -46,17 +51,20 @@
         });
     }
 
+    // Apply visual theme classes without touching storage.
     function applyTheme(isDark) {
         if (!document.body) return;
         document.body.classList.toggle('dark-mode', isDark);
         updateToggleVisuals(isDark);
     }
 
+    // Public setter: apply theme and persist preference.
     function setTheme(isDark) {
         applyTheme(isDark);
         persistTheme(isDark);
     }
 
+    // Bind click behavior once per toggle element.
     function bindToggle(toggle) {
         if (!toggle || toggle.dataset.themeManaged === '1') return;
         toggle.dataset.themeManaged = '1';
@@ -73,6 +81,7 @@
         });
     }
 
+    // Ensure there is always at least one toggle on the page.
     function ensureToggleExists() {
         const existingToggles = document.querySelectorAll('[data-theme-toggle], #night-mode-toggle');
         if (existingToggles.length) {
@@ -88,6 +97,7 @@
         bindToggle(floatingToggle);
     }
 
+    // Bootstrap theme from storage and sync controls.
     function initTheme() {
         applyTheme(readStoredTheme());
         ensureToggleExists();

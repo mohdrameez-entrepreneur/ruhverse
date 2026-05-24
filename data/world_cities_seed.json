@@ -1338,7 +1338,9 @@
     "latitude": -7.5666,
     "longitude": 110.8167,
     "timezone": "Asia/Jakarta",
-    "aliases": ["solo"]
+    "aliases": [
+      "solo"
+    ]
   },
   {
     "name": "Makassar",

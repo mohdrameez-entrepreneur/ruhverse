@@ -1,7 +1,17 @@
+/*
+ * RuhVerse client runtime.
+ * Debug entry: `initApp()` chooses Quran mode vs homepage mode.
+ * Quran mode: load/hydrate surah state, render verses, sync URL/SEO, audio.
+ * Homepage mode: nav/auth modal, countdowns, calendar, insights, city search.
+ */
 document.addEventListener('DOMContentLoaded', () => {
     initApp();
     setupLocationIntelligence();
 });
+
+function isHomepageContext() {
+    return Boolean(document.querySelector('#global-directory')) && Boolean(document.querySelector('.hero-section'));
+}
 
 function initApp() {
     setupDarkMode(); // Shared logic
@@ -10,7 +20,16 @@ function initApp() {
     if (document.body.classList.contains('quran-page-body')) {
         setupQuranApp();
     } else {
-        // Home page logic
+        // Home page logic (guarded to avoid heavy work on other static pages)
+        if (!isHomepageContext()) {
+            try {
+                setupNavigation();
+            } catch (err) {
+                console.error("Critical error in shared init:", err);
+            }
+            return;
+        }
+
         try {
             setupNavigation();
             setupHomeAuth();
@@ -37,6 +56,7 @@ let hasFullQuranData = false;
 let surahIntroByNumber = {};
 let chapterMetaByNumber = {};
 
+// Picks initial surah index from SSR bootstrap, canonical path, or ?surah query.
 function getInitialSurahIndex() {
     if (typeof window !== 'undefined' && Number.isInteger(window.__INITIAL_SURAH_INDEX)) {
         return Math.min(113, Math.max(0, window.__INITIAL_SURAH_INDEX));
@@ -175,6 +195,7 @@ function updateClientSeo(surahAr, surahIntro) {
     if (twitterImage) twitterImage.setAttribute('content', ogImage);
 }
 
+// Initializes the Quran reader with SSR bootstrap first, then CSR fallback APIs.
 async function setupQuranApp() {
     setupSidebarControls();
     setupQuranViewControls();
@@ -302,6 +323,7 @@ function bootstrapQuranState(bootstrap) {
     }
 }
 
+// Ensures full ayah payload exists for pagination/audio after lightweight SSR boot.
 async function ensureFullQuranData() {
     if (hasFullQuranData) return;
 
@@ -337,6 +359,7 @@ let audioObj = new Audio();
 let isPlaying = false;
 let currentAyahIdx = 0;
 
+// Wires audio controls and handles auto-next behavior across ayahs/surahs.
 function setupAudioPlayer() {
     const btnAudio = document.getElementById('btn-audio');
     const btnPlayPause = document.getElementById('audio-play-pause');
@@ -886,6 +909,7 @@ function setupQuranViewControls() {
 }
 
 // --- Shared (Home) Logic ---
+// Handles home navigation overlay open/close behavior.
 function setupNavigation() {
     const hamburger = document.getElementById('hamburger-btn');
     const overlay = document.getElementById('nav-overlay');
@@ -1203,6 +1227,7 @@ function setupHomeAuth() {
     }
 }
 
+// Handles Ramadan/Eid countdown timers and live prayer countdown cards.
 function setupTimers() {
     // --- Hardcoded Ramadan dates (IST) — accurate for India ---
     // Source: Islamic calendar. Ramadan starts at Fajr on the listed date.
@@ -1465,16 +1490,23 @@ function setupTimers() {
     }
 
     async function fetchPrayerTimes(lat, lon) {
-        const today = new Date().toLocaleDateString('en-GB', { timeZone: 'Asia/Kolkata' })
-            .split('/').reverse().join('-'); // YYYY-MM-DD
-        const url = `https://api.aladhan.com/v1/timings/${today}?latitude=${lat}&longitude=${lon}&method=1`;
-        // method=1 = University of Islamic Sciences, Karachi (standard for India/Pakistan)
+        const unixTs = Math.floor(Date.now() / 1000);
+        const endpoints = [
+            `https://api.aladhan.com/v1/timings/${unixTs}?latitude=${lat}&longitude=${lon}&method=1`,
+            `https://api.aladhan.com/v1/timingsByAddress?address=${encodeURIComponent(`${lat},${lon}`)}&method=1`
+        ];
 
         try {
-            const res = await fetch(url);
-            const json = await res.json();
-            if (json.code === 200) {
-                const timings = json.data.timings;
+            let timings = null;
+            for (const url of endpoints) {
+                const res = await fetch(url);
+                const json = await res.json();
+                if (json.code === 200 && json.data && json.data.timings) {
+                    timings = json.data.timings;
+                    break;
+                }
+            }
+            if (timings) {
                 renderPrayerCards(timings);
                 updatePrayerCountdown(timings);
                 setInterval(() => updatePrayerCountdown(timings), 1000);
@@ -1496,6 +1528,7 @@ function setupTimers() {
 }
 
 // --- Ramadan 2026 Calendar ---
+// Renders local Ramadan dataset into table and highlights today's row.
 function loadRamadanCalendar() {
     const tbody = document.getElementById('ramadan-cal-body');
     if (!tbody) {
@@ -1574,6 +1607,7 @@ function loadRamadanCalendar() {
 }
 
 // --- Daily Dynamic Insights ---
+// Builds rotating daily insight cards from a deterministic date-based subset.
 function loadDailyInsights() {
     const track = document.getElementById('insights-track');
     const nav = document.getElementById('slider-nav');
@@ -1689,6 +1723,7 @@ function loadDailyInsights() {
  * 7. Location Intelligence & Global City Search
  */
 function setupLocationIntelligence() {
+    if (!isHomepageContext()) return;
     const searchBtn = document.getElementById('city-search-btn');
     const detectBtn = document.getElementById('detect-location-btn');
     const cityInput = document.getElementById('city-search-input');
@@ -1700,8 +1735,189 @@ function setupLocationIntelligence() {
             if (e.key === 'Enter') handleCitySearch();
         });
     }
+    initHolyMosquesLeafletMaps();
 }
 
+function loadLeafletRuntime() {
+    if (window.L) return Promise.resolve(window.L);
+    if (window.__leafletLoadPromise) return window.__leafletLoadPromise;
+
+    window.__leafletLoadPromise = new Promise((resolve, reject) => {
+        const existing = document.querySelector('script[data-leaflet-runtime="1"]');
+        if (existing) {
+            existing.addEventListener('load', () => resolve(window.L));
+            existing.addEventListener('error', reject);
+            return;
+        }
+
+        const script = document.createElement('script');
+        script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+        script.defer = true;
+        script.dataset.leafletRuntime = '1';
+        script.onload = () => resolve(window.L);
+        script.onerror = reject;
+        document.head.appendChild(script);
+    });
+
+    return window.__leafletLoadPromise;
+}
+
+function initHolyMosquesLeafletMaps() {
+    const mapNodes = document.querySelectorAll('.holy-mosque-map');
+    if (!mapNodes.length) return;
+
+    const section = document.querySelector('.holy-mosques-seo');
+    if (!section) return;
+
+    const boot = () => {
+        loadLeafletRuntime().then(() => {
+            mapNodes.forEach((node) => {
+                if (node.dataset.initialized === '1') return;
+                const lat = Number(node.dataset.lat);
+                const lon = Number(node.dataset.lon);
+                const label = node.dataset.label || 'Holy Mosque';
+                if (!Number.isFinite(lat) || !Number.isFinite(lon) || !window.L) return;
+
+                const map = L.map(node, { zoomControl: true, dragging: true }).setView([lat, lon], 14);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                }).addTo(map);
+                L.marker([lat, lon], { title: label }).addTo(map).bindPopup(label);
+                node.dataset.initialized = '1';
+                setTimeout(() => map.invalidateSize(), 50);
+            });
+        }).catch((err) => {
+            console.error('Leaflet runtime failed to load:', err);
+        });
+    };
+
+    if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver((entries) => {
+            if (!entries.some((entry) => entry.isIntersecting)) return;
+            observer.disconnect();
+            boot();
+        }, { rootMargin: '300px 0px' });
+        observer.observe(section);
+        return;
+    }
+
+    boot();
+}
+
+const NEARBY_MOSQUE_RADIUS_METERS = 10000;
+const NEARBY_MOSQUE_LIMIT = 8;
+const HOLY_MOSQUES_FALLBACK = [
+    { name: 'Masjid al-Haram (Makkah)', note: 'Home of the Kaaba and the Qibla for all Muslims.' },
+    { name: 'Al-Masjid an-Nabawi (Madinah)', note: 'The Prophet’s Mosque and one of Islam’s holiest sites.' },
+    { name: 'Al-Aqsa Mosque (Jerusalem)', note: 'The first Qibla and the third holiest mosque in Islam.' },
+    { name: 'Quba Mosque (Madinah)', note: 'Regarded as the first mosque established in Islam.' },
+    { name: 'Qiblatain Mosque (Madinah)', note: 'Known for the historic change of Qibla direction.' }
+];
+
+function toRad(value) {
+    return (value * Math.PI) / 180;
+}
+
+function calculateDistanceKm(lat1, lon1, lat2, lon2) {
+    const earthRadiusKm = 6371;
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a = Math.sin(dLat / 2) ** 2
+        + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return earthRadiusKm * c;
+}
+
+function escapeHtmlText(value) {
+    return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function renderNearbyMosqueSection(title, subtitle, items) {
+    const safeItems = Array.isArray(items) ? items : [];
+    const listItemsHtml = safeItems.length
+        ? safeItems.map((item) => {
+            const note = item.note ? `<p>${escapeHtmlText(item.note)}</p>` : '';
+            return `
+                <li class="nearby-mosque-item">
+                    <h4>${escapeHtmlText(item.name)}</h4>
+                    ${note}
+                </li>
+            `;
+        }).join('')
+        : '<li class="nearby-mosque-item"><h4>No mosque data available right now.</h4></li>';
+
+    return `
+        <div class="featured-mosques-card">
+            <div class="featured-mosques-header">
+                <h3>${escapeHtmlText(title)}</h3>
+                <p>${escapeHtmlText(subtitle)}</p>
+            </div>
+            <ul class="nearby-mosque-list">
+                ${listItemsHtml}
+            </ul>
+        </div>
+    `;
+}
+
+async function fetchNearbyMosques(latitude, longitude, limit = NEARBY_MOSQUE_LIMIT) {
+    const query = `
+[out:json][timeout:25];
+(
+  node(around:${NEARBY_MOSQUE_RADIUS_METERS},${latitude},${longitude})["amenity"="mosque"];
+  way(around:${NEARBY_MOSQUE_RADIUS_METERS},${latitude},${longitude})["amenity"="mosque"];
+  relation(around:${NEARBY_MOSQUE_RADIUS_METERS},${latitude},${longitude})["amenity"="mosque"];
+  node(around:${NEARBY_MOSQUE_RADIUS_METERS},${latitude},${longitude})["amenity"="place_of_worship"]["religion"="muslim"];
+  way(around:${NEARBY_MOSQUE_RADIUS_METERS},${latitude},${longitude})["amenity"="place_of_worship"]["religion"="muslim"];
+  relation(around:${NEARBY_MOSQUE_RADIUS_METERS},${latitude},${longitude})["amenity"="place_of_worship"]["religion"="muslim"];
+);
+out center tags;
+    `.trim();
+
+    const response = await fetch('https://overpass-api.de/api/interpreter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+        body: `data=${encodeURIComponent(query)}`
+    });
+    if (!response.ok) {
+        throw new Error(`Overpass failed with status ${response.status}`);
+    }
+
+    const data = await response.json();
+    const elements = Array.isArray(data.elements) ? data.elements : [];
+    const seen = new Set();
+    const normalized = [];
+
+    for (const element of elements) {
+        const pointLat = Number(element.lat ?? element.center?.lat);
+        const pointLon = Number(element.lon ?? element.center?.lon);
+        if (!Number.isFinite(pointLat) || !Number.isFinite(pointLon)) continue;
+
+        const distanceKm = calculateDistanceKm(latitude, longitude, pointLat, pointLon);
+        if (!Number.isFinite(distanceKm) || distanceKm > (NEARBY_MOSQUE_RADIUS_METERS / 1000)) continue;
+
+        const name = (element.tags && element.tags.name) ? String(element.tags.name).trim() : 'Nearby Mosque';
+        const key = `${name.toLowerCase()}|${pointLat.toFixed(4)}|${pointLon.toFixed(4)}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+
+        normalized.push({
+            name,
+            distanceKm,
+            note: `${distanceKm.toFixed(1)} km away`
+        });
+    }
+
+    normalized.sort((a, b) => a.distanceKm - b.distanceKm);
+    return normalized.slice(0, limit);
+}
+
+// Queries city timings by city name and renders quick location card.
 async function handleCitySearch() {
     const input = document.getElementById('city-search-input');
     const city = input.value.trim();
@@ -1732,11 +1948,12 @@ async function handleCitySearch() {
     }
 }
 
+// Uses browser geolocation to fetch and render local prayer timings.
 function syncUserLocation() {
     if (!navigator.geolocation) return alert('Geolocation is not supported by your browser.');
 
     const btn = document.getElementById('detect-location-btn');
-    btn.innerHTML = '<span>📍 Detecting...</span>';
+    btn.innerHTML = '<span>&#128205; Detecting...</span>';
 
     navigator.geolocation.getCurrentPosition(async (pos) => {
         const { latitude, longitude } = pos.coords;
@@ -1751,15 +1968,51 @@ function syncUserLocation() {
             const prayerRes = await fetch(prayerUrl);
             const prayerData = await prayerRes.json();
             const timezone = prayerData.data && prayerData.data.meta ? prayerData.data.meta.timezone : null;
-            renderLocationCard(cityName, prayerData.data.timings, timezone);
+
+            let mosqueSectionHtml = '';
+            try {
+                const nearbyMosques = await fetchNearbyMosques(latitude, longitude);
+                mosqueSectionHtml = renderNearbyMosqueSection(
+                    'Nearby Mosques (Within 10 km)',
+                    'Based on your live location.',
+                    nearbyMosques
+                );
+            } catch (mosqueError) {
+                console.error('Nearby mosque lookup failed:', mosqueError);
+                mosqueSectionHtml = renderNearbyMosqueSection(
+                    'Nearby Mosques',
+                    'Unable to fetch nearby data right now.',
+                    []
+                );
+            }
+
+            renderLocationCard(cityName, prayerData.data.timings, timezone, mosqueSectionHtml);
         } catch (e) {
             alert('Detected location, but failed to fetch timings.');
         } finally {
-            btn.innerHTML = '<span>📍 Detect My City</span>';
+            btn.innerHTML = '<span>&#128205; Detect My City</span>';
         }
-    }, () => {
+    }, (geoError) => {
         alert('Location access denied.');
-        btn.innerHTML = '<span>📍 Detect My City</span>';
+        if (geoError && geoError.code) {
+            console.warn('Geolocation denied/unavailable with code:', geoError.code);
+        }
+
+        const holyMosquesSectionHtml = renderNearbyMosqueSection(
+            'Holy Mosques in Islam',
+            'Location is disabled, so here are globally revered mosques.',
+            HOLY_MOSQUES_FALLBACK
+        );
+
+        renderLocationCard('Location Access Needed', {
+            Fajr: '--:--',
+            Dhuhr: '--:--',
+            Asr: '--:--',
+            Maghrib: '--:--',
+            Isha: '--:--'
+        }, null, holyMosquesSectionHtml);
+
+        btn.innerHTML = '<span>&#128205; Detect My City</span>';
     });
 }
 
@@ -1815,7 +2068,7 @@ function getActivePrayerName(timings, timezone) {
     return 'Fajr';
 }
 
-function renderLocationCard(name, t, timezone) {
+function renderLocationCard(name, t, timezone, mosqueSectionHtml = '') {
     const container = document.getElementById('dynamic-search-results');
     container.style.display = 'block';
     const prayerOrder = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
@@ -1847,6 +2100,7 @@ function renderLocationCard(name, t, timezone) {
                 Times based on Islamic University, Karachi Method
             </div>
         </div>
+        ${mosqueSectionHtml}
     `;
 
     // Smooth scroll to the result

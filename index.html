@@ -13,14 +13,15 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Find Inner Peace: Read Quran Online, Prayer Times & Qibla | RuhVerse</title>
+    <title>Read Quran Online, Prayer Times by City, Qibla Finder & Holy Mosques | RuhVerse</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="footer_styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <meta name="google-site-verification" content="bA13I1r9yS6hph6_rcKl0UiR_D-utehWgTTrVP28emo" />
     <meta name="description"
-        content="Reconnect with your faith. Find powerful solace reading the Holy Quran with English translations, get exact daily Namaz timings, and locate the Qibla instantly.">
+        content="Read Quran online with translation, check accurate prayer times for cities worldwide, find Qibla direction, and explore holy mosques with maps on RuhVerse.">
     <meta name="keywords"
-        content="find inner peace islam, read quran online, spiritual healing quran, accurate namaz times, exact qibla finder, muslim faith renewal, daily islamic inspiration, ruhverse">
+        content="read quran online, prayer times today, namaz timings by city, qibla finder online, holy mosques in islam, nearby mosque finder, ramadan timetable 2026, islamic daily guidance, ruhverse">
     <meta name="author" content="Mohd Rameez">
     <meta name="robots" content="index, follow, max-image-preview:large">
     <meta name="theme-color" content="#1a4d2e">
@@ -29,17 +30,17 @@
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="RuhVerse">
     <meta property="og:url" content="https://ruhverse.online/">
-    <meta property="og:title" content="Find Inner Peace: Read Quran Online, Prayer Times & Qibla | RuhVerse">
+    <meta property="og:title" content="Read Quran Online, Prayer Times by City, Qibla Finder & Holy Mosques | RuhVerse">
     <meta property="og:description"
-        content="Reconnect with your faith. Find powerful solace reading the Holy Quran with English translations, get exact daily Namaz timings, and locate the Qibla instantly.">
+        content="Read Quran online with translation, check accurate prayer times for cities worldwide, find Qibla direction, and explore holy mosques with maps on RuhVerse.">
     <meta property="og:image" content="https://ruhverse.online/assets/RuhVerse.jpg">
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://ruhverse.online/">
-    <meta name="twitter:title" content="Find Inner Peace: Read Quran Online, Prayer Times & Qibla | RuhVerse">
+    <meta name="twitter:title" content="Read Quran Online, Prayer Times by City, Qibla Finder & Holy Mosques | RuhVerse">
     <meta name="twitter:description"
-        content="Reconnect with your faith. Find powerful solace reading the Holy Quran with English translations, get exact daily Namaz timings, and locate the Qibla instantly.">
+        content="Read Quran online with translation, check accurate prayer times for cities worldwide, find Qibla direction, and explore holy mosques with maps on RuhVerse.">
     <meta name="twitter:image" content="https://ruhverse.online/assets/RuhVerse.jpg">
 
     <!-- Structured Data (JSON-LD) -->
@@ -50,7 +51,7 @@
       "name": "RuhVerse",
       "alternateName": "RuhVerse Islamic Portal",
       "url": "https://ruhverse.online/",
-      "description": "Read Quran online, find prayer times, locate Qibla direction, and track Ramadan 2026 on RuhVerse.",
+      "description": "Read Quran online, check prayer times by city, find Qibla direction, and explore holy mosques with maps on RuhVerse.",
       "potentialAction": {
         "@type": "SearchAction",
         "target": { "@type": "EntryPoint", "urlTemplate": "https://ruhverse.online/quran/{surah}" },
@@ -78,7 +79,8 @@
         { "@type": "ListItem", "position": 1, "name": "Read Quran Online", "url": "https://ruhverse.online/quran" },
         { "@type": "ListItem", "position": 2, "name": "Qibla Finder", "url": "https://ruhverse.online/qibla" },
         { "@type": "ListItem", "position": 3, "name": "Prayer Times India", "url": "https://ruhverse.online/prayer-times-india.html" },
-        { "@type": "ListItem", "position": 4, "name": "Blog", "url": "https://ruhverse.online/blog" }
+        { "@type": "ListItem", "position": 4, "name": "Global Prayer Times", "url": "https://ruhverse.online/prayer-times-global.html" },
+        { "@type": "ListItem", "position": 5, "name": "Blog", "url": "https://ruhverse.online/blog" }
       ]
     }
     </script>
@@ -109,6 +111,14 @@
           "acceptedAnswer": {
             "@type": "Answer",
             "text": "Yes. RuhVerse Qibla Finder uses live geolocation and compass direction to help you locate the direction of Makkah from anywhere in the world."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I find nearby or holy mosques on RuhVerse?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. RuhVerse shows nearby mosque options after location detection and includes a Holy Mosques section with map support for key Islamic sites."
           }
         },
         {
@@ -380,7 +390,7 @@
                     </button>
                 </div>
                 <button class="quick-detect-btn" id="detect-location-btn">
-                    <span>📍 Detect My City</span>
+                    <span>&#128205; Detect My City</span>
                 </button>
             </div>
 
@@ -388,6 +398,29 @@
             <div id="dynamic-search-results" class="dynamic-result-area">
                 <!-- Golden card injected here by JS -->
             </div>
+            <section class="holy-mosques-seo" aria-labelledby="holy-mosques-title">
+                <div class="holy-mosques-head">
+                    <h3 id="holy-mosques-title">Holy Mosques of Islam</h3>
+                    <p>Explore the most revered mosques in Islam with location context and maps.</p>
+                </div>
+                <div class="holy-mosques-grid">
+                    <article class="holy-mosque-card">
+                        <h4>Masjid al-Haram, Makkah</h4>
+                        <p>The holiest mosque in Islam and home of the Kaaba, the Qibla for Muslims worldwide.</p>
+                        <div class="holy-mosque-map" id="holy-mosque-map-haram" data-lat="21.4225" data-lon="39.8262" data-label="Masjid al-Haram"></div>
+                    </article>
+                    <article class="holy-mosque-card">
+                        <h4>Al-Masjid an-Nabawi, Madinah</h4>
+                        <p>The Prophet's Mosque, one of the three mosques to which Muslims are encouraged to travel.</p>
+                        <div class="holy-mosque-map" id="holy-mosque-map-nabawi" data-lat="24.4672" data-lon="39.6111" data-label="Al-Masjid an-Nabawi"></div>
+                    </article>
+                    <article class="holy-mosque-card">
+                        <h4>Al-Aqsa Mosque, Jerusalem</h4>
+                        <p>Islam's third holiest site and the blessed sanctuary linked to Al-Isra wal-Mi'raj.</p>
+                        <div class="holy-mosque-map" id="holy-mosque-map-aqsa" data-lat="31.7767" data-lon="35.2354" data-label="Al-Aqsa Mosque"></div>
+                    </article>
+                </div>
+            </section>
 
             <div class="directory-container">
                 <div class="directory-group">

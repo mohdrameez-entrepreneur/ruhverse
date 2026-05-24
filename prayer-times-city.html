@@ -13,9 +13,9 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><!--SSR_PAGE_TITLE-->Namaz Times - RuhVerse</title>
-    <meta name="description" content="<!--SSR_PAGE_DESCRIPTION-->Accurate daily Namaz timings with city insights on RuhVerse.">
-    <meta name="keywords" content="<!--SSR_PAGE_KEYWORDS-->namaz times india, prayer times">
+    <title><!--SSR_PAGE_TITLE-->Prayer Times Today by City | Fajr, Dhuhr, Asr, Maghrib, Isha | RuhVerse</title>
+    <meta name="description" content="<!--SSR_PAGE_DESCRIPTION-->Get accurate city prayer times today with Fajr, Dhuhr, Asr, Maghrib, Isha, nearby mosques, and local Islamic insights on RuhVerse.">
+    <meta name="keywords" content="<!--SSR_PAGE_KEYWORDS-->prayer times today, city namaz timings, fajr dhuhr asr maghrib isha time, nearby mosque, ramadan sehri iftar time">
     <meta name="author" content="RuhVerse">
     <meta name="robots" content="index, follow, max-image-preview:large">
     <meta name="theme-color" content="#1a4d2e">
@@ -23,16 +23,16 @@
 
     <!-- Open Graph -->
     <meta property="og:type" content="website">
-    <meta property="og:title" content="<!--SSR_OG_TITLE-->Namaz Times - RuhVerse">
-    <meta property="og:description" content="<!--SSR_OG_DESCRIPTION-->Accurate daily Namaz timings on RuhVerse.">
+    <meta property="og:title" content="<!--SSR_OG_TITLE-->Prayer Times Today by City | Fajr, Dhuhr, Asr, Maghrib, Isha | RuhVerse">
+    <meta property="og:description" content="<!--SSR_OG_DESCRIPTION-->Get accurate city prayer times today with nearby mosques and local Islamic insights on RuhVerse.">
     <meta property="og:url" content="<!--SSR_OG_URL-->https://ruhverse.online/namaz-times">
     <meta property="og:image" content="<!--SSR_OG_IMAGE-->https://ruhverse.online/assets/RuhVerse.jpg">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="<!--SSR_TWITTER_URL-->https://ruhverse.online/namaz-times">
-    <meta name="twitter:title" content="<!--SSR_TWITTER_TITLE-->Namaz Times - RuhVerse">
-    <meta name="twitter:description" content="<!--SSR_TWITTER_DESCRIPTION-->Accurate daily Namaz timings on RuhVerse.">
+    <meta name="twitter:title" content="<!--SSR_TWITTER_TITLE-->Prayer Times Today by City | Fajr, Dhuhr, Asr, Maghrib, Isha | RuhVerse">
+    <meta name="twitter:description" content="<!--SSR_TWITTER_DESCRIPTION-->Get accurate city prayer times today with nearby mosques and local Islamic insights on RuhVerse.">
     <meta name="twitter:image" content="<!--SSR_TWITTER_IMAGE-->https://ruhverse.online/assets/RuhVerse.jpg">
 
     <!-- Structured Data -->
@@ -45,6 +45,12 @@
         rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
     <link rel="stylesheet" href="/footer_styles.css">
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin=""
+    >
 
     <style>
         .city-facts-grid {
@@ -228,6 +234,97 @@
             background: linear-gradient(90deg, transparent, var(--card-border), transparent);
             margin: 4rem 0;
         }
+
+        .nearby-mosques-section {
+            background: var(--white);
+            border: 1px solid var(--card-border);
+            border-radius: 22px;
+            padding: 2rem;
+            margin: 1.5rem 0 3rem;
+        }
+
+        .nearby-mosques-section h2 {
+            text-align: center;
+            margin-bottom: 0.45rem;
+            color: var(--emerald-dark);
+        }
+
+        .nearby-mosques-status {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.92rem;
+            margin-bottom: 1rem;
+        }
+
+        .nearby-mosques-map {
+            width: 100%;
+            height: 360px;
+            border-radius: 16px;
+            border: 1px solid var(--card-border);
+            overflow: hidden;
+            background: rgba(26, 77, 46, 0.06);
+            display: none;
+        }
+
+        .nearby-mosques-list {
+            list-style: none;
+            margin: 1rem 0 0;
+            padding: 0;
+            display: grid;
+            gap: 0.6rem;
+            display: none;
+        }
+
+        .nearby-mosques-item {
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 0.7rem 0.85rem;
+            background: rgba(26, 77, 46, 0.03);
+        }
+
+        .nearby-mosques-item strong {
+            color: var(--text-main);
+            display: block;
+            margin-bottom: 0.2rem;
+        }
+
+        .nearby-mosques-item small {
+            color: var(--text-muted);
+        }
+
+        .nearby-mosques-retry {
+            margin: 0.75rem auto 0;
+            display: none;
+        }
+
+        .popular-mosques-ssr {
+            margin-top: 1rem;
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            background: rgba(26, 77, 46, 0.03);
+            padding: 1rem;
+        }
+
+        .popular-mosques-ssr h3 {
+            margin: 0 0 0.65rem;
+            font-size: 1rem;
+            color: var(--emerald-dark);
+            text-align: center;
+        }
+
+        .popular-mosques-ssr-list {
+            list-style: disc;
+            margin: 0;
+            padding-left: 1.25rem;
+            color: var(--text-main);
+            display: grid;
+            gap: 0.35rem;
+        }
+
+        .popular-mosques-ssr-list li {
+            font-size: 0.94rem;
+            line-height: 1.5;
+        }
     </style>
     <script>
         window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
@@ -288,9 +385,71 @@
         </div>
     </section>
 
+    <!-- Ramadan Countdown Section -->
+    <section id="ramadan" class="ramadan-countdown-section">
+        <div class="container">
+            <h2 class="section-title">Ramadan Countdown</h2>
+            <p class="ramadan-subtitle" style="color: rgba(255,255,255,0.7); margin-top: -2rem; margin-bottom: 3rem;">
+                Counting down to the most blessed month of the year.</p>
+            <div class="ramadan-grid">
+                <div class="timer-card">
+                    <h3 id="ram-days">00</h3>
+                    <p>Days</p>
+                </div>
+                <div class="timer-card">
+                    <h3 id="ram-hrs">00</h3>
+                    <p>Hours</p>
+                </div>
+                <div class="timer-card">
+                    <h3 id="ram-min">00</h3>
+                    <p>Minutes</p>
+                </div>
+                <div class="timer-card">
+                    <h3 id="ram-sec">00</h3>
+                    <p>Seconds</p>
+                </div>
+            </div>
+            <a href="/how-to-pray-eid-salah" class="eid-salah-promo" id="eid-salah-promo"
+                title="How to Pray Eid Salah Step by Step (Authentic Hadith Guide)"
+                aria-label="Read the blog: How to Pray Eid Salah step by step with takbeer, rak'ahs, and khutbah">
+                <span class="eid-promo-tag">Eid Salah Guide</span>
+                <h3>How to Pray Eid Salah: Step-by-Step Sunnah Guide</h3>
+                <p id="eid-promo-text">There are only <strong id="eid-days-left">00</strong> days left for Eid al-Fitr.
+                    Learn the correct Eid Salah method with authentic Hadith before Eid day.</p>
+                <span class="eid-promo-cta">Read the full Eid Salah guide</span>
+            </a>
+        </div>
+    </section>
+
     <!-- City Content -->
     <section class="city-content-section" style="background: var(--cream); padding: 6rem 2rem;">
         <div class="container">
+
+            <!-- Nearby Mosques -->
+            <section class="nearby-mosques-section" id="nearby-mosques" aria-labelledby="nearby-mosques-heading">
+                <h2 id="nearby-mosques-heading" class="section-title">Nearby Mosques (Within 10 km)</h2>
+                <p id="nearby-mosques-status" class="nearby-mosques-status">
+                    Showing popular mosques in this city for now. Use your location to see nearby mosques within 10 km.
+                </p>
+                <div id="popular-mosques-ssr" class="popular-mosques-ssr">
+                    <h3><!--SSR_POPULAR_MOSQUES_TITLE-->Popular Mosques in This City</h3>
+                    <ul id="popular-mosques-ssr-list" class="popular-mosques-ssr-list">
+                        <!--SSR_POPULAR_MOSQUE_ITEMS-->
+                    </ul>
+                </div>
+                <div
+                    id="nearby-mosques-map"
+                    class="nearby-mosques-map"
+                    role="region"
+                    aria-label="Map showing nearby mosques and your current location"
+                ></div>
+                <button id="nearby-mosques-retry" class="btn-pill btn-outline nearby-mosques-retry" type="button">
+                    Find Nearby Mosques Using My Location
+                </button>
+                <ul id="nearby-mosques-list" class="nearby-mosques-list"></ul>
+            </section>
+
+            <hr class="section-divider">
 
             <!-- City Insights -->
             <div style="text-align:center; max-width:820px; margin: 0 auto 3rem;">
@@ -392,6 +551,11 @@
     <!-- SSR Bootstrap Data -->
     <!--SSR_DATA-->
     <script src="/theme.js"></script>
+    <script
+        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""
+    ></script>
 
     <script>
         // ─── Hydration & Live Prayer Logic ────────────────────────────────────────
@@ -400,6 +564,260 @@
         const ssrCity = window.__SSR_CITY || {};
         const CITY_TIMEZONE = ssrCity.timezone || 'Asia/Kolkata';
         const BACK_FALLBACK_URL = '/index.html';
+        const NEARBY_MOSQUE_RADIUS_METERS = 10000;
+        const NEARBY_MOSQUES_LIMIT = 25;
+        const OVERPASS_ENDPOINTS = [
+            'https://overpass-api.de/api/interpreter',
+            'https://overpass.kumi.systems/api/interpreter'
+        ];
+        let nearbyMosquesMap = null;
+        let nearbyMosquesMarkers = null;
+
+        // Converts degrees to radians for geographic distance calculations.
+        function toRadians(value) {
+            return (Number(value) * Math.PI) / 180;
+        }
+
+        // Haversine distance so we can verify each mosque is inside the 10km circle.
+        function distanceMeters(lat1, lon1, lat2, lon2) {
+            const earthRadius = 6371000;
+            const dLat = toRadians(lat2 - lat1);
+            const dLon = toRadians(lon2 - lon1);
+            const a = Math.sin(dLat / 2) ** 2
+                + Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2))
+                * Math.sin(dLon / 2) ** 2;
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return earthRadius * c;
+        }
+
+        // Formats map/list distance labels.
+        function formatDistance(distanceInMeters) {
+            const km = distanceInMeters / 1000;
+            return `${km.toFixed(km >= 1 ? 1 : 2)} km`;
+        }
+
+        // Centralized UI status updates for the nearby mosque module.
+        function setNearbyMosqueStatus(message) {
+            const statusEl = document.getElementById('nearby-mosques-status');
+            if (statusEl) statusEl.textContent = message;
+        }
+
+        function showNearbyMosqueRetry(show) {
+            const retryBtn = document.getElementById('nearby-mosques-retry');
+            if (!retryBtn) return;
+            retryBtn.style.display = show ? 'inline-flex' : 'none';
+        }
+
+        function setNearbyMosqueViewMode(mode) {
+            const popularWrap = document.getElementById('popular-mosques-ssr');
+            const mapEl = document.getElementById('nearby-mosques-map');
+            const listEl = document.getElementById('nearby-mosques-list');
+            const isNearby = mode === 'nearby';
+
+            if (popularWrap) popularWrap.style.display = isNearby ? 'none' : '';
+            if (mapEl) mapEl.style.display = isNearby ? 'block' : 'none';
+            if (listEl) listEl.style.display = isNearby ? 'grid' : 'none';
+        }
+
+        // Overpass can return nodes/ways/relations; this normalizes to a single lat/lon.
+        function getElementLatLon(item) {
+            if (typeof item?.lat === 'number' && typeof item?.lon === 'number') {
+                return { lat: item.lat, lon: item.lon };
+            }
+            if (typeof item?.center?.lat === 'number' && typeof item?.center?.lon === 'number') {
+                return { lat: item.center.lat, lon: item.center.lon };
+            }
+            return null;
+        }
+
+        // Queries OSM Overpass for nearby mosques around user coordinates.
+        async function fetchNearbyMosques(userLat, userLon) {
+            const query = `
+[out:json][timeout:25];
+(
+  node(around:${NEARBY_MOSQUE_RADIUS_METERS},${userLat},${userLon})["amenity"="place_of_worship"]["religion"="muslim"];
+  way(around:${NEARBY_MOSQUE_RADIUS_METERS},${userLat},${userLon})["amenity"="place_of_worship"]["religion"="muslim"];
+  relation(around:${NEARBY_MOSQUE_RADIUS_METERS},${userLat},${userLon})["amenity"="place_of_worship"]["religion"="muslim"];
+  node(around:${NEARBY_MOSQUE_RADIUS_METERS},${userLat},${userLon})["amenity"="mosque"];
+  way(around:${NEARBY_MOSQUE_RADIUS_METERS},${userLat},${userLon})["amenity"="mosque"];
+  relation(around:${NEARBY_MOSQUE_RADIUS_METERS},${userLat},${userLon})["amenity"="mosque"];
+);
+out center tags;
+`;
+
+            let lastError = null;
+            for (const endpoint of OVERPASS_ENDPOINTS) {
+                try {
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                        body: `data=${encodeURIComponent(query)}`
+                    });
+                    if (!response.ok) throw new Error(`Overpass error: ${response.status}`);
+                    const payload = await response.json();
+                    const elements = Array.isArray(payload?.elements) ? payload.elements : [];
+
+                    const dedup = new Map();
+                    elements.forEach((item) => {
+                        const point = getElementLatLon(item);
+                        if (!point) return;
+                        const dist = distanceMeters(userLat, userLon, point.lat, point.lon);
+                        if (!Number.isFinite(dist) || dist > NEARBY_MOSQUE_RADIUS_METERS) return;
+                        const name = String(item?.tags?.name || '').trim() || 'Unnamed Mosque';
+                        const key = `${name.toLowerCase()}|${point.lat.toFixed(5)}|${point.lon.toFixed(5)}`;
+                        if (!dedup.has(key)) {
+                            dedup.set(key, {
+                                name,
+                                lat: point.lat,
+                                lon: point.lon,
+                                distance: dist,
+                                address: String(item?.tags?.['addr:full'] || item?.tags?.['addr:street'] || '').trim()
+                            });
+                        }
+                    });
+
+                    return Array.from(dedup.values())
+                        .sort((a, b) => a.distance - b.distance)
+                        .slice(0, NEARBY_MOSQUES_LIMIT);
+                } catch (err) {
+                    lastError = err;
+                }
+            }
+
+            throw lastError || new Error('Unable to load nearby mosques right now.');
+        }
+
+        // Renders text list below map for quick debugging/validation of returned places.
+        function renderNearbyMosqueList(mosques) {
+            const listEl = document.getElementById('nearby-mosques-list');
+            if (!listEl) return;
+            listEl.style.display = 'grid';
+            listEl.innerHTML = '';
+
+            if (!Array.isArray(mosques) || !mosques.length) {
+                const li = document.createElement('li');
+                li.className = 'nearby-mosques-item';
+                li.innerHTML = '<strong>No mosques found within 10 km.</strong><small>Try again after allowing precise location.</small>';
+                listEl.appendChild(li);
+                return;
+            }
+
+            const fragment = document.createDocumentFragment();
+            mosques.forEach((mosque) => {
+                const li = document.createElement('li');
+                li.className = 'nearby-mosques-item';
+                li.innerHTML = `
+                    <strong>${mosque.name}</strong>
+                    <small>${formatDistance(mosque.distance)} away${mosque.address ? ` · ${mosque.address}` : ''}</small>
+                `;
+                fragment.appendChild(li);
+            });
+            listEl.appendChild(fragment);
+        }
+
+        // Draws/updates Leaflet map with user point + mosque points.
+        function renderNearbyMosqueMap(userLat, userLon, mosques) {
+            if (!window.L) {
+                setNearbyMosqueStatus('Map library unavailable. Showing list only.');
+                return;
+            }
+
+            const mapEl = document.getElementById('nearby-mosques-map');
+            if (!mapEl) return;
+            mapEl.style.display = 'block';
+
+            if (!nearbyMosquesMap) {
+                nearbyMosquesMap = L.map('nearby-mosques-map', { zoomControl: true }).setView([userLat, userLon], 13);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                }).addTo(nearbyMosquesMap);
+            } else {
+                nearbyMosquesMap.setView([userLat, userLon], 13);
+            }
+
+            if (nearbyMosquesMarkers) nearbyMosquesMarkers.remove();
+            nearbyMosquesMarkers = L.layerGroup().addTo(nearbyMosquesMap);
+
+            L.marker([userLat, userLon], { title: 'Your location' })
+                .bindPopup('You are here')
+                .addTo(nearbyMosquesMarkers);
+
+            mosques.forEach((mosque) => {
+                L.marker([mosque.lat, mosque.lon], { title: mosque.name })
+                    .bindPopup(`${mosque.name}<br>${formatDistance(mosque.distance)}`)
+                    .addTo(nearbyMosquesMarkers);
+            });
+
+            const points = [[userLat, userLon], ...mosques.map((x) => [x.lat, x.lon])];
+            if (points.length > 1) {
+                nearbyMosquesMap.fitBounds(points, { padding: [32, 32], maxZoom: 14 });
+            }
+        }
+
+        // Full nearby-mosque flow: geolocation -> Overpass fetch -> map/list render.
+        async function loadNearbyMosquesFromUserLocation() {
+            setNearbyMosqueStatus('Detecting your location...');
+            showNearbyMosqueRetry(false);
+
+            if (!navigator.geolocation) {
+                setNearbyMosqueStatus('Geolocation is not supported by this browser.');
+                showNearbyMosqueRetry(false);
+                return;
+            }
+
+            const getUserPosition = () => new Promise((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(resolve, reject, {
+                    enableHighAccuracy: true,
+                    timeout: 12000,
+                    maximumAge: 120000
+                });
+            });
+
+            try {
+                const position = await getUserPosition();
+                const userLat = Number(position?.coords?.latitude);
+                const userLon = Number(position?.coords?.longitude);
+                if (!Number.isFinite(userLat) || !Number.isFinite(userLon)) {
+                    throw new Error('Invalid location coordinates.');
+                }
+
+                setNearbyMosqueStatus('Fetching nearby mosques within 10 km...');
+                const mosques = await fetchNearbyMosques(userLat, userLon);
+                setNearbyMosqueViewMode('nearby');
+                renderNearbyMosqueMap(userLat, userLon, mosques);
+                renderNearbyMosqueList(mosques);
+                setNearbyMosqueStatus(`Showing ${mosques.length} nearby mosque${mosques.length === 1 ? '' : 's'} within 10 km of your current location.`);
+                showNearbyMosqueRetry(true);
+            } catch (err) {
+                setNearbyMosqueViewMode('popular');
+                setNearbyMosqueStatus('Unable to access your location or fetch nearby mosques. Allow location and try again.');
+                showNearbyMosqueRetry(true);
+            }
+        }
+
+        async function initNearbyMosquesModule() {
+            setNearbyMosqueViewMode('popular');
+            const retryBtn = document.getElementById('nearby-mosques-retry');
+            if (retryBtn) {
+                retryBtn.addEventListener('click', () => {
+                    loadNearbyMosquesFromUserLocation();
+                });
+            }
+            showNearbyMosqueRetry(true);
+
+            // If browser already has location permission granted, auto-switch to nearby mode.
+            try {
+                if (navigator.permissions && navigator.permissions.query) {
+                    const permission = await navigator.permissions.query({ name: 'geolocation' });
+                    if (permission?.state === 'granted') {
+                        loadNearbyMosquesFromUserLocation();
+                    }
+                }
+            } catch (_) {
+                // Permissions API is optional; manual button path still works.
+            }
+        }
 
         function goBackOrHome(ev) {
             if (ev) ev.preventDefault();
@@ -498,9 +916,110 @@
             }, 1000);
         }
 
+        function initRamadanCountdown() {
+            const ramadanDates = {
+                2026: { start: '2026-02-19', end: '2026-03-21' },
+                2027: { start: '2027-02-08', end: '2027-03-09' },
+                2028: { start: '2028-01-28', end: '2028-02-26' },
+                2029: { start: '2029-01-16', end: '2029-02-14' },
+                2030: { start: '2030-01-05', end: '2030-02-03' }
+            };
+            const now = new Date();
+            let start = null;
+            let end = null;
+            for (const y of [now.getFullYear(), now.getFullYear() + 1]) {
+                const entry = ramadanDates[y];
+                if (!entry) continue;
+                const s = new Date(`${entry.start}T00:00:00+05:30`);
+                const e = new Date(`${entry.end}T00:00:00+05:30`);
+                if (e > now) {
+                    start = s;
+                    end = e;
+                    break;
+                }
+            }
+            if (!start || !end) return;
+
+            const dayMs = 24 * 60 * 60 * 1000;
+            const titleEl = document.querySelector('#ramadan .section-title');
+            const subtitleEl = document.querySelector('.ramadan-subtitle');
+            const promoTextEl = document.getElementById('eid-promo-text');
+            const ramDaysEl = document.getElementById('ram-days');
+            const ramHrsEl = document.getElementById('ram-hrs');
+            const ramMinEl = document.getElementById('ram-min');
+            const ramSecEl = document.getElementById('ram-sec');
+
+            function updateDhms(ms) {
+                const safeMs = Math.max(0, ms);
+                const totalSec = Math.floor(safeMs / 1000);
+                const totalMin = Math.floor(totalSec / 60);
+                const totalHr = Math.floor(totalMin / 60);
+                const d = Math.floor(totalHr / 24);
+                const h = totalHr % 24;
+                const m = totalMin % 60;
+                const s = totalSec % 60;
+                if (ramDaysEl) ramDaysEl.textContent = String(d).padStart(2, '0');
+                if (ramHrsEl) ramHrsEl.textContent = String(h).padStart(2, '0');
+                if (ramMinEl) ramMinEl.textContent = String(m).padStart(2, '0');
+                if (ramSecEl) ramSecEl.textContent = String(s).padStart(2, '0');
+            }
+
+            function updatePromo(phase, msToEnd) {
+                if (!promoTextEl) return;
+                const daysText = String(Math.max(0, Math.ceil(msToEnd / dayMs))).padStart(2, '0');
+                if (phase === 'pre') {
+                    promoTextEl.innerHTML = `There are only <strong>${daysText}</strong> days left for Eid al-Fitr. Learn how to pray Eid Salah step by step with authentic Hadith guidance.`;
+                    return;
+                }
+                if (phase === 'ramadan') {
+                    promoTextEl.innerHTML = `There are only <strong>${daysText}</strong> days left for Eid al-Fitr. Learn the Eid Salah method, takbeer, and khutbah before Eid morning.`;
+                    return;
+                }
+                if (phase === 'eid') {
+                    promoTextEl.innerHTML = 'Eid is here. Read the step-by-step Eid Salah guide with takbeer, 2 rak\'ahs, and khutbah before going to the congregation.';
+                    return;
+                }
+                promoTextEl.innerHTML = 'Bookmark this Eid Salah guide with authentic Hadith so you are prepared for the next Eid prayer.';
+            }
+
+            function tick() {
+                const current = new Date();
+                const msToStart = start - current;
+                const msToEnd = end - current;
+                if (msToStart > 0) {
+                    if (titleEl) titleEl.textContent = 'Ramadan Starts In';
+                    if (subtitleEl) subtitleEl.textContent = 'Counting down to the most blessed month of the year.';
+                    updatePromo('pre', msToEnd);
+                    updateDhms(msToStart);
+                    return;
+                }
+                if (msToEnd > 0) {
+                    if (titleEl) titleEl.textContent = 'Ramadan Ends In';
+                    if (subtitleEl) subtitleEl.textContent = 'The month of mercy is passing. Make the most of every moment.';
+                    updatePromo('ramadan', msToEnd);
+                    updateDhms(msToEnd);
+                    return;
+                }
+                if (msToEnd > -dayMs) {
+                    if (titleEl) titleEl.textContent = 'Eid Mubarak';
+                    if (subtitleEl) subtitleEl.textContent = 'May Allah accept your fasts and prayers.';
+                    updatePromo('eid', msToEnd);
+                    updateDhms(0);
+                    return;
+                }
+                updatePromo('post', msToEnd);
+                updateDhms(0);
+            }
+
+            tick();
+            setInterval(tick, 1000);
+        }
+
         // ─── Bootstrap from SSR data or fetch live ──────────────────────────────
         (async function init() {
             const ssr = ssrCity;
+            initRamadanCountdown();
+            initNearbyMosquesModule();
 
             if (ssr && ssr.prayerTimes) {
                 // Hydrate from SSR — no extra API call needed
@@ -510,14 +1029,26 @@
 
             // Fallback: fetch live if SSR data missing
             if (!ssr || !ssr.latitude || !ssr.longitude) return;
-            const today = new Date().toLocaleDateString('en-GB', { timeZone: CITY_TIMEZONE }).split('/').reverse().join('-');
-            const url = `https://api.aladhan.com/v1/timings/${today}?latitude=${ssr.latitude}&longitude=${ssr.longitude}&method=${ssr.method || 1}`;
+            const unixTs = Math.floor(Date.now() / 1000);
+            const endpointCandidates = [
+                `https://api.aladhan.com/v1/timings/${unixTs}?latitude=${ssr.latitude}&longitude=${ssr.longitude}&method=${ssr.method || 1}`,
+                `https://api.aladhan.com/v1/timingsByCity?city=${encodeURIComponent(ssr.name || '')}&country=&method=${ssr.method || 1}`
+            ];
             const countdownEl = document.getElementById('prayer-countdown');
             try {
-                const res = await fetch(url);
-                const data = await res.json();
-                if (data && data.data && data.data.timings) {
-                    startLiveUpdates(data.data.timings);
+                let timings = null;
+                for (const url of endpointCandidates) {
+                    const res = await fetch(url);
+                    const data = await res.json();
+                    if (data && data.code === 200 && data.data && data.data.timings) {
+                        timings = data.data.timings;
+                        break;
+                    }
+                }
+                if (timings) {
+                    startLiveUpdates(timings);
+                } else if (countdownEl) {
+                    countdownEl.textContent = 'Failed to load. Check connection.';
                 }
             } catch (e) {
                 if (countdownEl) countdownEl.textContent = 'Failed to load. Check connection.';
