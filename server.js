@@ -88,6 +88,7 @@ const cityPrayerCache = new Map(); // slug -> { data, time }
 const CITY_PRAYER_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 const cityPopularMosquesCache = new Map(); // slug -> { data, time }
 const CITY_POPULAR_MOSQUES_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+const CITY_POPULAR_MOSQUES_SSR_TIMEOUT_MS = 1500;
 const CITY_POPULAR_MOSQUES_RADIUS_METERS = 14000;
 const CITY_POPULAR_MOSQUES_LIMIT = 8;
 const OVERPASS_ENDPOINTS = [
@@ -3470,8 +3471,13 @@ async function serveCityPage(req, res, cityProfile) {
   }
 
   applyIndexingHeaders(res);
-  const popularMosquesPromise = getCityPopularMosques(cityProfile).catch((err) => {
-    console.warn(`City popular mosques SSR failed for ${cityProfile.slug}:`, err.message);
+  const popularMosquesPromise = Promise.race([
+    getCityPopularMosques(cityProfile),
+    new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('SSR popular mosques timeout')), CITY_POPULAR_MOSQUES_SSR_TIMEOUT_MS);
+    })
+  ]).catch((err) => {
+    console.warn(`City popular mosques SSR fallback for ${cityProfile.slug}:`, err.message);
     return buildFallbackPopularMosques(cityProfile);
   });
 
