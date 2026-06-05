@@ -2659,6 +2659,12 @@ function getBlogSitemapUrls() {
       lastmod: getFileSitemapLastMod(resolveBlogFilePath('Why-Prophet-marry-aisha.html'))
     },
     {
+      loc: `${PUBLIC_BASE_URL}/what-islam-says-about-anxiety-depression`,
+      changefreq: 'monthly',
+      priority: '0.67',
+      lastmod: getFileSitemapLastMod(resolveBlogFilePath('anxiety-depression.html'))
+    },
+    {
       loc: `${PUBLIC_BASE_URL}/is-birthday-haram`,
       changefreq: 'monthly',
       priority: '0.66',
@@ -2831,7 +2837,8 @@ app.get('/sitemap.xml', async (req, res) => {
 });
 
 function pathIsCanonical(reqPath, canonicalPath) {
-  const source = `/${String(reqPath || '').replace(/^\/+/, '')}`.replace(/\/+$/, '').toLowerCase() || '/';
+  const sourceRaw = `/${String(reqPath || '').replace(/^\/+/, '')}`.toLowerCase();
+  const source = sourceRaw === '/' ? '/' : sourceRaw.replace(/\/{2,}/g, '/');
   const target = `/${String(canonicalPath || '').replace(/^\/+/, '')}`.replace(/\/+$/, '').toLowerCase() || '/';
   return source === target;
 }
@@ -2886,6 +2893,29 @@ app.get([
   '/why-prophet-marry-aisha.html',
   '/Why-Prophet-marry-aisha',
   '/Why-Prophet-marry-aisha.html'
+], (req, res) => {
+  if (redirectToCanonicalIfNeeded(req, res, '/why-prophet-marry-aisha')) return;
+  sendBlogPage(res, 'Why-Prophet-marry-aisha.html');
+});
+
+app.get([
+  '/what-islam-says-about-anxiety-depression',
+  '/what-islam-says-about-anxiety-depression/',
+  '/what-islam-says-about-anxiety-depression.html',
+  '/what-islam-really-says-about-anxiety-depression',
+  '/what-islam-really-says-about-anxiety-depression/',
+  '/what-islam-really-says-about-anxiety-depression.html',
+  '/anxiety-depression',
+  '/anxiety-depression.html'
+], (req, res) => {
+  if (redirectToCanonicalIfNeeded(req, res, '/what-islam-says-about-anxiety-depression')) return;
+  sendBlogPage(res, 'anxiety-depression.html');
+});
+
+app.get([
+  '/why-prophet-married-aisha',
+  '/why-prophet-married-aisha/',
+  '/why-prophet-married-aisha.html'
 ], (req, res) => {
   if (redirectToCanonicalIfNeeded(req, res, '/why-prophet-marry-aisha')) return;
   sendBlogPage(res, 'Why-Prophet-marry-aisha.html');
