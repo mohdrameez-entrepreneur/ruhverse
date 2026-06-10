@@ -1,6 +1,6 @@
 (function () {
     const isSecureContext = window.isSecureContext || window.location.hostname === 'localhost';
-    const SNOOZE_KEY = 'ruhverseInstallPromptSnoozedUntil';
+    const SNOOZE_KEY = 'ruhverseInstallPromptSnoozedUntilV3';
     const SNOOZE_MS = 1000 * 60 * 60 * 24 * 7;
 
     if ('serviceWorker' in navigator && isSecureContext) {
@@ -22,12 +22,23 @@
     const isIos = () => /iphone|ipad|ipod/i.test(window.navigator.userAgent);
     const isMobile = () => /android|iphone|ipad|ipod/i.test(window.navigator.userAgent);
 
-    const getSnoozedUntil = () => Number(window.localStorage.getItem(SNOOZE_KEY) || 0);
+    const getSnoozedUntil = () => {
+        try {
+            return Number(window.localStorage.getItem(SNOOZE_KEY) || 0);
+        } catch (err) {
+            console.error('Install prompt storage read failed:', err);
+            return 0;
+        }
+    };
 
     const isPromptSnoozed = () => Date.now() < getSnoozedUntil();
 
     const snoozePrompt = () => {
-        window.localStorage.setItem(SNOOZE_KEY, String(Date.now() + SNOOZE_MS));
+        try {
+            window.localStorage.setItem(SNOOZE_KEY, String(Date.now() + SNOOZE_MS));
+        } catch (err) {
+            console.error('Install prompt storage write failed:', err);
+        }
     };
 
     const createInstallButton = () => {
@@ -127,6 +138,12 @@
         dialog.hidden = false;
     };
 
+    const scheduleInstallPrompt = () => {
+        if (isStandalone()) return;
+        showInstallButton();
+        window.setTimeout(showInstallDialog, 800);
+    };
+
     const hideInstallDialog = () => {
         dialog.hidden = true;
     };
@@ -158,16 +175,15 @@
     });
 
     if (isIos() && !isStandalone()) {
-        showInstallButton();
-        window.setTimeout(showInstallDialog, 800);
+        scheduleInstallPrompt();
     }
 
-    window.addEventListener('load', () => {
-        if (!isStandalone()) {
-            showInstallButton();
-            window.setTimeout(showInstallDialog, 800);
-        }
-    });
+    if (document.readyState === 'complete') {
+        scheduleInstallPrompt();
+    } else {
+        window.addEventListener('load', scheduleInstallPrompt, { once: true });
+        window.setTimeout(scheduleInstallPrompt, 2000);
+    }
 
     floatingButton.addEventListener('click', runInstallFlow);
     navbarButton.addEventListener('click', runInstallFlow);
