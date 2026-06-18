@@ -1,6 +1,6 @@
 (function () {
     const isSecureContext = window.isSecureContext || window.location.hostname === 'localhost';
-    const SNOOZE_KEY = 'ruhverseInstallPromptSnoozedUntilV5';
+    const SNOOZE_KEY = 'ruhverseInstallPromptSnoozedUntilV6';
     const SNOOZE_MS = 1000 * 60 * 60 * 24 * 7;
 
     if ('serviceWorker' in navigator && isSecureContext) {
