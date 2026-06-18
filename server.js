@@ -3551,6 +3551,43 @@ app.get('/namaz-times/:citySlug', async (req, res) => {
   await serveCityPage(req, res, cityProfile);
 });
 
+// Block backend, repo, and local data files from being served by root static hosting.
+app.use((req, res, next) => {
+  let decodedPath = '';
+  try {
+    decodedPath = decodeURIComponent(String(req.path || '')).replace(/\\/g, '/');
+  } catch (_) {
+    res.status(404).send('Not found.');
+    return;
+  }
+
+  const normalizedPath = path.posix.normalize(decodedPath);
+  const segments = normalizedPath.split('/').filter(Boolean);
+  const fileName = segments[segments.length - 1] || '';
+  const lowerPath = normalizedPath.toLowerCase();
+  const lowerFileName = fileName.toLowerCase();
+
+  const isBlocked =
+    segments.some((segment) => segment.startsWith('.')) ||
+    lowerPath.startsWith('/data/') ||
+    lowerPath.startsWith('/node_modules/') ||
+    lowerPath.startsWith('/.git/') ||
+    lowerFileName === 'server.js' ||
+    lowerFileName === 'package.json' ||
+    lowerFileName === 'package-lock.json' ||
+    lowerFileName === 'vercel.json' ||
+    lowerFileName === 'agents.md' ||
+    lowerFileName.endsWith('.sql') ||
+    lowerFileName.endsWith('.env');
+
+  if (isBlocked) {
+    res.status(404).send('Not found.');
+    return;
+  }
+
+  next();
+});
+
 // -- Static files should be served after SSR routes ------------------------
 app.use(express.static(path.join(__dirname), {
   etag: true,
