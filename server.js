@@ -3551,6 +3551,27 @@ app.get('/namaz-times/:citySlug', async (req, res) => {
   await serveCityPage(req, res, cityProfile);
 });
 
+app.get('/onesignal-init.js', (req, res) => {
+  res.type('application/javascript; charset=utf-8').send(`
+(function () {
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+
+  window.OneSignalDeferred.push(async function (OneSignal) {
+    await OneSignal.init({
+      appId: '31aeb5c9-708a-4537-a231-90f50698b926',
+      serviceWorkerPath: 'push/onesignal/OneSignalSDKWorker.js',
+      serviceWorkerParam: { scope: '/push/onesignal/' },
+      allowLocalhostAsSecureOrigin: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    });
+  });
+})();
+`);
+});
+
+app.get('/push/onesignal/OneSignalSDKWorker.js', (req, res) => {
+  res.type('application/javascript; charset=utf-8').send('importScripts("https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js");\n');
+});
+
 // Block backend, repo, and local data files from being served by root static hosting.
 app.use((req, res, next) => {
   let decodedPath = '';
