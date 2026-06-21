@@ -2669,6 +2669,12 @@ function getBlogSitemapUrls() {
       changefreq: 'monthly',
       priority: '0.66',
       lastmod: getFileSitemapLastMod(resolveBlogFilePath('Is-Birthday-Haram.html'))
+    },
+    {
+      loc: `${PUBLIC_BASE_URL}/spiritually-empty-after-ramadan-ends`,
+      changefreq: 'monthly',
+      priority: '0.66',
+      lastmod: getFileSitemapLastMod(resolveBlogFilePath('why-feel-empty.html'))
     }
   ];
 }
@@ -2930,6 +2936,18 @@ app.get([
 ], (req, res) => {
   if (redirectToCanonicalIfNeeded(req, res, '/is-birthday-haram')) return;
   sendBlogPage(res, 'Is-Birthday-Haram.html');
+});
+
+app.get([
+  '/spiritually-empty-after-ramadan-ends',
+  '/spiritually-empty-after-ramadan-ends/',
+  '/spiritually-empty-after-ramadan-ends.html',
+  '/why-feel-empty',
+  '/why-feel-empty/',
+  '/why-feel-empty.html'
+], (req, res) => {
+  if (redirectToCanonicalIfNeeded(req, res, '/spiritually-empty-after-ramadan-ends')) return;
+  sendBlogPage(res, 'why-feel-empty.html');
 });
 
 app.get('/prayer-times-city.html', (req, res) => {
