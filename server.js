@@ -2675,6 +2675,12 @@ function getBlogSitemapUrls() {
       changefreq: 'monthly',
       priority: '0.66',
       lastmod: getFileSitemapLastMod(resolveBlogFilePath('why-feel-empty.html'))
+    },
+    {
+      loc: `${PUBLIC_BASE_URL}/why-i-feel-nothing-praying-reading-quran`,
+      changefreq: 'monthly',
+      priority: '0.68',
+      lastmod: getFileSitemapLastMod(resolveBlogFilePath('Feeling-numb-deen.html'))
     }
   ];
 }
@@ -2948,6 +2954,18 @@ app.get([
 ], (req, res) => {
   if (redirectToCanonicalIfNeeded(req, res, '/spiritually-empty-after-ramadan-ends')) return;
   sendBlogPage(res, 'why-feel-empty.html');
+});
+
+app.get([
+  '/why-i-feel-nothing-praying-reading-quran',
+  '/why-i-feel-nothing-praying-reading-quran/',
+  '/why-i-feel-nothing-praying-reading-quran.html',
+  '/Feeling-numb-deen',
+  '/Feeling-numb-deen/',
+  '/Feeling-numb-deen.html'
+], (req, res) => {
+  if (redirectToCanonicalIfNeeded(req, res, '/why-i-feel-nothing-praying-reading-quran')) return;
+  sendBlogPage(res, 'Feeling-numb-deen.html');
 });
 
 app.get('/prayer-times-city.html', (req, res) => {
