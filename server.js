@@ -2681,6 +2681,12 @@ function getBlogSitemapUrls() {
       changefreq: 'monthly',
       priority: '0.68',
       lastmod: getFileSitemapLastMod(resolveBlogFilePath('Feeling-numb-deen.html'))
+    },
+    {
+      loc: `${PUBLIC_BASE_URL}/ibadah-burnout-recognizing-and-recovering`,
+      changefreq: 'monthly',
+      priority: '0.67',
+      lastmod: getFileSitemapLastMod(resolveBlogFilePath('burnt-out-worshipping.html'))
     }
   ];
 }
@@ -2966,6 +2972,18 @@ app.get([
 ], (req, res) => {
   if (redirectToCanonicalIfNeeded(req, res, '/why-i-feel-nothing-praying-reading-quran')) return;
   sendBlogPage(res, 'Feeling-numb-deen.html');
+});
+
+app.get([
+  '/ibadah-burnout-recognizing-and-recovering',
+  '/ibadah-burnout-recognizing-and-recovering/',
+  '/ibadah-burnout-recognizing-and-recovering.html',
+  '/burnt-out-worshipping',
+  '/burnt-out-worshipping/',
+  '/burnt-out-worshipping.html'
+], (req, res) => {
+  if (redirectToCanonicalIfNeeded(req, res, '/ibadah-burnout-recognizing-and-recovering')) return;
+  sendBlogPage(res, 'burnt-out-worshipping.html');
 });
 
 app.get('/prayer-times-city.html', (req, res) => {
