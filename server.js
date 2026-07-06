@@ -2671,6 +2671,12 @@ function getBlogSitemapUrls() {
       lastmod: getFileSitemapLastMod(resolveBlogFilePath('Is-Birthday-Haram.html'))
     },
     {
+      loc: `${PUBLIC_BASE_URL}/why-feel-guilty-after-tawbah`,
+      changefreq: 'monthly',
+      priority: '0.67',
+      lastmod: getFileSitemapLastMod(resolveBlogFilePath('why-feel-guilty.html'))
+    },
+    {
       loc: `${PUBLIC_BASE_URL}/spiritually-empty-after-ramadan-ends`,
       changefreq: 'monthly',
       priority: '0.66',
@@ -2948,6 +2954,18 @@ app.get([
 ], (req, res) => {
   if (redirectToCanonicalIfNeeded(req, res, '/is-birthday-haram')) return;
   sendBlogPage(res, 'Is-Birthday-Haram.html');
+});
+
+app.get([
+  '/why-feel-guilty-after-tawbah',
+  '/why-feel-guilty-after-tawbah/',
+  '/why-feel-guilty-after-tawbah.html',
+  '/why-feel-guilty',
+  '/why-feel-guilty/',
+  '/why-feel-guilty.html'
+], (req, res) => {
+  if (redirectToCanonicalIfNeeded(req, res, '/why-feel-guilty-after-tawbah')) return;
+  sendBlogPage(res, 'why-feel-guilty.html');
 });
 
 app.get([
