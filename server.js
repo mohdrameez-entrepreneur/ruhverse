@@ -2693,6 +2693,12 @@ function getBlogSitemapUrls() {
       changefreq: 'monthly',
       priority: '0.67',
       lastmod: getFileSitemapLastMod(resolveBlogFilePath('burnt-out-worshipping.html'))
+    },
+    {
+      loc: `${PUBLIC_BASE_URL}/ibadah-burnout-warning-signs`,
+      changefreq: 'monthly',
+      priority: '0.67',
+      lastmod: getFileSitemapLastMod(resolveBlogFilePath('ibadah-burnout-warning-signs.html'))
     }
   ];
 }
@@ -3002,6 +3008,15 @@ app.get([
 ], (req, res) => {
   if (redirectToCanonicalIfNeeded(req, res, '/ibadah-burnout-recognizing-and-recovering')) return;
   sendBlogPage(res, 'burnt-out-worshipping.html');
+});
+
+app.get([
+  '/ibadah-burnout-warning-signs',
+  '/ibadah-burnout-warning-signs/',
+  '/ibadah-burnout-warning-signs.html'
+], (req, res) => {
+  if (redirectToCanonicalIfNeeded(req, res, '/ibadah-burnout-warning-signs')) return;
+  sendBlogPage(res, 'ibadah-burnout-warning-signs.html');
 });
 
 app.get('/prayer-times-city.html', (req, res) => {
