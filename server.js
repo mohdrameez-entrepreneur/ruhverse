@@ -2699,6 +2699,12 @@ function getBlogSitemapUrls() {
       changefreq: 'monthly',
       priority: '0.67',
       lastmod: getFileSitemapLastMod(resolveBlogFilePath('ibadah-burnout-warning-signs.html'))
+    },
+    {
+      loc: `${PUBLIC_BASE_URL}/committing-sins`,
+      changefreq: 'monthly',
+      priority: '0.67',
+      lastmod: getFileSitemapLastMod(resolveBlogFilePath('committing-sins.html'))
     }
   ];
 }
@@ -3017,6 +3023,15 @@ app.get([
 ], (req, res) => {
   if (redirectToCanonicalIfNeeded(req, res, '/ibadah-burnout-warning-signs')) return;
   sendBlogPage(res, 'ibadah-burnout-warning-signs.html');
+});
+
+app.get([
+  '/committing-sins',
+  '/committing-sins/',
+  '/committing-sins.html'
+], (req, res) => {
+  if (redirectToCanonicalIfNeeded(req, res, '/committing-sins')) return;
+  sendBlogPage(res, 'committing-sins.html');
 });
 
 app.get('/prayer-times-city.html', (req, res) => {
