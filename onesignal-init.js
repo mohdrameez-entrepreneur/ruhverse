@@ -3,7 +3,7 @@
 
   window.OneSignalDeferred.push(async function (OneSignal) {
     await OneSignal.init({
-      appId: '31aeb5c9-708a-4537-a231-90f50698b926',
+      appId: 'd1feb8cc-5929-42b8-a78f-55455c3f6613',
       safari_web_id: 'web.onesignal.auto.69a0d04c-4cfa-4f80-8d34-652264ce8748',
       serviceWorkerPath: 'push/onesignal/OneSignalSDKWorker.js',
       serviceWorkerParam: { scope: '/push/onesignal/' },
