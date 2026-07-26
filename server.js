@@ -2705,6 +2705,12 @@ function getBlogSitemapUrls() {
       changefreq: 'monthly',
       priority: '0.67',
       lastmod: getFileSitemapLastMod(resolveBlogFilePath('committing-sins.html'))
+    },
+    {
+      loc: `${PUBLIC_BASE_URL}/is-it-haram-to-feel-angry-at-allah`,
+      changefreq: 'monthly',
+      priority: '0.67',
+      lastmod: getFileSitemapLastMod(resolveBlogFilePath('angryA-haram.html'))
     }
   ];
 }
@@ -3002,6 +3008,18 @@ app.get([
 ], (req, res) => {
   if (redirectToCanonicalIfNeeded(req, res, '/why-i-feel-nothing-praying-reading-quran')) return;
   sendBlogPage(res, 'Feeling-numb-deen.html');
+});
+
+app.get([
+  '/is-it-haram-to-feel-angry-at-allah',
+  '/is-it-haram-to-feel-angry-at-allah/',
+  '/is-it-haram-to-feel-angry-at-allah.html',
+  '/angryA-haram',
+  '/angryA-haram/',
+  '/angryA-haram.html'
+], (req, res) => {
+  if (redirectToCanonicalIfNeeded(req, res, '/is-it-haram-to-feel-angry-at-allah')) return;
+  sendBlogPage(res, 'angryA-haram.html');
 });
 
 app.get([
