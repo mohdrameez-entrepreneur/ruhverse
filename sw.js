@@ -42,6 +42,11 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
+    if (url.pathname === '/onesignal-init.js' || url.pathname.startsWith('/push/onesignal/')) {
+        event.respondWith(fetch(request));
+        return;
+    }
+
     if (request.mode === 'navigate') {
         event.respondWith(
             fetch(request)
