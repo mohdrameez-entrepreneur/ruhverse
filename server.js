@@ -3726,6 +3726,12 @@ app.use((req, res, next) => {
   const lowerPath = normalizedPath.toLowerCase();
   const lowerFileName = fileName.toLowerCase();
 
+  // Whitelist specific public client-side files inside /data/ before applying the block.
+  const dataWhitelist = ['/data/insights.js'];
+  if (dataWhitelist.includes(lowerPath)) {
+    return next();
+  }
+
   const isBlocked =
     segments.some((segment) => segment.startsWith('.')) ||
     lowerPath.startsWith('/data/') ||
