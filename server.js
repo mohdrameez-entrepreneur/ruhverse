@@ -2717,6 +2717,12 @@ function getBlogSitemapUrls() {
       changefreq: 'monthly',
       priority: '0.67',
       lastmod: getFileSitemapLastMod(resolveBlogFilePath('instrutive-thoughts.html'))
+    },
+    {
+      loc: `${PUBLIC_BASE_URL}/missing-fajr`,
+      changefreq: 'monthly',
+      priority: '0.67',
+      lastmod: getFileSitemapLastMod(resolveBlogFilePath('missing-fajr.html'))
     }
   ];
 }
@@ -3065,6 +3071,15 @@ app.get([
 ], (req, res) => {
   if (redirectToCanonicalIfNeeded(req, res, '/committing-sins')) return;
   sendBlogPage(res, 'committing-sins.html');
+});
+
+app.get([
+  '/missing-fajr',
+  '/missing-fajr/',
+  '/missing-fajr.html'
+], (req, res) => {
+  if (redirectToCanonicalIfNeeded(req, res, '/missing-fajr')) return;
+  sendBlogPage(res, 'missing-fajr.html');
 });
 
 app.get('/prayer-times-city.html', (req, res) => {
