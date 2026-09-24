@@ -977,6 +977,8 @@ function setupHomeAuth() {
     const switchHint = document.getElementById('home-auth-switch-hint');
     const errorEl = document.getElementById('home-auth-error');
     const toast = document.getElementById('home-auth-toast');
+    const googleBtn = document.getElementById('home-google-auth-btn');
+    const authDivider = document.getElementById('home-auth-divider');
 
     const state = {
         mode: 'login',
@@ -1012,6 +1014,15 @@ function setupHomeAuth() {
         state.mode = nextMode;
         const isRegister = state.mode === 'register';
         const isAccount = state.mode === 'account';
+
+        if (googleBtn) {
+            googleBtn.hidden = isAccount;
+            googleBtn.style.display = isAccount ? 'none' : 'flex';
+        }
+        if (authDivider) {
+            authDivider.hidden = isAccount;
+            authDivider.style.display = isAccount ? 'none' : 'flex';
+        }
 
         if (usernameInput) {
             usernameInput.hidden = !isRegister;
@@ -1178,6 +1189,27 @@ function setupHomeAuth() {
             }
         }
     }
+
+    if (googleBtn) {
+        googleBtn.addEventListener('click', () => {
+            const redirectUrl = window.location.origin + window.location.pathname;
+            const supabaseUrl = 'https://ozgapfpryzqpfozsbyuz.supabase.co';
+            window.location.href = supabaseUrl + "/auth/v1/authorize?provider=google&redirect_to=" + encodeURIComponent(redirectUrl);
+        });
+    }
+
+    // Extract OAuth access_token from URL hash (Google Login redirect)
+    try {
+        const hashParams = new URLSearchParams((window.location.hash || '').replace(/^#/, ''));
+        const oauthToken = hashParams.get('access_token');
+        if (oauthToken) {
+            localStorage.setItem(tokenKey, oauthToken);
+            if (window.history && window.history.replaceState) {
+                window.history.replaceState(null, '', window.location.pathname + window.location.search);
+            }
+            showToast('Signed in successfully with Google!');
+        }
+    } catch (_) {}
 
     openers.forEach((btn) => {
         btn.addEventListener('click', (event) => {

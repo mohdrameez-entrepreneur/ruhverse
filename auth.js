@@ -48,6 +48,17 @@
     ensureScaffold();
     bindUiEvents();
 
+    try {
+      const hashParams = new URLSearchParams((window.location.hash || '').replace(/^#/, ''));
+      const oauthToken = hashParams.get('access_token');
+      if (oauthToken) {
+        localStorage.setItem(TOKEN_KEY, oauthToken);
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
+      }
+    } catch (e) {}
+
     state.token = localStorage.getItem(TOKEN_KEY) || '';
     await bootstrapSession();
     updateAuthUi();
@@ -157,6 +168,18 @@
           <p class="home-auth-tag">RuhVerse Member Access</p>
           <h3 id="auth-modal-title">Login to Continue Your Journey</h3>
           <p id="auth-modal-hint" class="home-auth-hint auth-modal-hint">Sign in to sync bookmarks and reading progress.</p>
+          <button type="button" id="auth-google-btn" class="google-auth-btn" aria-label="Continue with Google">
+            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.04h3.88c2.28-2.09 3.66-5.17 3.66-9.14z"/>
+              <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.04c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.27v3.13C3.25 21.27 7.31 24 12 24z"/>
+              <path fill="#FBBC05" d="M5.28 14.28c-.25-.72-.38-1.49-.38-2.28s.13-1.56.38-2.28V6.59H1.27C.46 8.2.01 10.05.01 12s.45 3.8 1.26 5.41l4.01-3.13z"/>
+              <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.25 2.73 1.27 6.59l4.01 3.13c.95-2.83 3.6-4.97 6.72-4.97z"/>
+            </svg>
+            <span>Continue with Google</span>
+          </button>
+          <div id="auth-divider" class="auth-divider">
+            <span>or continue with email</span>
+          </div>
           <form id="auth-form" class="auth-form home-auth-form" autocomplete="on">
             <input id="auth-username" class="input-field home-auth-input" type="text" placeholder="Choose a username" minlength="2" maxlength="40" hidden disabled />
             <input id="auth-email" class="input-field home-auth-input" type="email" placeholder="Enter your email" required />
@@ -193,6 +216,8 @@
     ui.modal = document.getElementById('auth-modal');
     ui.modalTitle = document.getElementById('auth-modal-title');
     ui.modalHint = document.getElementById('auth-modal-hint');
+    ui.googleBtn = document.getElementById('auth-google-btn');
+    ui.divider = document.getElementById('auth-divider');
     ui.usernameInput = document.getElementById('auth-username');
     ui.emailInput = document.getElementById('auth-email');
     ui.passwordInput = document.getElementById('auth-password');
@@ -211,6 +236,14 @@
       window.addEventListener('resize', placeQuranAuthControlsForViewport);
       window.addEventListener('orientationchange', placeQuranAuthControlsForViewport);
       viewportBindingAttached = true;
+    }
+
+    if (ui.googleBtn) {
+      ui.googleBtn.addEventListener('click', () => {
+        const redirectUrl = window.location.origin + window.location.pathname;
+        const supabaseUrl = 'https://ozgapfpryzqpfozsbyuz.supabase.co';
+        window.location.href = supabaseUrl + '/auth/v1/authorize?provider=google&redirect_to=' + encodeURIComponent(redirectUrl);
+      });
     }
 
     if (ui.authBtn) {
