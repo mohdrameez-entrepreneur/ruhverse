@@ -33,8 +33,8 @@ export default function NextPrayerCard({
   const activeProgress = celestial.isDay ? celestial.sunProgress : celestial.nightProgress;
   const celestialPos = getParabolicArcPoint(activeProgress, arcWidth, arcHeight);
 
-  // Generate 18 dotted points along the curved trajectory
-  const numDots = 18;
+  // Generate 11 cleanly spaced points along the curved trajectory
+  const numDots = 11;
   const arcDots = [];
   for (let i = 0; i <= numDots; i++) {
     const p = i / numDots;
@@ -53,7 +53,7 @@ export default function NextPrayerCard({
 
   return (
     <View style={styles.container}>
-      {/* 1. TOP HEADER: Clean Location Pill & Date (Removed Sun/Moon text) */}
+      {/* 1. TOP HEADER: Clean Location & Date Badges */}
       <View style={styles.topRow}>
         <View style={styles.locationPill}>
           <Ionicons name="location-sharp" size={13} color={Colors.goldLight} />
@@ -73,7 +73,7 @@ export default function NextPrayerCard({
         </View>
       </View>
 
-      {/* 2. DOTTED SUN & MOON PARABOLIC SKY ARC */}
+      {/* 2. SERENE SUN & MOON CELESTIAL SKY ARC */}
       <View
         style={styles.arcContainer}
         onLayout={(e) => {
@@ -83,7 +83,7 @@ export default function NextPrayerCard({
           }
         }}
       >
-        {/* Dotted Parabolic Sky Trajectory */}
+        {/* Graceful Parabolic Sky Trajectory */}
         {arcDots.map((dot) => (
           <View
             key={dot.id}
@@ -99,7 +99,7 @@ export default function NextPrayerCard({
           />
         ))}
 
-        {/* Real-time Revolving Sun or Moon sitting on the Arc */}
+        {/* Real-time Revolving Sun or Moon */}
         <View
           style={[
             styles.celestialObject,
@@ -109,7 +109,6 @@ export default function NextPrayerCard({
             },
           ]}
         >
-          {/* Radiant Sun/Moon (Clean, glowing, unified gold & silver) */}
           <View style={styles.celestialHalo}>
             <Ionicons
               name={celestial.isDay ? 'sunny' : 'moon'}
@@ -120,7 +119,7 @@ export default function NextPrayerCard({
         </View>
       </View>
 
-      {/* 3. HORIZON TIMINGS (↑ Sunrise and ↓ Sunset) */}
+      {/* 3. HORIZON TIMINGS (Sunrise, Sunset & Phase) */}
       <View style={styles.horizonTimeRow}>
         <View style={styles.horizonItem}>
           <Text style={styles.arrowIcon}>↑</Text>
@@ -141,20 +140,7 @@ export default function NextPrayerCard({
         </View>
       </View>
 
-      {/* 4. LUNAR PHASE STRIP */}
-      <View style={styles.lunarBar}>
-        <View style={styles.lunarLeft}>
-          <Ionicons name="moon-outline" size={13} color={Colors.goldLight} />
-          <Text style={styles.lunarText} numberOfLines={1}>
-            {celestial.lunarPhase.name}
-          </Text>
-        </View>
-        <Text style={styles.lunarIllumination} numberOfLines={1}>
-          {celestial.lunarPhase.illumination} Illum.
-        </Text>
-      </View>
-
-      {/* 5. NEXT PRAYER COUNTDOWN INFO */}
+      {/* 4. PRIMARY FOCAL POINT: NEXT PRAYER & COUNTDOWN */}
       <TouchableOpacity style={styles.mainInfo} activeOpacity={0.88} onPress={onPress}>
         <View style={styles.prayerLeftWrap}>
           <Text style={styles.nextLabel}>
@@ -315,42 +301,12 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
 
-  // Lunar Info Strip
-  lunarBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 5.5,
-    borderRadius: 14,
-    backgroundColor: 'rgba(7, 24, 15, 0.40)',
-    borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.20)',
-    marginBottom: 12,
-  },
-  lunarLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    flexShrink: 1,
-  },
-  lunarText: {
-    fontSize: 11.5,
-    fontWeight: '600',
-    color: 'rgba(255, 255, 255, 0.9)',
-  },
-  lunarIllumination: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: Colors.goldLight,
-  },
-
   // Next Prayer Info
   mainInfo: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
-    marginBottom: 12,
+    marginVertical: 10,
   },
   prayerLeftWrap: {
     flexShrink: 1,
@@ -401,6 +357,7 @@ const styles = StyleSheet.create({
     padding: 4,
     borderWidth: 1,
     borderColor: 'rgba(212, 175, 55, 0.20)',
+    marginTop: 6,
   },
   stripItem: {
     flex: 1,

@@ -166,8 +166,6 @@ export default function HomeScreen({ navigation }) {
         {/* Top Header inside ScrollView so it scrolls with the page */}
         <Header
           title="RuhVerse"
-          subtitle="Illuminating Hearts with Divine Wisdom"
-          onSupportPress={() => setSupportVisible(true)}
           onProfilePress={() => navigation.navigate('Profile')}
           transparent={true}
         />
@@ -181,13 +179,14 @@ export default function HomeScreen({ navigation }) {
         />
 
         {/* Quick Utilities Row (Quran, Qibla, Salah, Support) */}
+        {/* Decluttered design psychology: pure icon + label with generous tap targets */}
         <View style={styles.quickGrid}>
           <TouchableOpacity
             style={[
               styles.quickCard,
               {
-                backgroundColor: isDarkMode ? 'rgba(10, 32, 20, 0.65)' : 'rgba(255, 255, 255, 0.88)',
-                borderColor: isDarkMode ? 'rgba(212, 175, 55, 0.28)' : 'rgba(212, 175, 55, 0.40)',
+                backgroundColor: isDarkMode ? 'rgba(10, 32, 20, 0.65)' : 'rgba(255, 255, 255, 0.90)',
+                borderColor: isDarkMode ? 'rgba(212, 175, 55, 0.28)' : 'rgba(212, 175, 55, 0.35)',
               },
             ]}
             onPress={() => navigation.navigate('Quran')}
@@ -202,7 +201,7 @@ export default function HomeScreen({ navigation }) {
                 },
               ]}
             >
-              <Ionicons name="book-outline" size={19} color={isDarkMode ? Colors.goldLight : theme.primary} />
+              <Ionicons name="book-outline" size={21} color={isDarkMode ? Colors.goldLight : theme.primary} />
             </View>
             <Text
               style={[styles.quickTitle, { color: isDarkMode ? '#FFFFFF' : theme.text }]}
@@ -211,17 +210,14 @@ export default function HomeScreen({ navigation }) {
             >
               Quran
             </Text>
-            <Text style={[styles.quickSub, { color: isDarkMode ? '#FDE68A' : theme.textSecondary }]} numberOfLines={1}>
-              114 Surahs
-            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[
               styles.quickCard,
               {
-                backgroundColor: isDarkMode ? 'rgba(10, 32, 20, 0.65)' : 'rgba(255, 255, 255, 0.88)',
-                borderColor: isDarkMode ? 'rgba(212, 175, 55, 0.28)' : 'rgba(212, 175, 55, 0.40)',
+                backgroundColor: isDarkMode ? 'rgba(10, 32, 20, 0.65)' : 'rgba(255, 255, 255, 0.90)',
+                borderColor: isDarkMode ? 'rgba(212, 175, 55, 0.28)' : 'rgba(212, 175, 55, 0.35)',
               },
             ]}
             onPress={() => navigation.navigate('Qibla')}
@@ -236,7 +232,7 @@ export default function HomeScreen({ navigation }) {
                 },
               ]}
             >
-              <Ionicons name="compass-outline" size={19} color={isDarkMode ? Colors.goldLight : theme.primary} />
+              <Ionicons name="compass-outline" size={21} color={isDarkMode ? Colors.goldLight : theme.primary} />
             </View>
             <Text
               style={[styles.quickTitle, { color: isDarkMode ? '#FFFFFF' : theme.text }]}
@@ -245,16 +241,13 @@ export default function HomeScreen({ navigation }) {
             >
               Qibla
             </Text>
-            <Text style={[styles.quickSub, { color: isDarkMode ? '#FDE68A' : theme.textSecondary }]} numberOfLines={1}>
-              Compass
-            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[
               styles.quickCard,
               {
-                backgroundColor: isDarkMode ? 'rgba(10, 32, 20, 0.65)' : 'rgba(255, 255, 255, 0.88)',
+                backgroundColor: isDarkMode ? 'rgba(10, 32, 20, 0.65)' : 'rgba(255, 255, 255, 0.90)',
                 borderColor: isDarkMode ? 'rgba(212, 175, 55, 0.28)' : 'rgba(212, 175, 55, 0.40)',
               },
             ]}
@@ -270,7 +263,7 @@ export default function HomeScreen({ navigation }) {
                 },
               ]}
             >
-              <Ionicons name="time-outline" size={19} color={isDarkMode ? Colors.goldLight : theme.primary} />
+              <Ionicons name="time-outline" size={21} color={isDarkMode ? Colors.goldLight : theme.primary} />
             </View>
             <Text
               style={[styles.quickTitle, { color: isDarkMode ? '#FFFFFF' : theme.text }]}
@@ -279,17 +272,14 @@ export default function HomeScreen({ navigation }) {
             >
               Salah
             </Text>
-            <Text style={[styles.quickSub, { color: isDarkMode ? '#FDE68A' : theme.textSecondary }]} numberOfLines={1}>
-              Timings
-            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[
               styles.quickCard,
               {
-                backgroundColor: isDarkMode ? 'rgba(10, 32, 20, 0.65)' : 'rgba(255, 255, 255, 0.88)',
-                borderColor: isDarkMode ? 'rgba(212, 175, 55, 0.28)' : 'rgba(212, 175, 55, 0.40)',
+                backgroundColor: isDarkMode ? 'rgba(10, 32, 20, 0.65)' : 'rgba(255, 255, 255, 0.90)',
+                borderColor: isDarkMode ? 'rgba(212, 175, 55, 0.28)' : 'rgba(212, 175, 55, 0.35)',
               },
             ]}
             onPress={() => setSupportVisible(true)}
@@ -304,7 +294,7 @@ export default function HomeScreen({ navigation }) {
                 },
               ]}
             >
-              <Ionicons name="heart" size={19} color="#F87171" />
+              <Ionicons name="heart" size={21} color="#F87171" />
             </View>
             <Text
               style={[styles.quickTitle, { color: isDarkMode ? '#FFFFFF' : theme.text }]}
@@ -312,9 +302,6 @@ export default function HomeScreen({ navigation }) {
               adjustsFontSizeToFit
             >
               Support
-            </Text>
-            <Text style={[styles.quickSub, { color: isDarkMode ? '#FDE68A' : theme.textSecondary }]} numberOfLines={1}>
-              Ad-Free
             </Text>
           </TouchableOpacity>
         </View>
@@ -324,7 +311,7 @@ export default function HomeScreen({ navigation }) {
           style={[
             styles.verseCard,
             {
-              backgroundColor: isDarkMode ? 'rgba(10, 30, 20, 0.68)' : 'rgba(255, 255, 255, 0.88)',
+              backgroundColor: isDarkMode ? 'rgba(10, 30, 20, 0.68)' : 'rgba(255, 255, 255, 0.92)',
               borderColor: isDarkMode ? 'rgba(212, 175, 55, 0.25)' : 'rgba(212, 175, 55, 0.35)',
             },
           ]}
@@ -390,45 +377,39 @@ const styles = StyleSheet.create({
   quickGrid: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 18,
-    marginTop: 8,
-    marginBottom: 16,
-    gap: 8,
+    paddingHorizontal: 20,
+    marginTop: 10,
+    marginBottom: 20,
+    gap: 10,
   },
   quickCard: {
     flex: 1,
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 4,
-    borderRadius: 18,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
   },
   iconCircle: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 5,
+    marginBottom: 7,
   },
   quickTitle: {
-    fontSize: 12,
+    fontSize: 12.5,
     fontWeight: '700',
     textAlign: 'center',
-    letterSpacing: 0.1,
-  },
-  quickSub: {
-    fontSize: 9.5,
-    fontWeight: '500',
-    textAlign: 'center',
-    marginTop: 1,
+    letterSpacing: 0.2,
   },
   verseCard: {
-    borderRadius: 22,
-    padding: 20,
-    marginHorizontal: 18,
-    marginVertical: 12,
+    borderRadius: 24,
+    padding: 22,
+    marginHorizontal: 20,
+    marginVertical: 16,
     borderWidth: 1,
     borderLeftWidth: 4,
     borderLeftColor: Colors.gold,
@@ -447,20 +428,20 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
   },
   verseArabic: {
-    fontSize: 22,
+    fontSize: 23,
     textAlign: 'right',
-    lineHeight: 38,
-    marginBottom: 10,
+    lineHeight: 42,
+    marginBottom: 12,
   },
   verseTranslation: {
-    fontSize: 14,
-    lineHeight: 22,
+    fontSize: 14.5,
+    lineHeight: 24,
     fontStyle: 'italic',
   },
   verseRef: {
-    fontSize: 12.5,
+    fontSize: 13,
     fontWeight: '700',
-    marginTop: 10,
+    marginTop: 12,
     textAlign: 'right',
   },
   sectionHeader: {
@@ -468,12 +449,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    marginTop: 20,
-    marginBottom: 14,
+    marginTop: 26,
+    marginBottom: 16,
   },
   sectionTitle: {
     color: Colors.text,
-    fontSize: 19,
+    fontSize: 20,
     fontWeight: '800',
     letterSpacing: -0.3,
   },
