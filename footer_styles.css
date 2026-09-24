@@ -6,8 +6,7 @@
     margin-top: 0;
     position: relative;
     border-top: 4px solid var(--gold, #d4af37);
-    content-visibility: auto;
-    contain-intrinsic-size: 560px;
+    display: block;
 }
 
 body.dark-mode .site-footer {

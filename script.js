@@ -513,28 +513,33 @@ function setupDarkMode() {
         return;
     }
 
-    // Fallback when theme.js is unavailable.
     if (nightBtn.dataset.themeManaged === '1') return;
     nightBtn.dataset.themeManaged = '1';
 
+    // Persist reliably in localStorage across tab close and refresh.
     const storedTheme = (() => {
         try {
-            return sessionStorage.getItem('ruhverse-theme');
+            return localStorage.getItem('ruhverse-theme');
         } catch (_) {
             return null;
         }
     })();
 
-    if (storedTheme === 'dark') {
+    if (storedTheme === 'light') {
+        document.body.classList.remove('dark-mode');
+    } else {
         document.body.classList.add('dark-mode');
     }
 
     nightBtn.addEventListener('click', () => {
+        if (window.RuhVerseTheme && typeof window.RuhVerseTheme.setTheme === 'function') {
+            window.RuhVerseTheme.setTheme(!document.body.classList.contains('dark-mode'));
+            return;
+        }
         const willBeDark = !document.body.classList.contains('dark-mode');
         document.body.classList.toggle('dark-mode', willBeDark);
         try {
-            if (willBeDark) sessionStorage.setItem('ruhverse-theme', 'dark');
-            else sessionStorage.removeItem('ruhverse-theme');
+            localStorage.setItem('ruhverse-theme', willBeDark ? 'dark' : 'light');
         } catch (_) {
             // Ignore storage failures.
         }

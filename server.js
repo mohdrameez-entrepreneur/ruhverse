@@ -2570,6 +2570,12 @@ function getStaticSitemapUrls() {
       lastmod: getFileSitemapLastMod(path.join(__dirname, 'index.html'), path.join(__dirname, 'style.css'))
     },
     {
+      loc: `${PUBLIC_BASE_URL}/privacy.html`,
+      changefreq: 'yearly',
+      priority: '0.3',
+      lastmod: getFileSitemapLastMod(path.join(__dirname, 'privacy.html'))
+    },
+    {
       loc: `${PUBLIC_BASE_URL}/quran`,
       changefreq: 'weekly',
       priority: '0.9',
@@ -3121,6 +3127,10 @@ app.get(['/prayer-times-global', '/prayer-times-global/'], (req, res) => {
 
 app.get(['/terms', '/terms/'], (req, res) => {
   res.redirect(301, '/terms.html');
+});
+
+app.get(['/privacy', '/privacy/'], (req, res) => {
+  res.redirect(301, '/privacy.html');
 });
 
 app.get('/index.html', (req, res) => {

@@ -28,7 +28,10 @@
           "robots.txt",
           "google50b824ea32f5425b.html",
           "assets/**",
-          "data/**"
+          "data/**",
+          "footer-common.js",
+          "privacy.html",
+          "PRIVACY_POLICY.md"
         ]
       }
     }

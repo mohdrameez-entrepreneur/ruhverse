@@ -55,8 +55,10 @@
 
     // Apply visual theme classes without touching storage.
     function applyTheme(isDark) {
-        if (!document.body) return;
-        document.body.classList.toggle('dark-mode', isDark);
+        document.documentElement.classList.toggle('dark-mode', isDark);
+        if (document.body) {
+            document.body.classList.toggle('dark-mode', isDark);
+        }
         updateToggleVisuals(isDark);
     }
 
@@ -106,9 +108,8 @@
         updateToggleVisuals(getCurrentThemeState());
     }
 
-    if (document.body) {
-        applyTheme(readStoredTheme());
-    }
+    // Apply immediately to prevent any flicker during refresh
+    applyTheme(readStoredTheme());
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initTheme);

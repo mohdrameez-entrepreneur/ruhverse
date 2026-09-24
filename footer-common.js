@@ -1,8 +1,9 @@
 (function () {
-  const footerMounts = document.querySelectorAll('[data-ruhverse-footer]');
-  if (!footerMounts.length) return;
+  function mountFooter() {
+    const footerMounts = document.querySelectorAll('[data-ruhverse-footer]');
+    if (!footerMounts.length) return;
 
-  const footerHtml = `
+    const footerHtml = `
     <footer class="site-footer">
       <div class="container">
         <div class="footer-content">
@@ -26,7 +27,7 @@
             <h4>Legal</h4>
             <ul class="footer-links">
               <li><a href="/terms.html">Terms &amp; Conditions</a></li>
-              <li><a href="/terms.html">Privacy Policy</a></li>
+              <li><a href="/privacy.html">Privacy Policy</a></li>
             </ul>
           </div>
           <div class="footer-col">
@@ -51,9 +52,16 @@
         </div>
       </div>
     </footer>
-  `;
+    `;
 
-  footerMounts.forEach(function (footerMount) {
-    footerMount.outerHTML = footerHtml;
-  });
+    footerMounts.forEach(function (footerMount) {
+      footerMount.outerHTML = footerHtml;
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', mountFooter);
+  } else {
+    mountFooter();
+  }
 }());
