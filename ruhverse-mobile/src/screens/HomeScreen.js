@@ -27,6 +27,44 @@ import { useTheme } from '../context/ThemeContext';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
+/**
+ * Smooth Atmospheric Gradient Generator
+ * Calculates continuously interpolated, rich, solid hex color stops
+ * with zero alpha gaps and seamless landing into screen background.
+ */
+function computeSmoothAtmosphericGradient(topColor, bgColor, isDark) {
+  if (!isDark) {
+    return {
+      colors: ['#1A4D2E', '#17472A', '#133F25', '#103720', '#0C2D1A', '#082314'],
+      locations: [0.0, 0.20, 0.42, 0.64, 0.85, 1.0],
+    };
+  }
+
+  const parseHex = (hex) => {
+    const c = (hex || '#000000').replace('#', '');
+    const num = parseInt(c.length === 3 ? c.split('').map((x) => x + x).join('') : c, 16);
+    return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
+  };
+
+  const toHex = ([r, g, b]) =>
+    `#${[r, g, b].map((x) => Math.max(0, Math.min(255, Math.round(x))).toString(16).padStart(2, '0')).join('')}`;
+
+  const startRGB = parseHex(topColor || '#123724');
+  const endRGB = parseHex(bgColor || '#0B1A12');
+
+  const stops = [0.0, 0.20, 0.42, 0.64, 0.85, 1.0];
+  const colors = stops.map((t) => {
+    // S-curve cosine interpolation for seamless optical transition
+    const factor = (1 - Math.cos(t * Math.PI)) / 2;
+    const r = startRGB[0] + (endRGB[0] - startRGB[0]) * factor;
+    const g = startRGB[1] + (endRGB[1] - startRGB[1]) * factor;
+    const b = startRGB[2] + (endRGB[2] - startRGB[2]) * factor;
+    return toHex([r, g, b]);
+  });
+
+  return { colors, locations: stops };
+}
+
 export default function HomeScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const { isDarkMode, theme } = useTheme();
@@ -84,6 +122,11 @@ export default function HomeScreen({ navigation }) {
   };
 
   const topEmeraldColor = celestial.theme.gradientColors[0] || '#1A4D2E';
+  const atmosphericGradient = computeSmoothAtmosphericGradient(
+    topEmeraldColor,
+    theme.background,
+    isDarkMode
+  );
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -96,21 +139,15 @@ export default function HomeScreen({ navigation }) {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FFFFFF" />}
       >
         {/* ============================================================== */}
-        {/* 1. EMERALD GREEN GRADIENT IN BACKGROUND */}
-        {/* Darkens deeply beneath near Quran, Qibla, Salah & Support icons */}
+        {/* 1. SILKY-SMOOTH EMERALD GRADIENT */}
+        {/* Continuous, solid chromatic ramp with zero white gaps or black corners */}
         {/* ============================================================== */}
         <LinearGradient
-          colors={[
-            topEmeraldColor,
-            celestial.theme.gradientColors[1] || '#143823',
-            '#0a2315',
-            '#04130a',
-            '#020a05',
-          ]}
-          locations={[0, 0.25, 0.52, 0.74, 1.0]}
+          colors={atmosphericGradient.colors}
+          locations={atmosphericGradient.locations}
           start={{ x: 0.5, y: 0 }}
           end={{ x: 0.5, y: 1 }}
-          style={[styles.firstScreenGradient, { height: Math.max(640, SCREEN_HEIGHT * 0.76) }]}
+          style={[styles.firstScreenGradient, { height: Math.max(720, SCREEN_HEIGHT * 0.85) }]}
           pointerEvents="none"
         />
 
@@ -132,68 +169,139 @@ export default function HomeScreen({ navigation }) {
         />
 
         {/* Quick Utilities Row (Quran, Qibla, Salah, Support) */}
-        {/* Darker contrast backdrop beneath for maximum icon clarity */}
         <View style={styles.quickGrid}>
           <TouchableOpacity
-            style={styles.quickCard}
+            style={[
+              styles.quickCard,
+              {
+                backgroundColor: isDarkMode ? 'rgba(10, 32, 20, 0.65)' : 'rgba(255, 255, 255, 0.88)',
+                borderColor: isDarkMode ? 'rgba(212, 175, 55, 0.28)' : 'rgba(212, 175, 55, 0.40)',
+              },
+            ]}
             onPress={() => navigation.navigate('Quran')}
             activeOpacity={0.8}
           >
-            <View style={styles.iconCircle}>
-              <Ionicons name="book-outline" size={19} color={Colors.goldLight} />
+            <View
+              style={[
+                styles.iconCircle,
+                {
+                  backgroundColor: isDarkMode ? 'rgba(212, 175, 55, 0.16)' : 'rgba(26, 77, 46, 0.08)',
+                  borderColor: isDarkMode ? 'rgba(212, 175, 55, 0.32)' : 'rgba(26, 77, 46, 0.15)',
+                },
+              ]}
+            >
+              <Ionicons name="book-outline" size={19} color={isDarkMode ? Colors.goldLight : theme.primary} />
             </View>
-            <Text style={styles.quickTitle} numberOfLines={1} adjustsFontSizeToFit>
+            <Text
+              style={[styles.quickTitle, { color: isDarkMode ? '#FFFFFF' : theme.text }]}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+            >
               Quran
             </Text>
-            <Text style={styles.quickSub} numberOfLines={1}>
+            <Text style={[styles.quickSub, { color: isDarkMode ? '#FDE68A' : theme.textSecondary }]} numberOfLines={1}>
               114 Surahs
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.quickCard}
+            style={[
+              styles.quickCard,
+              {
+                backgroundColor: isDarkMode ? 'rgba(10, 32, 20, 0.65)' : 'rgba(255, 255, 255, 0.88)',
+                borderColor: isDarkMode ? 'rgba(212, 175, 55, 0.28)' : 'rgba(212, 175, 55, 0.40)',
+              },
+            ]}
             onPress={() => navigation.navigate('Qibla')}
             activeOpacity={0.8}
           >
-            <View style={styles.iconCircle}>
-              <Ionicons name="compass-outline" size={19} color={Colors.goldLight} />
+            <View
+              style={[
+                styles.iconCircle,
+                {
+                  backgroundColor: isDarkMode ? 'rgba(212, 175, 55, 0.16)' : 'rgba(26, 77, 46, 0.08)',
+                  borderColor: isDarkMode ? 'rgba(212, 175, 55, 0.32)' : 'rgba(26, 77, 46, 0.15)',
+                },
+              ]}
+            >
+              <Ionicons name="compass-outline" size={19} color={isDarkMode ? Colors.goldLight : theme.primary} />
             </View>
-            <Text style={styles.quickTitle} numberOfLines={1} adjustsFontSizeToFit>
+            <Text
+              style={[styles.quickTitle, { color: isDarkMode ? '#FFFFFF' : theme.text }]}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+            >
               Qibla
             </Text>
-            <Text style={styles.quickSub} numberOfLines={1}>
+            <Text style={[styles.quickSub, { color: isDarkMode ? '#FDE68A' : theme.textSecondary }]} numberOfLines={1}>
               Compass
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.quickCard}
+            style={[
+              styles.quickCard,
+              {
+                backgroundColor: isDarkMode ? 'rgba(10, 32, 20, 0.65)' : 'rgba(255, 255, 255, 0.88)',
+                borderColor: isDarkMode ? 'rgba(212, 175, 55, 0.28)' : 'rgba(212, 175, 55, 0.40)',
+              },
+            ]}
             onPress={() => navigation.navigate('Salah')}
             activeOpacity={0.8}
           >
-            <View style={styles.iconCircle}>
-              <Ionicons name="time-outline" size={19} color={Colors.goldLight} />
+            <View
+              style={[
+                styles.iconCircle,
+                {
+                  backgroundColor: isDarkMode ? 'rgba(212, 175, 55, 0.16)' : 'rgba(26, 77, 46, 0.08)',
+                  borderColor: isDarkMode ? 'rgba(212, 175, 55, 0.32)' : 'rgba(26, 77, 46, 0.15)',
+                },
+              ]}
+            >
+              <Ionicons name="time-outline" size={19} color={isDarkMode ? Colors.goldLight : theme.primary} />
             </View>
-            <Text style={styles.quickTitle} numberOfLines={1} adjustsFontSizeToFit>
+            <Text
+              style={[styles.quickTitle, { color: isDarkMode ? '#FFFFFF' : theme.text }]}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+            >
               Salah
             </Text>
-            <Text style={styles.quickSub} numberOfLines={1}>
+            <Text style={[styles.quickSub, { color: isDarkMode ? '#FDE68A' : theme.textSecondary }]} numberOfLines={1}>
               Timings
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.quickCard}
+            style={[
+              styles.quickCard,
+              {
+                backgroundColor: isDarkMode ? 'rgba(10, 32, 20, 0.65)' : 'rgba(255, 255, 255, 0.88)',
+                borderColor: isDarkMode ? 'rgba(212, 175, 55, 0.28)' : 'rgba(212, 175, 55, 0.40)',
+              },
+            ]}
             onPress={() => setSupportVisible(true)}
             activeOpacity={0.8}
           >
-            <View style={styles.iconCircle}>
+            <View
+              style={[
+                styles.iconCircle,
+                {
+                  backgroundColor: isDarkMode ? 'rgba(212, 175, 55, 0.16)' : 'rgba(26, 77, 46, 0.08)',
+                  borderColor: isDarkMode ? 'rgba(212, 175, 55, 0.32)' : 'rgba(26, 77, 46, 0.15)',
+                },
+              ]}
+            >
               <Ionicons name="heart" size={19} color="#F87171" />
             </View>
-            <Text style={styles.quickTitle} numberOfLines={1} adjustsFontSizeToFit>
+            <Text
+              style={[styles.quickTitle, { color: isDarkMode ? '#FFFFFF' : theme.text }]}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+            >
               Support
             </Text>
-            <Text style={styles.quickSub} numberOfLines={1}>
+            <Text style={[styles.quickSub, { color: isDarkMode ? '#FDE68A' : theme.textSecondary }]} numberOfLines={1}>
               Ad-Free
             </Text>
           </TouchableOpacity>
@@ -204,8 +312,8 @@ export default function HomeScreen({ navigation }) {
           style={[
             styles.verseCard,
             {
-              backgroundColor: isDarkMode ? 'rgba(7, 24, 15, 0.72)' : 'rgba(255, 255, 255, 0.78)',
-              borderColor: isDarkMode ? 'rgba(212, 175, 55, 0.35)' : 'rgba(212, 175, 55, 0.42)',
+              backgroundColor: isDarkMode ? 'rgba(10, 30, 20, 0.68)' : 'rgba(255, 255, 255, 0.88)',
+              borderColor: isDarkMode ? 'rgba(212, 175, 55, 0.25)' : 'rgba(212, 175, 55, 0.35)',
             },
           ]}
         >
@@ -259,7 +367,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: Math.max(640, SCREEN_HEIGHT * 0.76),
+    height: Math.max(720, SCREEN_HEIGHT * 0.85),
   },
   scrollContent: {
     paddingBottom: 115,
@@ -275,58 +383,41 @@ const styles = StyleSheet.create({
   },
   quickCard: {
     flex: 1,
-    backgroundColor: 'rgba(3, 16, 9, 0.82)',
-    paddingVertical: 13,
+    paddingVertical: 12,
     paddingHorizontal: 4,
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1.2,
-    borderColor: 'rgba(212, 175, 55, 0.42)',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    borderWidth: 1,
   },
   iconCircle: {
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: 'rgba(212, 175, 55, 0.2)',
-    borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.45)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 6,
+    marginBottom: 5,
   },
   quickTitle: {
-    color: '#FFFFFF',
-    fontSize: 12.5,
+    fontSize: 12,
     fontWeight: '700',
     textAlign: 'center',
-    letterSpacing: 0.2,
+    letterSpacing: 0.1,
   },
   quickSub: {
-    color: '#FDE68A',
-    fontSize: 10,
-    fontWeight: '600',
+    fontSize: 9.5,
+    fontWeight: '500',
     textAlign: 'center',
-    marginTop: 2,
+    marginTop: 1,
   },
   verseCard: {
     borderRadius: 22,
     padding: 20,
     marginHorizontal: 18,
     marginVertical: 12,
-    borderWidth: 1.2,
+    borderWidth: 1,
     borderLeftWidth: 4,
     borderLeftColor: Colors.gold,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.15,
-    shadowRadius: 14,
-    elevation: 3,
   },
   verseHeader: {
     flexDirection: 'row',

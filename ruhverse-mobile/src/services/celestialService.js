@@ -11,9 +11,9 @@ export const CELESTIAL_THEMES = {
     accent: '#D4AF37', // Gold
     accentSecondary: '#FB923C', // Peach
     gradientColors: [
-      '#183E28', // Deep Dawn Emerald
-      'rgba(24, 62, 40, 0.45)',
-      'transparent',
+      '#17472D', // Deep Dawn Emerald
+      '#123924',
+      '#0E2C1C',
     ],
     sunColor: '#FDBA74',
     sunGlow: 'rgba(251, 146, 60, 0.65)',
@@ -29,9 +29,9 @@ export const CELESTIAL_THEMES = {
     accent: '#D4AF37',
     accentSecondary: '#F59E0B',
     gradientColors: [
-      '#174529', // Rich Morning Emerald
-      'rgba(23, 69, 41, 0.50)',
-      'transparent',
+      '#1E5836', // Rich Morning Emerald
+      '#17462B',
+      '#103320',
     ],
     sunColor: '#FBBF24',
     sunGlow: 'rgba(251, 191, 36, 0.70)',
@@ -47,9 +47,9 @@ export const CELESTIAL_THEMES = {
     accent: '#D4AF37', // Divine RuhVerse Gold
     accentSecondary: '#EAB308',
     gradientColors: [
-      '#1A4D2E', // Signature RuhVerse Emerald Green
-      'rgba(26, 77, 46, 0.60)',
-      'transparent',
+      '#20613B', // Signature RuhVerse Emerald Green
+      '#194D2F',
+      '#123822',
     ],
     sunColor: '#FDE047',
     sunGlow: 'rgba(250, 204, 21, 0.75)',
@@ -65,9 +65,9 @@ export const CELESTIAL_THEMES = {
     accent: '#D4AF37',
     accentSecondary: '#EA580C',
     gradientColors: [
-      '#1C462C', // Warm Sunset Emerald
-      'rgba(28, 70, 44, 0.50)',
-      'transparent',
+      '#245939', // Warm Sunset Emerald
+      '#1B452C',
+      '#133321',
     ],
     sunColor: '#FB923C',
     sunGlow: 'rgba(249, 115, 22, 0.70)',
@@ -83,9 +83,9 @@ export const CELESTIAL_THEMES = {
     accent: '#D4AF37',
     accentSecondary: '#8B5CF6',
     gradientColors: [
-      '#153A2A', // Twilight Deep Emerald
-      'rgba(21, 58, 42, 0.40)',
-      'transparent',
+      '#18422E', // Twilight Deep Emerald
+      '#133424',
+      '#0E261B',
     ],
     sunColor: '#F97316',
     sunGlow: 'rgba(249, 115, 22, 0.35)',
@@ -101,9 +101,9 @@ export const CELESTIAL_THEMES = {
     accent: '#D4AF37',
     accentSecondary: '#38BDF8',
     gradientColors: [
-      '#112E1E', // Midnight Deep Emerald
-      'rgba(17, 46, 30, 0.35)',
-      'transparent',
+      '#123724', // Midnight Deep Emerald
+      '#0F2C1D',
+      '#0B2015',
     ],
     sunColor: '#F59E0B',
     sunGlow: 'rgba(245, 158, 11, 0.20)',
