@@ -15,7 +15,7 @@ import { Colors } from '../constants/colors';
 
 export default function SupportModal({ visible, onClose }) {
   const [copied, setCopied] = useState(false);
-  const upiId = process.env.EXPO_PUBLIC_UPI_ID || 'ruhversebusiness@upi';
+  const upiId = process.env.EXPO_PUBLIC_UPI_ID || '8287593935@fam';
   const buyMeCoffeeUrl = process.env.EXPO_PUBLIC_BUY_ME_COFFEE_URL || 'https://www.buymeacoffee.com/ruhverse';
 
   const handleCopyUPI = async () => {

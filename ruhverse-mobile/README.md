@@ -68,7 +68,7 @@ Update your Supabase URL, Anon Key, and UPI / BuyMeACoffee details:
 ```env
 EXPO_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-EXPO_PUBLIC_UPI_ID=ruhversebusiness@upi
+EXPO_PUBLIC_UPI_ID=8287593935@fam
 EXPO_PUBLIC_BUY_ME_COFFEE_URL=https://www.buymeacoffee.com/ruhverse
 ```
 
