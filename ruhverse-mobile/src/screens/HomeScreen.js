@@ -33,10 +33,22 @@ const { height: SCREEN_HEIGHT } = Dimensions.get('window');
  * with zero alpha gaps and seamless landing into screen background.
  */
 function computeSmoothAtmosphericGradient(topColor, bgColor, isDark) {
+  const targetBg = bgColor || (isDark ? '#0B1A12' : '#FAF9F6');
+
   if (!isDark) {
+    // Luxurious chromatic ramp from signature emerald softly melting into white/cream background
     return {
-      colors: ['#1A4D2E', '#17472A', '#133F25', '#103720', '#0C2D1A', '#082314'],
-      locations: [0.0, 0.20, 0.42, 0.64, 0.85, 1.0],
+      colors: [
+        topColor || '#1A4D2E',
+        '#23633D',
+        '#338354',
+        '#5BA678',
+        '#9FD3B3',
+        '#D9F0E1',
+        '#EEF8F2',
+        targetBg,
+      ],
+      locations: [0.0, 0.18, 0.36, 0.54, 0.72, 0.86, 0.95, 1.0],
     };
   }
 
@@ -368,6 +380,8 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: Math.max(720, SCREEN_HEIGHT * 0.85),
+    borderBottomLeftRadius: 36,
+    borderBottomRightRadius: 36,
   },
   scrollContent: {
     paddingBottom: 115,
