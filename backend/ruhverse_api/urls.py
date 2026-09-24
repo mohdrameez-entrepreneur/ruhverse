@@ -1,8 +1,23 @@
 from django.contrib import admin
 from django.urls import path, include
+from django.http import JsonResponse
 from authentication import views as auth_views
 
+def root_index(request):
+    return JsonResponse({
+        'service': 'RuhVerse Backend API',
+        'status': 'online',
+        'version': '1.0.0',
+        'endpoints': {
+            'health': '/api/health/',
+            'articles': '/api/articles/',
+            'deferred_feed': '/api/deferred-feed/',
+            'auth': '/api/auth/'
+        }
+    })
+
 urlpatterns = [
+    path('', root_index, name='root_index'),
     path('admin/', admin.site.urls),
     # Articles endpoints
     path('api/', include('articles.urls')),
