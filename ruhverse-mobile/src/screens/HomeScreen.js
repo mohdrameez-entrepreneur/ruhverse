@@ -166,6 +166,7 @@ export default function HomeScreen({ navigation }) {
         {/* Top Header inside ScrollView so it scrolls with the page */}
         <Header
           title="RuhVerse"
+          locationName="New Delhi, India"
           onProfilePress={() => navigation.navigate('Profile')}
           transparent={true}
         />
@@ -174,7 +175,6 @@ export default function HomeScreen({ navigation }) {
         <NextPrayerCard
           nextPrayer={nextPrayer}
           prayerTimes={prayerTimes}
-          locationName="New Delhi, India"
           onPress={() => navigation.navigate('Salah')}
         />
 

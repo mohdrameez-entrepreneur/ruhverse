@@ -7,6 +7,7 @@ import { useTheme } from '../context/ThemeContext';
 export default function Header({
   title = 'RuhVerse',
   subtitle,
+  locationName,
   onSupportPress,
   onProfilePress,
   transparent = false,
@@ -21,24 +22,43 @@ export default function Header({
       ]}
     >
       <View style={styles.titleWrap}>
-        <View style={styles.titleRow}>
+        <View style={styles.brandRow}>
           <Image
             source={require('../../assets/icon.png')}
             style={styles.logo}
             resizeMode="contain"
           />
-          <Text
-            numberOfLines={1}
-            adjustsFontSizeToFit
-            style={[
-              styles.title,
-              { color: transparent ? '#FFFFFF' : theme.primaryDark },
-            ]}
-          >
-            {title}
-          </Text>
+          <View style={styles.brandTextCol}>
+            <Text
+              numberOfLines={1}
+              style={[
+                styles.title,
+                { color: transparent ? '#FFFFFF' : theme.primaryDark },
+              ]}
+            >
+              {title}
+            </Text>
+            {locationName && (
+              <View style={styles.locationRow}>
+                <Ionicons
+                  name="location-sharp"
+                  size={10.5}
+                  color={transparent ? Colors.goldLight : theme.primary}
+                />
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.locationText,
+                    { color: transparent ? 'rgba(255, 255, 255, 0.80)' : theme.textSecondary },
+                  ]}
+                >
+                  {locationName}
+                </Text>
+              </View>
+            )}
+          </View>
         </View>
-        {subtitle && (
+        {subtitle && !locationName && (
           <Text
             numberOfLines={1}
             adjustsFontSizeToFit
@@ -133,21 +153,36 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingRight: 8,
   },
-  titleRow: {
+  brandRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 9,
   },
   logo: {
-    width: 26,
-    height: 26,
-    borderRadius: 7,
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+  },
+  brandTextCol: {
+    justifyContent: 'center',
   },
   title: {
-    fontSize: 22,
+    fontSize: 19,
     fontWeight: '800',
     color: Colors.primaryDark,
     letterSpacing: -0.3,
+    lineHeight: 22,
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    marginTop: 1,
+  },
+  locationText: {
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 0.1,
   },
   subtitle: {
     fontSize: 10.5,

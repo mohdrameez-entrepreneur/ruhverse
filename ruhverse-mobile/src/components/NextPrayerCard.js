@@ -11,7 +11,8 @@ import {
 export default function NextPrayerCard({
   nextPrayer,
   prayerTimes,
-  locationName = 'New Delhi',
+  locationName,
+  showLocation = false,
   onPress,
 }) {
   const [arcWidth, setArcWidth] = useState(300);
@@ -53,16 +54,18 @@ export default function NextPrayerCard({
 
   return (
     <View style={styles.container}>
-      {/* 1. TOP HEADER: Clean Location & Date Badges */}
-      <View style={styles.topRow}>
-        <View style={styles.locationPill}>
-          <Ionicons name="location-sharp" size={13} color={Colors.goldLight} />
-          <Text style={styles.locationText} numberOfLines={1}>
-            {locationName}
-          </Text>
-        </View>
+      {/* 1. TOP HEADER: Date Badge (or optional location) */}
+      <View style={[styles.topRow, !showLocation && { justifyContent: 'flex-end' }]}>
+        {showLocation && locationName && (
+          <View style={styles.locationPill}>
+            <Ionicons name="location-sharp" size={11} color={Colors.goldLight} />
+            <Text style={styles.locationText} numberOfLines={1}>
+              {locationName}
+            </Text>
+          </View>
+        )}
         <View style={styles.datePill}>
-          <Ionicons name="calendar-outline" size={12} color="rgba(255, 255, 255, 0.75)" style={{ marginRight: 4 }} />
+          <Ionicons name="calendar-outline" size={11} color="rgba(255, 255, 255, 0.75)" style={{ marginRight: 4 }} />
           <Text style={styles.dateText} numberOfLines={1}>
             {currentTime.toLocaleDateString(undefined, {
               weekday: 'short',
@@ -128,9 +131,11 @@ export default function NextPrayerCard({
           </Text>
         </View>
         <View style={styles.horizonCenterInfo}>
-          <Text style={styles.phaseSubtitle} numberOfLines={1} adjustsFontSizeToFit>
-            {theme.subtitle}
-          </Text>
+          <View style={styles.phaseBadge}>
+            <Text style={styles.phaseSubtitle} numberOfLines={1} adjustsFontSizeToFit>
+              {theme.subtitle}
+            </Text>
+          </View>
         </View>
         <View style={styles.horizonItem}>
           <Text style={styles.arrowIcon}>↓</Text>
@@ -204,36 +209,38 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   locationPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.16)',
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
     borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.35)',
-    paddingHorizontal: 10,
-    paddingVertical: 4.5,
-    borderRadius: 14,
-    gap: 5,
+    borderColor: 'rgba(212, 175, 55, 0.30)',
+    paddingHorizontal: 8,
+    paddingVertical: 3.5,
+    borderRadius: 12,
+    gap: 4,
     maxWidth: '58%',
   },
   locationText: {
-    fontSize: 11.5,
+    fontSize: 10.5,
     fontWeight: '700',
     color: '#FFFFFF',
   },
   datePill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.12)',
-    paddingHorizontal: 9,
-    paddingVertical: 4.5,
-    borderRadius: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.10)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    paddingHorizontal: 8,
+    paddingVertical: 3.5,
+    borderRadius: 12,
   },
   dateText: {
-    color: 'rgba(255, 255, 255, 0.9)',
-    fontSize: 11.5,
+    color: 'rgba(255, 255, 255, 0.85)',
+    fontSize: 10.5,
     fontWeight: '600',
   },
 
@@ -277,28 +284,36 @@ const styles = StyleSheet.create({
   horizonItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 3,
   },
   arrowIcon: {
-    fontSize: 13,
+    fontSize: 10,
     fontWeight: '800',
     color: Colors.goldLight,
   },
   horizonTimeText: {
-    color: 'rgba(255, 255, 255, 0.95)',
-    fontSize: 12,
-    fontWeight: '700',
+    color: 'rgba(255, 255, 255, 0.78)',
+    fontSize: 11,
+    fontWeight: '600',
   },
   horizonCenterInfo: {
     alignItems: 'center',
     flexShrink: 1,
   },
+  phaseBadge: {
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.22)',
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
   phaseSubtitle: {
-    fontSize: 10.5,
-    fontWeight: '600',
-    color: 'rgba(255, 255, 255, 0.75)',
+    fontSize: 9,
+    fontWeight: '700',
+    color: 'rgba(254, 240, 138, 0.85)',
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 0.7,
   },
 
   // Next Prayer Info
@@ -312,39 +327,39 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   nextLabel: {
-    color: 'rgba(255, 255, 255, 0.7)',
-    fontSize: 11,
+    color: 'rgba(212, 175, 55, 0.88)',
+    fontSize: 10,
     textTransform: 'uppercase',
-    letterSpacing: 1,
-    fontWeight: '600',
+    letterSpacing: 1.2,
+    fontWeight: '700',
+    marginBottom: 2,
   },
   prayerName: {
-    fontSize: 30,
+    fontSize: 27,
     fontWeight: '800',
-    color: Colors.gold,
-    marginTop: 2,
-    letterSpacing: -0.5,
+    color: '#FFFFFF',
+    letterSpacing: -0.4,
   },
   timeWrapper: {
     alignItems: 'flex-end',
   },
   exactTime: {
-    color: '#FFFFFF',
-    fontSize: 24,
+    color: Colors.goldLight,
+    fontSize: 23,
     fontWeight: '800',
-    letterSpacing: -0.5,
+    letterSpacing: -0.4,
   },
   countdown: {
-    fontSize: 11.5,
+    fontSize: 11,
     fontWeight: '700',
-    color: Colors.goldLight,
-    backgroundColor: 'rgba(10, 32, 20, 0.50)',
+    color: '#FFFFFF',
+    backgroundColor: 'rgba(10, 32, 20, 0.60)',
     borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.30)',
+    borderColor: 'rgba(212, 175, 55, 0.35)',
     marginTop: 4,
-    paddingHorizontal: 9,
+    paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 16,
+    borderRadius: 12,
     overflow: 'hidden',
   },
 
