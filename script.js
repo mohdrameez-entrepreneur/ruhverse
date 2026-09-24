@@ -2288,3 +2288,20 @@ function renderLocationCard(name, t, timezone, mosqueSectionHtml = '') {
     // Smooth scroll to the result
     container.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
+
+
+// Background warmup trigger: wakes up sleeping backend in background when visitor arrives
+(function () {
+    const triggerWarmup = () => {
+        try {
+            fetch("/api/backend/warmup", { priority: "low" }).catch(() => {});
+        } catch (_) {}
+    };
+    if (typeof window !== "undefined") {
+        if ("requestIdleCallback" in window) {
+            window.requestIdleCallback(triggerWarmup);
+        } else {
+            setTimeout(triggerWarmup, 1200);
+        }
+    }
+})();

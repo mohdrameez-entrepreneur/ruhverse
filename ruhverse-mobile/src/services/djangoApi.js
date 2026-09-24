@@ -130,3 +130,20 @@ export async function verifySessionWithBackend(token) {
   }
 }
 
+/**
+ * Silently warms up the backend on app start.
+ * Uses a fire-and-forget request with a generous timeout to wake up sleeping instances (e.g., Render free tier)
+ * without blocking UI rendering or showing any spinners.
+ */
+export function warmupBackend() {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 25000);
+    fetch(`${DEFAULT_BACKEND_URL}/health/`, { signal: controller.signal })
+      .then(() => clearTimeout(timeoutId))
+      .catch(() => clearTimeout(timeoutId));
+  } catch (_) {
+    // Non-blocking, completely silent
+  }
+}
+

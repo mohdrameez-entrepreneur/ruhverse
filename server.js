@@ -66,6 +66,16 @@ const SUPABASE_AUTH_URL = SUPABASE_URL ? `${SUPABASE_URL}/auth/v1` : '';
 const SUPABASE_REST_URL = SUPABASE_URL ? `${SUPABASE_URL}/rest/v1` : '';
 const SUPABASE_ENABLED = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 const SUPABASE_ADMIN_ENABLED = Boolean(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY);
+const DJANGO_BACKEND_URL = normalizeWhitespace(process.env.DJANGO_BACKEND_URL || "").replace(/\/+$/, "");
+
+let lastBackendWarmupTime = 0;
+function triggerBackendWarmup() {
+  if (!DJANGO_BACKEND_URL) return;
+  const now = Date.now();
+  if (now - lastBackendWarmupTime < 180000) return;
+  lastBackendWarmupTime = now;
+  fetch(`${DJANGO_BACKEND_URL}/api/health/`, { timeout: 25000 }).catch(() => {});
+}
 
 const SUPABASE_HTTP_TIMEOUT_MS = Math.max(3000, Number(process.env.SUPABASE_HTTP_TIMEOUT_MS) || 15000);
 const IS_HOSTED_RUNTIME = Boolean(process.env.VERCEL || process.env.AWS_REGION);
