@@ -12,6 +12,9 @@
             if (saved === LIGHT_VALUE) {
                 return false;
             }
+            if (!saved) {
+                localStorage.setItem(STORAGE_KEY, DARK_VALUE);
+            }
             return true;
         } catch (_) {
             return true;

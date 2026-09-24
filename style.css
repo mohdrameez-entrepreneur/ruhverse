@@ -114,6 +114,8 @@ body {
 }
 
 /* Dark Mode Overrides */
+:root.dark-mode,
+html.dark-mode,
 body.dark-mode {
     --cream: #121212;
     --white: #1E1E1E;

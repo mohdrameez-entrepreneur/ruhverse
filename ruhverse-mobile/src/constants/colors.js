@@ -93,5 +93,5 @@ export const DarkColors = {
   gradientEnd: '#0D2115',
 };
 
-// Default export for existing components
-export const Colors = LightColors;
+// Default export for existing components (defaults to Dark mode)
+export const Colors = DarkColors;
