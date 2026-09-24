@@ -53,26 +53,24 @@ export default function NextPrayerCard({
 
   return (
     <View style={styles.container}>
-      {/* 1. TOP HEADER: Sun/Moon Title, Location Badge, Date */}
+      {/* 1. TOP HEADER: Clean Location Pill & Date (Removed Sun/Moon text) */}
       <View style={styles.topRow}>
-        <View style={styles.headerLeft}>
-          <Text style={styles.celestialTitle} numberOfLines={1} adjustsFontSizeToFit>
-            {celestial.isDay ? 'Sun' : 'Moon'}
+        <View style={styles.locationPill}>
+          <Ionicons name="location-sharp" size={13} color={Colors.goldLight} />
+          <Text style={styles.locationText} numberOfLines={1}>
+            {locationName}
           </Text>
-          <View style={styles.locationBadge}>
-            <Ionicons name="location-sharp" size={11} color={Colors.goldLight} />
-            <Text style={styles.locationText} numberOfLines={1} adjustsFontSizeToFit>
-              {locationName}
-            </Text>
-          </View>
         </View>
-        <Text style={styles.dateText} numberOfLines={1}>
-          {currentTime.toLocaleDateString(undefined, {
-            weekday: 'short',
-            month: 'short',
-            day: 'numeric',
-          })}
-        </Text>
+        <View style={styles.datePill}>
+          <Ionicons name="calendar-outline" size={12} color="rgba(255, 255, 255, 0.75)" style={{ marginRight: 4 }} />
+          <Text style={styles.dateText} numberOfLines={1}>
+            {currentTime.toLocaleDateString(undefined, {
+              weekday: 'short',
+              month: 'short',
+              day: 'numeric',
+            })}
+          </Text>
+        </View>
       </View>
 
       {/* 2. DOTTED SUN & MOON PARABOLIC SKY ARC */}
@@ -148,7 +146,7 @@ export default function NextPrayerCard({
         <View style={styles.lunarLeft}>
           <Ionicons name="moon-outline" size={13} color={Colors.goldLight} />
           <Text style={styles.lunarText} numberOfLines={1}>
-            Moon: {celestial.lunarPhase.name}
+            {celestial.lunarPhase.name}
           </Text>
         </View>
         <Text style={styles.lunarIllumination} numberOfLines={1}>
@@ -159,9 +157,11 @@ export default function NextPrayerCard({
       {/* 5. NEXT PRAYER COUNTDOWN INFO */}
       <TouchableOpacity style={styles.mainInfo} activeOpacity={0.88} onPress={onPress}>
         <View style={styles.prayerLeftWrap}>
-          <Text style={styles.nextLabel}>Next Prayer</Text>
+          <Text style={styles.nextLabel}>
+            {nextPrayer?.isTomorrow ? 'Upcoming Prayer' : 'Next Prayer'}
+          </Text>
           <Text style={styles.prayerName} numberOfLines={1} adjustsFontSizeToFit>
-            {nextPrayer?.nextPrayerName || 'Fajr'}
+            {nextPrayer?.isTomorrow ? 'Fajr (Tomorrow)' : (nextPrayer?.nextPrayerName || 'Fajr')}
           </Text>
         </View>
         <View style={styles.timeWrapper}>
@@ -181,7 +181,7 @@ export default function NextPrayerCard({
       {/* 6. 5 DAILY PRAYERS STRIP */}
       <View style={styles.prayerStrip}>
         {prayerList.map((p) => {
-          const isNext = nextPrayer?.nextPrayerName?.toLowerCase() === p.label.toLowerCase();
+          const isNext = (nextPrayer?.nextPrayerName?.toLowerCase() === p.label.toLowerCase()) || (nextPrayer?.isTomorrow && p.label === 'Fajr');
           return (
             <TouchableOpacity
               key={p.key}
@@ -220,37 +220,35 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 4,
   },
-  headerLeft: {
+  locationPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    flexShrink: 1,
-  },
-  celestialTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    letterSpacing: -0.3,
-  },
-  locationBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.14)',
-    paddingHorizontal: 8,
-    paddingVertical: 3.5,
-    borderRadius: 12,
-    gap: 4,
-    flexShrink: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.16)',
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.35)',
+    paddingHorizontal: 10,
+    paddingVertical: 4.5,
+    borderRadius: 14,
+    gap: 5,
+    maxWidth: '58%',
   },
   locationText: {
-    fontSize: 11,
+    fontSize: 11.5,
     fontWeight: '700',
-    color: Colors.goldLight,
+    color: '#FFFFFF',
+  },
+  datePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    paddingHorizontal: 9,
+    paddingVertical: 4.5,
+    borderRadius: 14,
   },
   dateText: {
-    color: 'rgba(255, 255, 255, 0.85)',
-    fontSize: 12,
-    fontWeight: '500',
+    color: 'rgba(255, 255, 255, 0.9)',
+    fontSize: 11.5,
+    fontWeight: '600',
   },
 
   // Parabolic Sky Arc Container

@@ -85,17 +85,29 @@ export function getNextUpcomingPrayer(prayerTimesObj) {
         remainingHours: hours,
         remainingMinutes: minutes,
         diffMs,
+        isTomorrow: false,
       };
     }
   }
 
-  // If after Isha, the next prayer is tomorrow's Fajr
+  // If after Isha, the next prayer is tomorrow's Fajr with exact countdown
+  let tomorrowFajr = null;
+  if (prayerTimesObj.fajr) {
+    tomorrowFajr = new Date(prayerTimesObj.fajr.getTime() + 24 * 60 * 60 * 1000);
+  } else {
+    tomorrowFajr = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 5, 0, 0);
+  }
+  const diffMs = Math.max(0, tomorrowFajr.getTime() - now.getTime());
+  const hours = Math.floor(diffMs / (1000 * 60 * 60));
+  const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+
   return {
-    nextPrayerName: 'Fajr (Tomorrow)',
-    nextPrayerTime: null,
-    remainingHours: 0,
-    remainingMinutes: 0,
-    diffMs: 0,
+    nextPrayerName: 'Fajr',
+    nextPrayerTime: tomorrowFajr,
+    remainingHours: hours,
+    remainingMinutes: minutes,
+    diffMs,
+    isTomorrow: true,
   };
 }
 
