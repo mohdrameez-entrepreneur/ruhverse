@@ -99,9 +99,14 @@ export async function fetchAuthConfig() {
 /**
  * Fetch Google OAuth authorization URL from backend
  */
-export async function fetchGoogleAuthUrl(redirectTo = 'ruhverse://auth/callback') {
+export async function fetchGoogleAuthUrl(redirectTo) {
   try {
-    const params = new URLSearchParams({ redirect_to: redirectTo });
+    const isWeb = Platform.OS === 'web';
+    const defaultRedirect = isWeb
+      ? (typeof window !== 'undefined' && window.location?.origin ? `${window.location.origin}/` : 'https://ruhverse.online/')
+      : 'ruhverse://auth/callback';
+    const targetRedirect = redirectTo || defaultRedirect;
+    const params = new URLSearchParams({ redirect_to: targetRedirect });
     const res = await fetchWithTimeout(`${DEFAULT_BACKEND_URL}/auth/google/url/?${params.toString()}`);
     if (!res.ok) return { success: false, data: null };
     const json = await res.json();

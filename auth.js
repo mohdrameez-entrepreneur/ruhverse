@@ -105,6 +105,20 @@
         } else {
           showToast('Signed in successfully with Google!');
         }
+
+        // Restore intended page if user logged in from another route
+        try {
+          const returnUrl = sessionStorage.getItem('ruhverse_auth_return_url');
+          if (returnUrl) {
+            sessionStorage.removeItem('ruhverse_auth_return_url');
+            const cleanReturn = String(returnUrl).trim();
+            if (cleanReturn && cleanReturn !== window.location.pathname && cleanReturn.startsWith('/')) {
+              setTimeout(() => {
+                window.location.replace(cleanReturn);
+              }, 400);
+            }
+          }
+        } catch (_) {}
       }
     } catch (e) {}
 
@@ -294,7 +308,18 @@
         e.preventDefault();
         ui.googleBtn.disabled = true;
         ui.googleBtn.style.opacity = '0.7';
-        const redirectUrl = window.location.origin + window.location.pathname;
+
+        // Remember return path if user is on a specific route
+        try {
+          const currentPath = window.location.pathname + window.location.search;
+          if (currentPath && currentPath !== '/' && currentPath !== '/index.html') {
+            sessionStorage.setItem('ruhverse_auth_return_url', currentPath);
+          }
+        } catch (_) {}
+
+        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const baseOrigin = isLocalhost ? window.location.origin : 'https://ruhverse.online';
+        const redirectUrl = baseOrigin + '/';
         const supabaseUrl = 'https://ozgapfpryzqpfozsbyuz.supabase.co';
         window.location.href = supabaseUrl + '/auth/v1/authorize?provider=google&redirect_to=' + encodeURIComponent(redirectUrl);
       });

@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
+import { Platform } from 'react-native';
 import * as Linking from 'expo-linking';
 import { supabase, fetchUserProfile, fetchUserProgress } from '../services/supabase';
 import { verifySessionWithBackend } from '../services/djangoApi';
@@ -93,6 +94,9 @@ export const AuthProvider = ({ children }) => {
               setUser(data.session.user);
               verifySessionWithBackend(accessToken).catch(() => {});
             }
+            if (Platform.OS === 'web' && typeof window !== 'undefined' && window.history?.replaceState) {
+              window.history.replaceState(null, '', window.location.pathname);
+            }
           }
         } else if (url.includes('code=')) {
           const query = url.split('?')[1] || '';
@@ -107,6 +111,9 @@ export const AuthProvider = ({ children }) => {
                 verifySessionWithBackend(data.session.access_token).catch(() => {});
               }
             }
+            if (Platform.OS === 'web' && typeof window !== 'undefined' && window.history?.replaceState) {
+              window.history.replaceState(null, '', window.location.pathname);
+            }
           }
         }
       } catch (err) {
@@ -117,7 +124,11 @@ export const AuthProvider = ({ children }) => {
     const linkSub = Linking.addEventListener('url', handleDeepLink);
 
     Linking.getInitialURL().then((url) => {
-      if (url) handleDeepLink({ url });
+      if (url) {
+        handleDeepLink({ url });
+      } else if (Platform.OS === 'web' && typeof window !== 'undefined' && (window.location?.hash || window.location?.search)) {
+        handleDeepLink({ url: window.location.href });
+      }
     });
 
     return () => {
@@ -156,11 +167,19 @@ export const AuthProvider = ({ children }) => {
   };
 
   /**
-   * Google OAuth Login using Supabase with deep link redirect
+   * Google OAuth Login using Supabase
+   * - Web: Returns cleanly to the web origin (canonical https://ruhverse.online/ or current origin)
+   * - Mobile App: Returns to the mobile app via deep link (ruhverse://auth/callback)
    */
   const signInWithGoogle = async () => {
     try {
-      const redirectUrl = Linking.createURL('auth/callback');
+      const isWeb = Platform.OS === 'web';
+      const redirectUrl = isWeb
+        ? (typeof window !== 'undefined' && window.location?.origin
+            ? `${window.location.origin}/`
+            : 'https://ruhverse.online/')
+        : 'ruhverse://auth/callback';
+
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -172,9 +191,13 @@ export const AuthProvider = ({ children }) => {
       if (error) throw error;
 
       if (data?.url) {
-        const canOpen = await Linking.canOpenURL(data.url);
-        if (canOpen) {
-          await Linking.openURL(data.url);
+        if (isWeb && typeof window !== 'undefined') {
+          window.location.href = data.url;
+        } else {
+          const canOpen = await Linking.canOpenURL(data.url);
+          if (canOpen) {
+            await Linking.openURL(data.url);
+          }
         }
       }
       return { success: true, data };
