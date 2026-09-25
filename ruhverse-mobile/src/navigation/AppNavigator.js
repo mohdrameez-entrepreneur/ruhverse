@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors } from '../constants/colors';
 
 // Screens
@@ -14,6 +15,7 @@ import PrayerTimesScreen from '../screens/PrayerTimesScreen';
 import QiblaScreen from '../screens/QiblaScreen';
 import AuthScreen from '../screens/AuthScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import TermsAgreementScreen, { TERMS_AGREED_KEY } from '../screens/TermsAgreementScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -131,8 +133,34 @@ const styles = StyleSheet.create({
 });
 
 export default function AppNavigator() {
+  const [hasAgreedTerms, setHasAgreedTerms] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    AsyncStorage.getItem(TERMS_AGREED_KEY)
+      .then((val) => {
+        if (isMounted) {
+          setHasAgreedTerms(Boolean(val));
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setHasAgreedTerms(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  if (hasAgreedTerms === null) {
+    return null;
+  }
+
   return (
     <Stack.Navigator
+      initialRouteName={hasAgreedTerms ? 'MainTabs' : 'TermsAgreement'}
       screenOptions={{
         headerStyle: {
           backgroundColor: Colors.background,
@@ -148,6 +176,19 @@ export default function AppNavigator() {
         },
       }}
     >
+      {!hasAgreedTerms && (
+        <Stack.Screen
+          name="TermsAgreement"
+          options={{ headerShown: false }}
+        >
+          {(props) => (
+            <TermsAgreementScreen
+              {...props}
+              onAgree={() => setHasAgreedTerms(true)}
+            />
+          )}
+        </Stack.Screen>
+      )}
       <Stack.Screen
         name="MainTabs"
         component={MainTabNavigator}
@@ -172,6 +213,11 @@ export default function AppNavigator() {
         name="Profile"
         component={ProfileScreen}
         options={{ title: 'Account & Bookmarks' }}
+      />
+      <Stack.Screen
+        name="TermsReview"
+        component={TermsAgreementScreen}
+        options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );

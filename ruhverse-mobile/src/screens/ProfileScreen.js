@@ -145,6 +145,26 @@ export default function ProfileScreen({ navigation }) {
           ))
         )}
 
+        {/* Terms & Privacy Policy Review Card */}
+        <TouchableOpacity
+          style={[styles.settingCard, { backgroundColor: theme.surface, borderColor: theme.surfaceBorder }]}
+          activeOpacity={0.88}
+          onPress={() => navigation.navigate('TermsReview', { isReview: true })}
+        >
+          <View style={styles.settingLeft}>
+            <View style={[styles.settingIconWrap, { backgroundColor: theme.primaryTint }]}>
+              <Ionicons name="document-text" size={20} color={theme.primary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.settingTitle, { color: theme.text }]}>Terms & Privacy Policy</Text>
+              <Text style={[styles.settingSub, { color: theme.textSecondary }]}>
+                Review your agreed terms, location data privacy, and user rights
+              </Text>
+            </View>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={theme.textSecondary} />
+        </TouchableOpacity>
+
         {/* About App Card */}
         <View style={styles.aboutCard}>
           <Text style={styles.aboutTitle}>RuhVerse Mobile v1.0.0</Text>
