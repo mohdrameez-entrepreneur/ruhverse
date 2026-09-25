@@ -12,8 +12,10 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import * as Linking from 'expo-linking';
 import { Colors } from '../constants/colors';
+import { useTheme } from '../context/ThemeContext';
 
 export default function SupportModal({ visible, onClose }) {
+  const { isDarkMode, theme } = useTheme();
   const [copied, setCopied] = useState(false);
   const upiId = process.env.EXPO_PUBLIC_UPI_ID || '8287593935@fam';
   const buyMeCoffeeUrl = process.env.EXPO_PUBLIC_BUY_ME_COFFEE_URL || 'https://www.buymeacoffee.com/ruhverse';
@@ -25,17 +27,12 @@ export default function SupportModal({ visible, onClose }) {
   };
 
   const handleOpenUPI = async () => {
-    // UPI payment URI intent
     const upiUri = `upi://pay?pa=${upiId}&pn=RuhVerse&cu=INR&tn=Support%20RuhVerse%20App`;
     const supported = await Linking.canOpenURL(upiUri);
     if (supported) {
       await Linking.openURL(upiUri);
     } else {
-      handleCopyUPI();
-      Alert.alert(
-        'UPI App Not Found',
-        `We copied the UPI ID (${upiId}) to your clipboard. You can paste it into GPay, PhonePe, or Paytm.`
-      );
+      await handleCopyUPI();
     }
   };
 
@@ -46,68 +43,125 @@ export default function SupportModal({ visible, onClose }) {
   return (
     <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={onClose}>
       <View style={styles.overlay}>
-        <View style={styles.sheet}>
+        <View style={[styles.sheet, { backgroundColor: theme.surface, borderColor: theme.surfaceBorder }]}>
           {/* Handle bar */}
-          <View style={styles.handle} />
+          <View style={[styles.handle, { backgroundColor: theme.surfaceBorder }]} />
 
           <View style={styles.headerRow}>
-            <View style={styles.badge}>
-              <Ionicons name="shield-checkmark" size={14} color={Colors.primary} />
-              <Text style={styles.badgeText}>100% Ad-Free Experience</Text>
+            <View style={[styles.badge, { backgroundColor: theme.primaryTint }]}>
+              <Ionicons name="shield-checkmark" size={14} color={theme.primary} />
+              <Text style={[styles.badgeText, { color: theme.primary }]}>Transparent & Ad-Free</Text>
             </View>
-            <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-              <Ionicons name="close" size={22} color={Colors.textSecondary} />
+            <TouchableOpacity onPress={onClose} style={styles.closeBtn} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+              <Ionicons name="close" size={22} color={theme.textSecondary} />
             </TouchableOpacity>
           </View>
 
           <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.body}>
-            <Text style={styles.title}>Help Keep RuhVerse Ad-Free & Alive 🕊️</Text>
-            <Text style={styles.description}>
-              RuhVerse is dedicated to delivering a pure spiritual sanctuary with zero annoying popups, banner ads, or tracking.
-              {'\n\n'}
-              Your kind support directly covers server hosting, prayer calculation databases, and continuous app updates.
-            </Text>
+            <Text style={[styles.title, { color: theme.text }]}>Support RuhVerse 🕊️</Text>
 
-            {/* UPI Direct Payment Card */}
-            <View style={styles.paymentCard}>
-              <View style={styles.paymentHeader}>
-                <Ionicons name="phone-portrait-outline" size={20} color={Colors.primaryLight} />
-                <Text style={styles.paymentTitle}>Support via UPI (India / Zero Fees)</Text>
+            {/* Transparent Contribution Breakdown */}
+            <View
+              style={[
+                styles.transparencyCard,
+                {
+                  backgroundColor: isDarkMode ? 'rgba(212, 175, 55, 0.08)' : 'rgba(26, 77, 46, 0.05)',
+                  borderColor: isDarkMode ? 'rgba(212, 175, 55, 0.25)' : 'rgba(26, 77, 46, 0.15)',
+                },
+              ]}
+            >
+              <View style={styles.transparencyHeader}>
+                <Ionicons name="receipt-outline" size={17} color={isDarkMode ? Colors.goldLight : theme.primary} />
+                <Text style={[styles.transparencyTitle, { color: isDarkMode ? Colors.goldLight : theme.primary }]}>
+                  How Contributions Are Used
+                </Text>
               </View>
 
-              <View style={styles.upiBox}>
-                <Text style={styles.upiIdText}>{upiId}</Text>
-                <TouchableOpacity style={styles.copyBtn} onPress={handleCopyUPI}>
-                  <Ionicons name={copied ? 'checkmark-circle' : 'copy-outline'} size={16} color={copied ? Colors.primaryLight : Colors.text} />
-                  <Text style={[styles.copyBtnText, copied && { color: Colors.primaryLight }]}>
+              <Text style={[styles.contributionIntro, { color: theme.textSecondary }]}>
+                Contributions help cover:
+              </Text>
+
+              <View style={styles.bulletList}>
+                <View style={styles.bulletRow}>
+                  <Text style={[styles.bulletDot, { color: isDarkMode ? Colors.goldLight : theme.primary }]}>•</Text>
+                  <Text style={[styles.bulletText, { color: theme.text }]}>Hosting & domain costs</Text>
+                </View>
+                <View style={styles.bulletRow}>
+                  <Text style={[styles.bulletDot, { color: isDarkMode ? Colors.goldLight : theme.primary }]}>•</Text>
+                  <Text style={[styles.bulletText, { color: theme.text }]}>Development and maintenance</Text>
+                </View>
+                <View style={styles.bulletRow}>
+                  <Text style={[styles.bulletDot, { color: isDarkMode ? Colors.goldLight : theme.primary }]}>•</Text>
+                  <Text style={[styles.bulletText, { color: theme.text }]}>Content and infrastructure</Text>
+                </View>
+                <View style={styles.bulletRow}>
+                  <Text style={[styles.bulletDot, { color: isDarkMode ? Colors.goldLight : theme.primary }]}>•</Text>
+                  <Text style={[styles.bulletText, { color: theme.text }]}>Compensation for the time required to maintain the project</Text>
+                </View>
+              </View>
+
+              <View style={[styles.disclosureDivider, { borderTopColor: isDarkMode ? 'rgba(212, 175, 55, 0.20)' : 'rgba(0, 0, 0, 0.08)' }]} />
+
+              <Text style={[styles.disclosureText, { color: isDarkMode ? 'rgba(255, 255, 255, 0.85)' : theme.textSecondary }]}>
+                “A portion of contributions may be used to compensate the developer/maintainer for their time and necessary personal expenses associated with maintaining RuhVerse.”
+              </Text>
+            </View>
+
+            {/* UPI Direct Payment Card */}
+            <View style={[styles.paymentCard, { backgroundColor: theme.surfaceElevated, borderColor: theme.surfaceBorder }]}>
+              <View style={styles.paymentHeader}>
+                <Ionicons name="phone-portrait-outline" size={20} color={isDarkMode ? Colors.goldLight : theme.primary} />
+                <Text style={[styles.paymentTitle, { color: theme.text }]}>Support via UPI</Text>
+              </View>
+
+              <View style={[styles.upiBox, { backgroundColor: isDarkMode ? 'rgba(10, 32, 20, 0.50)' : '#FFFFFF', borderColor: theme.surfaceBorder }]}>
+                <Text style={[styles.upiIdText, { color: isDarkMode ? Colors.goldLight : Colors.goldDark }]}>{upiId}</Text>
+                <TouchableOpacity
+                  style={[styles.copyBtn, { backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(26, 77, 46, 0.08)' }]}
+                  onPress={handleCopyUPI}
+                >
+                  <Ionicons
+                    name={copied ? 'checkmark-circle' : 'copy-outline'}
+                    size={16}
+                    color={copied ? (isDarkMode ? Colors.goldLight : theme.primary) : theme.text}
+                  />
+                  <Text style={[styles.copyBtnText, { color: copied ? (isDarkMode ? Colors.goldLight : theme.primary) : theme.text }]}>
                     {copied ? 'Copied!' : 'Copy'}
                   </Text>
                 </TouchableOpacity>
               </View>
 
-              <TouchableOpacity style={styles.upiAppBtn} onPress={handleOpenUPI} activeOpacity={0.85}>
+              <TouchableOpacity
+                style={[styles.upiAppBtn, { backgroundColor: theme.primary }]}
+                onPress={handleOpenUPI}
+                activeOpacity={0.85}
+              >
                 <Ionicons name="flash" size={18} color="#FFFFFF" />
-                <Text style={styles.upiAppBtnText}>Pay via GPay / PhonePe / Paytm</Text>
+                <Text style={styles.upiAppBtnText}>Pay with UPI</Text>
               </TouchableOpacity>
             </View>
 
             {/* Global / Buy Me a Coffee */}
-            <View style={styles.paymentCard}>
+            <View style={[styles.paymentCard, { backgroundColor: theme.surfaceElevated, borderColor: theme.surfaceBorder }]}>
               <View style={styles.paymentHeader}>
-                <Ionicons name="cafe-outline" size={20} color={Colors.goldDark} />
-                <Text style={styles.paymentTitle}>International / Buy Me a Coffee</Text>
+                <Ionicons name="cafe-outline" size={20} color={isDarkMode ? Colors.goldLight : Colors.goldDark} />
+                <Text style={[styles.paymentTitle, { color: theme.text }]}>International / Buy Me a Coffee</Text>
               </View>
-              <Text style={styles.paymentSubtitle}>
+              <Text style={[styles.paymentSubtitle, { color: theme.textSecondary }]}>
                 Support with Card, Apple Pay, Google Pay, or PayPal from anywhere in the world.
               </Text>
-              <TouchableOpacity style={styles.coffeeBtn} onPress={handleOpenBuyMeCoffee} activeOpacity={0.85}>
+              <TouchableOpacity
+                style={styles.coffeeBtn}
+                onPress={handleOpenBuyMeCoffee}
+                activeOpacity={0.85}
+              >
                 <Ionicons name="heart" size={18} color="#FFFFFF" />
                 <Text style={styles.coffeeBtnText}>Support on Buy Me a Coffee</Text>
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.footerNote}>
-              May Allah reward your generosity and make this a continuous source of blessings (Sadaqah Jariyah).
+            <Text style={[styles.footerNote, { color: theme.textTertiary }]}>
+              Thank you for keeping RuhVerse independent, transparent, and completely free of commercial advertisements.
             </Text>
           </ScrollView>
         </View>
@@ -145,7 +199,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 14,
   },
   badge: {
     flexDirection: 'row',
@@ -171,13 +225,58 @@ const styles = StyleSheet.create({
     color: Colors.text,
     fontSize: 22,
     fontWeight: '800',
+    marginBottom: 14,
+    letterSpacing: -0.3,
+  },
+  transparencyCard: {
+    borderRadius: 18,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+  },
+  transparencyHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    marginBottom: 10,
+  },
+  transparencyTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    letterSpacing: 0.1,
+  },
+  contributionIntro: {
+    fontSize: 13,
+    fontWeight: '600',
     marginBottom: 8,
   },
-  description: {
-    color: Colors.textSecondary,
+  bulletList: {
+    gap: 6,
+    marginBottom: 12,
+  },
+  bulletRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 7,
+  },
+  bulletDot: {
     fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 20,
+    fontWeight: '800',
+    lineHeight: 18,
+  },
+  bulletText: {
+    fontSize: 13,
+    lineHeight: 18,
+    flexShrink: 1,
+  },
+  disclosureDivider: {
+    borderTopWidth: 1,
+    marginVertical: 10,
+  },
+  disclosureText: {
+    fontSize: 12.5,
+    lineHeight: 18,
+    fontStyle: 'italic',
   },
   paymentCard: {
     backgroundColor: Colors.surfaceElevated,

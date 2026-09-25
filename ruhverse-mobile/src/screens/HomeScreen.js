@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   RefreshControl,
   Dimensions,
+  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,6 +16,7 @@ import Header from '../components/Header';
 import NextPrayerCard from '../components/NextPrayerCard';
 import ArticleCard from '../components/ArticleCard';
 import SupportModal from '../components/SupportModal';
+import TransparencyAlertModal from '../components/TransparencyAlertModal';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
   calculatePrayerTimes,
@@ -81,6 +83,7 @@ export default function HomeScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const { isDarkMode, theme } = useTheme();
   const [supportVisible, setSupportVisible] = useState(false);
+  const [transparencyAlertVisible, setTransparencyAlertVisible] = useState(false);
   const [prayerTimes, setPrayerTimes] = useState(null);
   const [nextPrayer, setNextPrayer] = useState(null);
   const [articles, setArticles] = useState([]);
@@ -133,6 +136,10 @@ export default function HomeScreen({ navigation }) {
     setRefreshing(false);
   };
 
+  const handleSupportPress = () => {
+    setTransparencyAlertVisible(true);
+  };
+
   const topEmeraldColor = celestial.theme.gradientColors[0] || '#1A4D2E';
   const atmosphericGradient = computeSmoothAtmosphericGradient(
     topEmeraldColor,
@@ -168,6 +175,7 @@ export default function HomeScreen({ navigation }) {
           title="RuhVerse"
           locationName="New Delhi, India"
           onProfilePress={() => navigation.navigate('Profile')}
+          onSupportPress={handleSupportPress}
           transparent={true}
         />
 
@@ -282,7 +290,7 @@ export default function HomeScreen({ navigation }) {
                 borderColor: isDarkMode ? 'rgba(212, 175, 55, 0.28)' : 'rgba(212, 175, 55, 0.35)',
               },
             ]}
-            onPress={() => setSupportVisible(true)}
+            onPress={handleSupportPress}
             activeOpacity={0.8}
           >
             <View
@@ -348,6 +356,16 @@ export default function HomeScreen({ navigation }) {
           />
         ))}
       </ScrollView>
+
+      {/* Personalised Web-style Transparency & Permission Alert Modal */}
+      <TransparencyAlertModal
+        visible={transparencyAlertVisible}
+        onDecline={() => setTransparencyAlertVisible(false)}
+        onGrant={() => {
+          setTransparencyAlertVisible(false);
+          setSupportVisible(true);
+        }}
+      />
 
       {/* Support / Keep Ad-Free Modal */}
       <SupportModal visible={supportVisible} onClose={() => setSupportVisible(false)} />

@@ -16,6 +16,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useBookmarks } from '../context/BookmarkContext';
 import { getArticleBySlug } from '../services/cacheService';
 import SupportModal from '../components/SupportModal';
+import TransparencyAlertModal from '../components/TransparencyAlertModal';
 
 export default function ArticleDetailScreen({ route, navigation }) {
   const { theme } = useTheme();
@@ -23,6 +24,7 @@ export default function ArticleDetailScreen({ route, navigation }) {
   const [article, setArticle] = useState(initialArticle);
   const [fontSizeOffset, setFontSizeOffset] = useState(0);
   const [supportVisible, setSupportVisible] = useState(false);
+  const [transparencyAlertVisible, setTransparencyAlertVisible] = useState(false);
   const { width } = useWindowDimensions();
 
   const { isBookmarked, toggleBookmark } = useBookmarks();
@@ -271,7 +273,7 @@ export default function ArticleDetailScreen({ route, navigation }) {
           {/* Sincere Support Callout Banner */}
           <TouchableOpacity
             style={[styles.supportBanner, { backgroundColor: theme.glassSurface, borderColor: theme.glassBorderSubtle }]}
-            onPress={() => setSupportVisible(true)}
+            onPress={() => setTransparencyAlertVisible(true)}
             activeOpacity={0.85}
           >
             <View style={styles.supportIconWrap}>
@@ -285,6 +287,16 @@ export default function ArticleDetailScreen({ route, navigation }) {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* Personalised Web-style Transparency & Permission Alert Modal */}
+      <TransparencyAlertModal
+        visible={transparencyAlertVisible}
+        onDecline={() => setTransparencyAlertVisible(false)}
+        onGrant={() => {
+          setTransparencyAlertVisible(false);
+          setSupportVisible(true);
+        }}
+      />
 
       {/* Support Modal */}
       <SupportModal visible={supportVisible} onClose={() => setSupportVisible(false)} />

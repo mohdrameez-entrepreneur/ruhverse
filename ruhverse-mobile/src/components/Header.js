@@ -42,14 +42,14 @@ export default function Header({
               <View style={styles.locationRow}>
                 <Ionicons
                   name="location-sharp"
-                  size={10.5}
+                  size={11}
                   color={transparent ? Colors.goldLight : theme.primary}
                 />
                 <Text
                   numberOfLines={1}
                   style={[
                     styles.locationText,
-                    { color: transparent ? 'rgba(255, 255, 255, 0.80)' : theme.textSecondary },
+                    { color: transparent ? 'rgba(255, 255, 255, 0.85)' : theme.textSecondary },
                   ]}
                 >
                   {locationName}

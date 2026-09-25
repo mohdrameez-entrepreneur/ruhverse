@@ -1162,6 +1162,24 @@ function setupHomeAuth() {
         });
     }
 
+    function parseJwt(token) {
+        try {
+            const parts = String(token || '').split('.');
+            if (parts.length < 2) return null;
+            const base64Url = parts[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(
+                atob(base64)
+                    .split('')
+                    .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                    .join('')
+            );
+            return JSON.parse(jsonPayload);
+        } catch (_) {
+            return null;
+        }
+    }
+
     async function bootstrapSession() {
         const token = localStorage.getItem(tokenKey);
         if (!token) {
@@ -1170,6 +1188,28 @@ function setupHomeAuth() {
             setLoginButtonState(null);
             return;
         }
+
+        // Hydrate from valid local JWT first if user object is not yet populated
+        if (!state.currentUser) {
+            const payload = parseJwt(token);
+            if (payload && (payload.sub || payload.email)) {
+                const meta = payload.user_metadata || {};
+                const cleanEmail = String(payload.email || '').trim().toLowerCase();
+                const cleanName = String(meta.full_name || meta.name || cleanEmail.split('@')[0] || 'Member').trim().slice(0, 50);
+                const cleanUsername = String(meta.username || cleanName.replace(/\s+/g, '_').toLowerCase()).trim().slice(0, 30);
+                const localUser = {
+                    id: payload.sub,
+                    email: cleanEmail,
+                    username: cleanUsername,
+                    fullName: cleanName,
+                    emailVerified: true
+                };
+                state.currentUser = localUser;
+                localStorage.setItem(userKey, JSON.stringify(localUser));
+                setLoginButtonState(localUser);
+            }
+        }
+
         try {
             const me = await meRequest(token);
             if (me?.user) {
@@ -1178,10 +1218,11 @@ function setupHomeAuth() {
                 setLoginButtonState(me.user);
             }
         } catch (err) {
-            // ONLY clear session if server explicitly rejects with 401 or 403
+            const payload = parseJwt(token);
+            const isJwtExpired = payload?.exp ? (payload.exp * 1000 <= Date.now()) : true;
             const status = Number(err?.status);
             const msg = String(err?.message || '');
-            if (status === 401 || status === 403 || /401|403|unauthorized|invalid session/i.test(msg)) {
+            if ((status === 401 || status === 403 || /401|403|unauthorized|invalid session/i.test(msg)) && isJwtExpired) {
                 localStorage.removeItem(tokenKey);
                 localStorage.removeItem(userKey);
                 state.currentUser = null;
@@ -1191,23 +1232,60 @@ function setupHomeAuth() {
     }
 
     if (googleBtn) {
-        googleBtn.addEventListener('click', () => {
+        googleBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            googleBtn.disabled = true;
+            googleBtn.style.opacity = '0.7';
             const redirectUrl = window.location.origin + window.location.pathname;
             const supabaseUrl = 'https://ozgapfpryzqpfozsbyuz.supabase.co';
             window.location.href = supabaseUrl + "/auth/v1/authorize?provider=google&redirect_to=" + encodeURIComponent(redirectUrl);
         });
     }
 
-    // Extract OAuth access_token from URL hash (Google Login redirect)
+    // Extract OAuth access_token or errors from URL hash/query params (Google Login redirect)
     try {
         const hashParams = new URLSearchParams((window.location.hash || '').replace(/^#/, ''));
-        const oauthToken = hashParams.get('access_token');
+        const searchParams = new URLSearchParams(window.location.search || '');
+
+        const oauthError = hashParams.get('error_description') || searchParams.get('error_description') ||
+                           hashParams.get('error') || searchParams.get('error');
+        if (oauthError) {
+            const safeError = String(oauthError).replace(/[<>]/g, '').slice(0, 150);
+            showToast(safeError || 'Google sign-in was canceled or failed.', true);
+            if (window.history && window.history.replaceState) {
+                window.history.replaceState(null, '', window.location.pathname);
+            }
+        }
+
+        const oauthToken = hashParams.get('access_token') || searchParams.get('access_token');
         if (oauthToken) {
             localStorage.setItem(tokenKey, oauthToken);
+            
+            // Clean credentials from URL immediately to protect against history/referrer leakage
             if (window.history && window.history.replaceState) {
-                window.history.replaceState(null, '', window.location.pathname + window.location.search);
+                window.history.replaceState(null, '', window.location.pathname);
             }
-            showToast('Signed in successfully with Google!');
+
+            const payload = parseJwt(oauthToken);
+            if (payload && (payload.sub || payload.email)) {
+                const meta = payload.user_metadata || {};
+                const cleanEmail = String(payload.email || '').trim().toLowerCase();
+                const cleanName = String(meta.full_name || meta.name || cleanEmail.split('@')[0] || 'Member').trim().slice(0, 50);
+                const cleanUsername = String(meta.username || cleanName.replace(/\s+/g, '_').toLowerCase()).trim().slice(0, 30);
+                const user = {
+                    id: payload.sub,
+                    email: cleanEmail,
+                    username: cleanUsername,
+                    fullName: cleanName,
+                    emailVerified: true
+                };
+                state.currentUser = user;
+                localStorage.setItem(userKey, JSON.stringify(user));
+                setLoginButtonState(user);
+                showToast('Signed in successfully as ' + cleanName + '!');
+            } else {
+                showToast('Signed in successfully with Google!');
+            }
         }
     } catch (_) {}
 

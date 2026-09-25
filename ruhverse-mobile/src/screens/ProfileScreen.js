@@ -13,6 +13,7 @@ import { useAuth } from '../context/AuthContext';
 import { useBookmarks } from '../context/BookmarkContext';
 import ArticleCard from '../components/ArticleCard';
 import SupportModal from '../components/SupportModal';
+import TransparencyAlertModal from '../components/TransparencyAlertModal';
 
 import { Switch } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
@@ -22,6 +23,7 @@ export default function ProfileScreen({ navigation }) {
   const { bookmarks, quranBookmarks } = useBookmarks();
   const { isDarkMode, toggleTheme, theme } = useTheme();
   const [supportVisible, setSupportVisible] = useState(false);
+  const [transparencyAlertVisible, setTransparencyAlertVisible] = useState(false);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -106,7 +108,7 @@ export default function ProfileScreen({ navigation }) {
         <TouchableOpacity
           style={[styles.supportCard, { backgroundColor: theme.surface }]}
           activeOpacity={0.88}
-          onPress={() => setSupportVisible(true)}
+          onPress={() => setTransparencyAlertVisible(true)}
         >
           <View style={styles.supportCardLeft}>
             <View style={styles.heartCircle}>
@@ -151,6 +153,16 @@ export default function ProfileScreen({ navigation }) {
           </Text>
         </View>
       </ScrollView>
+
+      {/* Personalised Web-style Transparency & Permission Alert Modal */}
+      <TransparencyAlertModal
+        visible={transparencyAlertVisible}
+        onDecline={() => setTransparencyAlertVisible(false)}
+        onGrant={() => {
+          setTransparencyAlertVisible(false);
+          setSupportVisible(true);
+        }}
+      />
 
       {/* Support / Keep Ad-Free Modal */}
       <SupportModal visible={supportVisible} onClose={() => setSupportVisible(false)} />

@@ -7,8 +7,11 @@ import {
   TouchableOpacity,
   TextInput,
   Linking,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Location from 'expo-location';
 import { useTheme } from '../context/ThemeContext';
 import {
   calculatePrayerTimes,
@@ -16,6 +19,7 @@ import {
   DEFAULT_COORDINATES,
   CALCULATION_METHODS,
 } from '../services/prayerService';
+import { fetchNearbyMosques } from '../services/mosqueService';
 
 const SECTIONS = [
   { id: 'daily', label: 'Daily Salah', icon: 'time-outline' },
@@ -125,6 +129,23 @@ export default function PrayerTimesScreen() {
   const [mosqueSearch, setMosqueSearch] = useState('');
   const [worldSearch, setWorldSearch] = useState('');
 
+  // Real-time nearby mosques state & anti-spam cooldown
+  const [mosquesList, setMosquesList] = useState(NEARBY_MOSQUES);
+  const [isLocating, setIsLocating] = useState(false);
+  const [cooldownSeconds, setCooldownSeconds] = useState(0);
+  const [userCityName, setUserCityName] = useState(null);
+
+  // Cooldown countdown timer (decrements every second)
+  useEffect(() => {
+    let timer;
+    if (cooldownSeconds > 0) {
+      timer = setInterval(() => {
+        setCooldownSeconds((prev) => (prev > 1 ? prev - 1 : 0));
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [cooldownSeconds]);
+
   // Dhikr Counter state for Guide tab
   const [dhikrCount, setDhikrCount] = useState(0);
   const [activeDhikrIndex, setActiveDhikrIndex] = useState(0);
@@ -155,7 +176,7 @@ export default function PrayerTimesScreen() {
     { name: 'Isha', time: prayerTimes?.isha, icon: 'moon-outline', desc: 'Night prayer' },
   ];
 
-  const filteredMosques = NEARBY_MOSQUES.filter((m) =>
+  const filteredMosques = mosquesList.filter((m) =>
     m.name.toLowerCase().includes(mosqueSearch.toLowerCase()) ||
     m.address.toLowerCase().includes(mosqueSearch.toLowerCase())
   );
@@ -164,6 +185,59 @@ export default function PrayerTimesScreen() {
     c.city.toLowerCase().includes(worldSearch.toLowerCase()) ||
     c.country.toLowerCase().includes(worldSearch.toLowerCase())
   );
+
+  const handleFindNearbyMosques = async () => {
+    if (isLocating || cooldownSeconds > 0) return;
+
+    try {
+      setIsLocating(true);
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert(
+          'Location Permission Needed',
+          'Please allow location access to discover accurate masajid near your current location.'
+        );
+        setIsLocating(false);
+        return;
+      }
+
+      const loc = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+
+      const { latitude, longitude } = loc.coords;
+
+      // Reverse geocode for local city / area label
+      try {
+        const reverse = await Location.reverseGeocodeAsync({ latitude, longitude });
+        if (reverse && reverse[0]) {
+          const r = reverse[0];
+          const area = r.city || r.subregion || r.district || r.name;
+          if (area) setUserCityName(area);
+        }
+      } catch (_) {}
+
+      // Fetch real nearby mosques from OSM Overpass API
+      const fetched = await fetchNearbyMosques(latitude, longitude, prayerTimes);
+
+      if (fetched && fetched.length > 0) {
+        setMosquesList(fetched);
+      } else {
+        Alert.alert(
+          'No Masajid Found Nearby',
+          'Could not find mapped masajid within 8 km on OpenStreetMap. You can still search manually in the search box.'
+        );
+      }
+
+      // Enforce anti-spam cooldown (60 seconds)
+      setCooldownSeconds(60);
+    } catch (err) {
+      console.warn('Error locating mosques:', err);
+      Alert.alert('Location Error', 'Unable to fetch your current location. Please verify that your GPS is enabled.');
+    } finally {
+      setIsLocating(false);
+    }
+  };
 
   const handleOpenMap = (address) => {
     const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
@@ -178,6 +252,28 @@ export default function PrayerTimesScreen() {
     } else {
       setDhikrCount((c) => c + 1);
     }
+  };
+
+  const renderTimeBadge = (timeVal, digitsColor, periodColor) => {
+    const formatted = typeof timeVal === 'string' ? timeVal : formatPrayerTime(timeVal);
+    if (!formatted || formatted === '--:--') {
+      return <Text style={[styles.timeDigits, { color: digitsColor }]}>--:--</Text>;
+    }
+    const parts = formatted.trim().split(' ');
+    const digits = parts[0] || '--:--';
+    const period = parts[1] || '';
+    return (
+      <View style={styles.timeBadgeWrap}>
+        <Text style={[styles.timeDigits, { color: digitsColor }]} numberOfLines={1}>
+          {digits}
+        </Text>
+        {period ? (
+          <Text style={[styles.timeAmPm, { color: periodColor || digitsColor }]}>
+            {period}
+          </Text>
+        ) : null}
+      </View>
+    );
   };
 
   return (
@@ -254,7 +350,7 @@ export default function PrayerTimesScreen() {
                       size={20}
                       color={p.name === 'Sunrise' ? theme.gold : theme.primaryLight}
                     />
-                    <View>
+                    <View style={styles.prayerInfo}>
                       <Text style={[styles.prayerName, { color: theme.text }]}>{p.name}</Text>
                       <Text style={[styles.prayerDesc, { color: theme.textTertiary }]}>{p.desc}</Text>
                     </View>
@@ -270,18 +366,26 @@ export default function PrayerTimesScreen() {
             </View>
             <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.surfaceBorder, paddingVertical: 4 }]}>
               <View style={[styles.sunnahRow, { borderBottomColor: theme.surfaceBorder }]}>
-                <View>
-                  <Text style={[styles.sunnahTitle, { color: theme.text }]}>Midnight (Nisf al-Layl)</Text>
-                  <Text style={[styles.sunnahSub, { color: theme.textTertiary }]}>End of preferred Isha time</Text>
+                <View style={styles.sunnahLeft}>
+                  <Text style={[styles.sunnahTitle, { color: theme.text }]} numberOfLines={1}>
+                    Midnight (Nisf al-Layl)
+                  </Text>
+                  <Text style={[styles.sunnahSub, { color: theme.textTertiary }]} numberOfLines={1}>
+                    End of preferred Isha time
+                  </Text>
                 </View>
                 <Text style={[styles.sunnahTime, { color: theme.primary }]}>
                   {formatPrayerTime(prayerTimes?.middleOfTheNight)}
                 </Text>
               </View>
               <View style={[styles.sunnahRow, { borderBottomWidth: 0 }]}>
-                <View>
-                  <Text style={[styles.sunnahTitle, { color: theme.text }]}>Last Third of Night (Tahajjud)</Text>
-                  <Text style={[styles.sunnahSub, { color: theme.textTertiary }]}>Most blessed time for Du'a</Text>
+                <View style={styles.sunnahLeft}>
+                  <Text style={[styles.sunnahTitle, { color: theme.text }]} numberOfLines={1}>
+                    Last Third of Night (Tahajjud)
+                  </Text>
+                  <Text style={[styles.sunnahSub, { color: theme.textTertiary }]} numberOfLines={1}>
+                    Most blessed time for Du'a
+                  </Text>
                 </View>
                 <Text style={[styles.sunnahTime, { color: theme.primary }]}>
                   {formatPrayerTime(prayerTimes?.lastThirdOfTheNight)}
@@ -363,30 +467,72 @@ export default function PrayerTimesScreen() {
               )}
             </View>
 
-            <View style={styles.sectionHeader}>
-              <Text style={[styles.sectionTitle, { color: theme.text }]}>
-                Nearby Masajid ({filteredMosques.length})
-              </Text>
+            <View style={styles.sectionHeaderRow}>
+              <View style={{ flex: 1, paddingRight: 8 }}>
+                <Text style={[styles.sectionTitle, { color: theme.text }]}>
+                  Nearby Masajid ({filteredMosques.length})
+                </Text>
+                {userCityName && (
+                  <Text style={[styles.sectionSub, { color: theme.textTertiary }]}>
+                    Near {userCityName}
+                  </Text>
+                )}
+              </View>
+
+              <TouchableOpacity
+                style={[
+                  styles.locateBtn,
+                  cooldownSeconds > 0
+                    ? { backgroundColor: theme.surfaceElevated, borderColor: theme.surfaceBorder }
+                    : { backgroundColor: theme.primary, borderColor: theme.primary },
+                ]}
+                onPress={handleFindNearbyMosques}
+                disabled={isLocating || cooldownSeconds > 0}
+                activeOpacity={0.8}
+              >
+                {isLocating ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <Ionicons
+                    name={cooldownSeconds > 0 ? 'checkmark-circle' : 'locate'}
+                    size={14}
+                    color={cooldownSeconds > 0 ? theme.primary : '#FFFFFF'}
+                  />
+                )}
+                <Text
+                  style={[
+                    styles.locateBtnText,
+                    { color: cooldownSeconds > 0 ? theme.textSecondary : '#FFFFFF' },
+                  ]}
+                >
+                  {isLocating
+                    ? 'Locating...'
+                    : cooldownSeconds > 0
+                    ? `Wait ${cooldownSeconds}s`
+                    : 'Locate Near Me'}
+                </Text>
+              </TouchableOpacity>
             </View>
 
             {filteredMosques.map((mosque) => (
               <View key={mosque.id} style={[styles.mosqueCard, { backgroundColor: theme.surface, borderColor: theme.surfaceBorder }]}>
                 <View style={styles.mosqueTop}>
-                  <View style={{ flex: 1 }}>
+                  <View style={styles.mosqueInfo}>
                     <Text style={[styles.mosqueName, { color: theme.text }]}>{mosque.name}</Text>
                     <View style={styles.addressRow}>
-                      <Ionicons name="location-sharp" size={13} color={theme.primary} />
-                      <Text style={[styles.mosqueAddress, { color: theme.textSecondary }]}>
-                        {mosque.address} • <Text style={{ fontWeight: '700', color: theme.primary }}>{mosque.distance}</Text>
+                      <Ionicons name="location-sharp" size={13} color={theme.gold} />
+                      <Text style={[styles.mosqueAddress, { color: theme.textSecondary }]} numberOfLines={1}>
+                        {mosque.address} • <Text style={{ fontWeight: '700', color: theme.text }}>{mosque.distance}</Text>
                       </Text>
                     </View>
                   </View>
                   <TouchableOpacity
-                    style={[styles.mapBtn, { backgroundColor: theme.primaryTint }]}
+                    style={[styles.mapBtn, { backgroundColor: theme.primary }]}
                     onPress={() => handleOpenMap(`${mosque.name}, ${mosque.address}`)}
+                    activeOpacity={0.85}
                   >
-                    <Ionicons name="navigate" size={16} color={theme.primary} />
-                    <Text style={[styles.mapBtnText, { color: theme.primary }]}>Directions</Text>
+                    <Ionicons name="navigate" size={13} color="#FFFFFF" />
+                    <Text style={styles.mapBtnText}>Directions</Text>
                   </TouchableOpacity>
                 </View>
 
@@ -396,29 +542,29 @@ export default function PrayerTimesScreen() {
                   <View style={styles.jamatGrid}>
                     <View style={styles.jamatSlot}>
                       <Text style={[styles.jamatLabel, { color: theme.textTertiary }]}>Fajr</Text>
-                      <Text style={[styles.jamatTime, { color: theme.text }]}>{mosque.jamatTimings.fajr}</Text>
+                      {renderTimeBadge(mosque.jamatTimings.fajr, theme.text, theme.textTertiary)}
                     </View>
                     <View style={styles.jamatSlot}>
                       <Text style={[styles.jamatLabel, { color: theme.textTertiary }]}>Dhuhr</Text>
-                      <Text style={[styles.jamatTime, { color: theme.text }]}>{mosque.jamatTimings.dhuhr}</Text>
+                      {renderTimeBadge(mosque.jamatTimings.dhuhr, theme.text, theme.textTertiary)}
                     </View>
                     <View style={styles.jamatSlot}>
                       <Text style={[styles.jamatLabel, { color: theme.textTertiary }]}>Asr</Text>
-                      <Text style={[styles.jamatTime, { color: theme.text }]}>{mosque.jamatTimings.asr}</Text>
+                      {renderTimeBadge(mosque.jamatTimings.asr, theme.text, theme.textTertiary)}
                     </View>
                     <View style={styles.jamatSlot}>
                       <Text style={[styles.jamatLabel, { color: theme.textTertiary }]}>Maghrib</Text>
-                      <Text style={[styles.jamatTime, { color: theme.text }]}>{mosque.jamatTimings.maghrib}</Text>
+                      {renderTimeBadge(mosque.jamatTimings.maghrib, theme.text, theme.textTertiary)}
                     </View>
                     <View style={styles.jamatSlot}>
                       <Text style={[styles.jamatLabel, { color: theme.textTertiary }]}>Isha</Text>
-                      <Text style={[styles.jamatTime, { color: theme.text }]}>{mosque.jamatTimings.isha}</Text>
+                      {renderTimeBadge(mosque.jamatTimings.isha, theme.text, theme.textTertiary)}
                     </View>
                   </View>
 
                   <View style={[styles.jummahRow, { borderTopColor: theme.surfaceBorder }]}>
                     <Ionicons name="calendar-outline" size={14} color={theme.gold} />
-                    <Text style={[styles.jummahText, { color: theme.textSecondary }]}>
+                    <Text style={[styles.jummahText, { color: theme.textSecondary }]} numberOfLines={1}>
                       Jummah 1st: <Text style={{ fontWeight: '700', color: theme.text }}>{mosque.jamatTimings.jummah1}</Text>
                       {mosque.jamatTimings.jummah2 !== 'None' && ` • 2nd: ${mosque.jamatTimings.jummah2}`}
                     </Text>
@@ -428,8 +574,15 @@ export default function PrayerTimesScreen() {
                 {/* Facilities Badges */}
                 <View style={styles.facilitiesRow}>
                   {mosque.facilities.map((f) => (
-                    <View key={f} style={[styles.facilityBadge, { backgroundColor: theme.primaryTint }]}>
-                      <Text style={[styles.facilityText, { color: theme.primary }]}>{f}</Text>
+                    <View
+                      key={f}
+                      style={[
+                        styles.facilityBadge,
+                        { backgroundColor: theme.surfaceElevated, borderColor: theme.surfaceBorder },
+                      ]}
+                    >
+                      <Ionicons name="checkmark-circle-outline" size={12} color={theme.primary} style={{ marginRight: 4 }} />
+                      <Text style={[styles.facilityText, { color: theme.textSecondary }]}>{f}</Text>
                     </View>
                   ))}
                 </View>
@@ -484,33 +637,23 @@ export default function PrayerTimesScreen() {
                   <View style={styles.worldGrid}>
                     <View style={styles.worldSlot}>
                       <Text style={[styles.worldSlotLabel, { color: theme.textTertiary }]}>Fajr</Text>
-                      <Text style={[styles.worldSlotTime, { color: theme.primary }]}>
-                        {formatPrayerTime(cityTimes?.fajr)}
-                      </Text>
+                      {renderTimeBadge(cityTimes?.fajr, theme.primary, theme.textTertiary)}
                     </View>
                     <View style={styles.worldSlot}>
                       <Text style={[styles.worldSlotLabel, { color: theme.textTertiary }]}>Dhuhr</Text>
-                      <Text style={[styles.worldSlotTime, { color: theme.primary }]}>
-                        {formatPrayerTime(cityTimes?.dhuhr)}
-                      </Text>
+                      {renderTimeBadge(cityTimes?.dhuhr, theme.primary, theme.textTertiary)}
                     </View>
                     <View style={styles.worldSlot}>
                       <Text style={[styles.worldSlotLabel, { color: theme.textTertiary }]}>Asr</Text>
-                      <Text style={[styles.worldSlotTime, { color: theme.primary }]}>
-                        {formatPrayerTime(cityTimes?.asr)}
-                      </Text>
+                      {renderTimeBadge(cityTimes?.asr, theme.primary, theme.textTertiary)}
                     </View>
                     <View style={styles.worldSlot}>
                       <Text style={[styles.worldSlotLabel, { color: theme.textTertiary }]}>Maghrib</Text>
-                      <Text style={[styles.worldSlotTime, { color: theme.primary }]}>
-                        {formatPrayerTime(cityTimes?.maghrib)}
-                      </Text>
+                      {renderTimeBadge(cityTimes?.maghrib, theme.primary, theme.textTertiary)}
                     </View>
                     <View style={styles.worldSlot}>
                       <Text style={[styles.worldSlotLabel, { color: theme.textTertiary }]}>Isha</Text>
-                      <Text style={[styles.worldSlotTime, { color: theme.primary }]}>
-                        {formatPrayerTime(cityTimes?.isha)}
-                      </Text>
+                      {renderTimeBadge(cityTimes?.isha, theme.primary, theme.textTertiary)}
                     </View>
                   </View>
                 </View>
@@ -659,7 +802,8 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   content: {
-    padding: 20,
+    paddingHorizontal: 16,
+    paddingTop: 16,
     paddingBottom: 115,
   },
   card: {
@@ -691,10 +835,40 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginBottom: 10,
   },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 8,
+    marginBottom: 12,
+  },
   sectionTitle: {
     fontSize: 16.5,
     fontWeight: '800',
     letterSpacing: -0.2,
+  },
+  sectionSub: {
+    fontSize: 11.5,
+    marginTop: 1,
+    fontWeight: '500',
+  },
+  locateBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 14,
+    borderWidth: 1,
+    shadowColor: '#1A4D2E',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  locateBtnText: {
+    fontSize: 11.5,
+    fontWeight: '700',
   },
   prayerRow: {
     flexDirection: 'row',
@@ -708,6 +882,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+    flex: 1,
+    paddingRight: 10,
+  },
+  prayerInfo: {
+    flex: 1,
   },
   prayerName: {
     fontSize: 15,
@@ -718,19 +897,25 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   prayerTime: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 15,
+    fontWeight: '800',
+    flexShrink: 0,
   },
   sunnahRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 12,
+    paddingHorizontal: 16,
     borderBottomWidth: 1,
   },
+  sunnahLeft: {
+    flex: 1,
+    paddingRight: 12,
+  },
   sunnahTitle: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 13.5,
+    fontWeight: '700',
   },
   sunnahSub: {
     fontSize: 11,
@@ -738,7 +923,8 @@ const styles = StyleSheet.create({
   },
   sunnahTime: {
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '800',
+    flexShrink: 0,
   },
   settingLabel: {
     fontSize: 13,
@@ -751,16 +937,19 @@ const styles = StyleSheet.create({
   },
   toggleBtn: {
     flex: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    borderRadius: 12,
     alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1,
+    minHeight: 46,
   },
   toggleText: {
     fontSize: 11,
     fontWeight: '600',
     textAlign: 'center',
+    lineHeight: 15,
   },
   methodsRow: {
     gap: 8,
@@ -807,10 +996,14 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginBottom: 12,
   },
+  mosqueInfo: {
+    flex: 1,
+    paddingRight: 8,
+  },
   mosqueName: {
-    fontSize: 16,
+    fontSize: 15.5,
     fontWeight: '800',
-    lineHeight: 22,
+    lineHeight: 21,
   },
   addressRow: {
     flexDirection: 'row',
@@ -819,18 +1012,26 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   mosqueAddress: {
-    fontSize: 12,
+    fontSize: 11.5,
+    flex: 1,
   },
   mapBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 10,
-    marginLeft: 8,
+    gap: 5,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 12,
+    marginLeft: 6,
+    flexShrink: 0,
+    shadowColor: '#1A4D2E',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 2,
   },
   mapBtnText: {
+    color: '#FFFFFF',
     fontSize: 12,
     fontWeight: '700',
   },
@@ -850,16 +1051,34 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   jamatSlot: {
+    flex: 1,
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 2,
+    paddingHorizontal: 1,
   },
   jamatLabel: {
-    fontSize: 10.5,
-    fontWeight: '600',
-    marginBottom: 2,
-  },
-  jamatTime: {
-    fontSize: 12,
+    fontSize: 9.5,
     fontWeight: '700',
+    marginBottom: 3,
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+  },
+  timeBadgeWrap: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  timeDigits: {
+    fontSize: 11.5,
+    fontWeight: '800',
+    letterSpacing: -0.2,
+  },
+  timeAmPm: {
+    fontSize: 8,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    marginTop: 1,
+    opacity: 0.7,
   },
   jummahRow: {
     flexDirection: 'row',
@@ -871,6 +1090,7 @@ const styles = StyleSheet.create({
   },
   jummahText: {
     fontSize: 11.5,
+    flex: 1,
   },
   facilitiesRow: {
     flexDirection: 'row',
@@ -878,13 +1098,16 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   facilityBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 9,
+    paddingVertical: 4,
     borderRadius: 8,
+    borderWidth: 1,
   },
   facilityText: {
-    fontSize: 10.5,
-    fontWeight: '700',
+    fontSize: 11,
+    fontWeight: '600',
   },
   worldCard: {
     borderRadius: 18,
@@ -918,19 +1141,22 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     backgroundColor: 'rgba(0,0,0,0.03)',
     borderRadius: 12,
-    padding: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 6,
   },
   worldSlot: {
+    flex: 1,
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 2,
+    paddingHorizontal: 1,
   },
   worldSlotLabel: {
-    fontSize: 10.5,
-    fontWeight: '600',
-    marginBottom: 2,
-  },
-  worldSlotTime: {
-    fontSize: 12.5,
-    fontWeight: '800',
+    fontSize: 9.5,
+    fontWeight: '700',
+    marginBottom: 3,
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
   },
   dhikrCard: {
     borderRadius: 22,
@@ -1011,19 +1237,22 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   rakatRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 10,
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    paddingVertical: 11,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(0,0,0,0.06)',
+    gap: 3,
   },
   rakatPrayer: {
-    fontSize: 13.5,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: '800',
+    letterSpacing: -0.2,
   },
   rakatDetail: {
-    fontSize: 12,
+    fontSize: 11.5,
+    lineHeight: 16,
+    opacity: 0.65,
   },
   guideCard: {
     borderRadius: 16,
