@@ -4,10 +4,97 @@
  * Quran mode: load/hydrate surah state, render verses, sync URL/SEO, audio.
  * Homepage mode: nav/auth modal, countdowns, calendar, insights, city search.
  */
-document.addEventListener('DOMContentLoaded', () => {
+// --- Immediate Early OAuth & Session Bootstrap ---
+// Runs synchronously upon script execution to immediately capture tokens,
+// hydrate user state into localStorage, clean sensitive tokens from the URL bar,
+// and bridge mobile deep links if opened from the app.
+(function earlyOAuthBootstrap() {
+    try {
+        const hash = window.location.hash || '';
+        const search = window.location.search || '';
+        if (!hash.includes('access_token=') && !search.includes('access_token=') &&
+            !hash.includes('error_description=') && !search.includes('error_description=') &&
+            !hash.includes('error=') && !search.includes('error=')) {
+            return;
+        }
+
+        const hashParams = new URLSearchParams(hash.replace(/^#/, ''));
+        const searchParams = new URLSearchParams(search);
+
+        const oauthError = hashParams.get('error_description') || searchParams.get('error_description') ||
+                           hashParams.get('error') || searchParams.get('error');
+        if (oauthError) {
+            if (window.history && window.history.replaceState) {
+                window.history.replaceState(null, '', window.location.pathname);
+            }
+            return;
+        }
+
+        const oauthToken = hashParams.get('access_token') || searchParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token') || searchParams.get('refresh_token');
+
+        if (oauthToken) {
+            localStorage.setItem('ruhverse_auth_token', oauthToken);
+            if (refreshToken) {
+                localStorage.setItem('ruhverse_refresh_token', refreshToken);
+            }
+
+            // Immediately sanitize URL and purge hash to prevent back-button loops & token leakage
+            if (window.history && window.history.replaceState) {
+                window.history.replaceState(null, '', window.location.pathname);
+            }
+
+            // Decode JWT payload
+            try {
+                const parts = String(oauthToken).split('.');
+                if (parts.length >= 2) {
+                    const base64Url = parts[1];
+                    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                    const jsonPayload = decodeURIComponent(
+                        atob(base64)
+                            .split('')
+                            .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                            .join('')
+                    );
+                    const payload = JSON.parse(jsonPayload);
+                    if (payload && (payload.sub || payload.email)) {
+                        const meta = payload.user_metadata || {};
+                        const cleanEmail = String(payload.email || '').trim().toLowerCase();
+                        const cleanName = String(meta.full_name || meta.name || cleanEmail.split('@')[0] || 'Member').trim().slice(0, 50);
+                        const cleanUsername = String(meta.username || cleanName.replace(/\s+/g, '_').toLowerCase()).trim().slice(0, 30);
+                        const user = {
+                            id: payload.sub,
+                            email: cleanEmail,
+                            username: cleanUsername,
+                            fullName: cleanName,
+                            emailVerified: true
+                        };
+                        localStorage.setItem('ruhverse_auth_user', JSON.stringify(user));
+                    }
+                }
+            } catch (_) {}
+
+            // If user is on mobile device: store deep link callback so they can return to app
+            const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+            if (isMobile) {
+                const appDeepLink = 'ruhverse://auth/callback#access_token=' + encodeURIComponent(oauthToken) + (refreshToken ? '&refresh_token=' + encodeURIComponent(refreshToken) : '');
+                try {
+                    sessionStorage.setItem('ruhverse_app_callback', appDeepLink);
+                } catch (_) {}
+            }
+        }
+    } catch (_) {}
+})();
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        initApp();
+        setupLocationIntelligence();
+    });
+} else {
     initApp();
     setupLocationIntelligence();
-});
+}
 
 function isHomepageContext() {
     return Boolean(document.querySelector('#global-directory')) && Boolean(document.querySelector('.hero-section'));
@@ -993,6 +1080,18 @@ function setupHomeAuth() {
             state.currentUser = JSON.parse(cachedUserRaw);
             setLoginButtonState(state.currentUser);
         } catch (_) {}
+    }
+
+    const appCallbackUrl = sessionStorage.getItem('ruhverse_app_callback');
+    if (appCallbackUrl) {
+        sessionStorage.removeItem('ruhverse_app_callback');
+        showToast('Signed in as ' + (state.currentUser?.fullName || 'Member') + '! Tap here to open RuhVerse App ↗');
+        if (toast) {
+            toast.style.cursor = 'pointer';
+            toast.onclick = () => {
+                window.location.href = appCallbackUrl;
+            };
+        }
     }
 
     function setError(message) {

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ruhverse-pwa-v6';
+const CACHE_NAME = 'ruhverse-pwa-v7';
 const APP_SHELL = [
     '/',
     '/index.html',
@@ -6,7 +6,7 @@ const APP_SHELL = [
     '/footer_styles.css',
     '/theme.js',
     '/script.js',
-    '/pwa.js?v=6',
+    '/pwa.js?v=7',
     '/quran.html',
     '/qibla.html',
     '/assets/RuhVerse.jpg',

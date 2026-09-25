@@ -10,6 +10,21 @@
     currentSurah: { number: null, name: '' }
   };
 
+  // Immediate synchronous token and URL cleanup
+  try {
+    const hash = window.location.hash || '';
+    if (hash.includes('access_token=')) {
+      const p = new URLSearchParams(hash.replace(/^#/, ''));
+      const t = p.get('access_token');
+      if (t) {
+        localStorage.setItem(TOKEN_KEY, t);
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState(null, '', window.location.pathname);
+        }
+      }
+    }
+  } catch (_) {}
+
   const ui = {
     authBtn: null,
     bookmarkToggleBtn: null,
