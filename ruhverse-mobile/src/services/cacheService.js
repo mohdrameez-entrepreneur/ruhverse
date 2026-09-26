@@ -7,6 +7,7 @@ const CACHE_KEYS = {
   ARTICLE_DETAIL_PREFIX: '@ruhverse_article_',
   LAST_SYNC: '@ruhverse_last_sync',
   SAVED_BOOKMARKS: '@ruhverse_saved_bookmarks',
+  SAVED_QURAN_BOOKMARKS: '@ruhverse_saved_quran_bookmarks',
 };
 
 import originalArticles from '../data/originalArticles.json';
@@ -152,6 +153,50 @@ export async function toggleLocalBookmark(article) {
     }
 
     await AsyncStorage.setItem(CACHE_KEYS.SAVED_BOOKMARKS, JSON.stringify(updated));
+    return { bookmarked: !isAlreadyBookmarked, list: updated };
+  } catch (err) {
+    return { error: err.message };
+  }
+}
+
+/**
+ * Local offline Quran bookmarks manager
+ */
+export async function getLocalQuranBookmarks() {
+  try {
+    const raw = await AsyncStorage.getItem(CACHE_KEYS.SAVED_QURAN_BOOKMARKS);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+export async function toggleLocalQuranBookmark(surahNumber, ayahNumber, meta = {}) {
+  try {
+    const existing = await getLocalQuranBookmarks();
+    const isAlreadyBookmarked = existing.some(
+      (b) => Number(b.surah_number) === Number(surahNumber) && Number(b.ayah_number) === Number(ayahNumber)
+    );
+
+    let updated;
+    if (isAlreadyBookmarked) {
+      updated = existing.filter(
+        (b) => !(Number(b.surah_number) === Number(surahNumber) && Number(b.ayah_number) === Number(ayahNumber))
+      );
+    } else {
+      const item = {
+        id: `${surahNumber}:${ayahNumber}`,
+        surah_number: Number(surahNumber),
+        ayah_number: Number(ayahNumber),
+        surah_name: meta.surahName || '',
+        arabic: meta.arabic || '',
+        translation: meta.translation || '',
+        created_at: new Date().toISOString(),
+      };
+      updated = [item, ...existing];
+    }
+
+    await AsyncStorage.setItem(CACHE_KEYS.SAVED_QURAN_BOOKMARKS, JSON.stringify(updated));
     return { bookmarked: !isAlreadyBookmarked, list: updated };
   } catch (err) {
     return { error: err.message };

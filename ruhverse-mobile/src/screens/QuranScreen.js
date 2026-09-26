@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   FlatList,
+  ScrollView,
   TextInput,
   TouchableOpacity,
 } from 'react-native';
@@ -11,7 +12,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../constants/colors';
 import surahsData from '../../assets/quran/surahs.json';
 import { getCachedSurahNumbers } from '../services/quranService';
-
 import { useTheme } from '../context/ThemeContext';
 
 export default function QuranScreen({ navigation }) {
@@ -61,7 +61,12 @@ export default function QuranScreen({ navigation }) {
           )}
         </View>
 
-        <View style={styles.filterRow}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterScroll}
+          style={styles.filterScrollView}
+        >
           {['All', 'Meccan', 'Medinan'].map((t) => {
             const active = filterType === t;
             return (
@@ -75,11 +80,14 @@ export default function QuranScreen({ navigation }) {
                   },
                 ]}
                 onPress={() => setFilterType(t)}
+                activeOpacity={0.8}
               >
                 <Text
                   style={[
                     styles.filterChipText,
-                    { color: active ? '#FFFFFF' : theme.textSecondary },
+                    {
+                      color: active ? '#FFFFFF' : theme.textSecondary,
+                    },
                     active && styles.filterChipTextActive,
                   ]}
                 >
@@ -88,10 +96,10 @@ export default function QuranScreen({ navigation }) {
               </TouchableOpacity>
             );
           })}
-        </View>
+        </ScrollView>
       </View>
 
-      {/* Surah List */}
+      {/* Regular Surah List */}
       <FlatList
         data={filteredSurahs}
         keyExtractor={(item) => item.number.toString()}
@@ -101,9 +109,20 @@ export default function QuranScreen({ navigation }) {
             activeOpacity={0.75}
             onPress={() => navigation.navigate('SurahDetail', { surah: item })}
           >
-            {/* Surah Number Badge */}
-            <View style={[styles.numberBadge, { backgroundColor: theme.primaryTint, borderColor: 'rgba(45, 138, 86, 0.2)' }]}>
-              <Text style={[styles.numberText, { color: theme.primary }]}>{item.number}</Text>
+            {/* Surah Number Badge with Gold Accent */}
+            <View
+              style={[
+                styles.numberBadge,
+                {
+                  backgroundColor: theme.goldSoft,
+                  borderColor: theme.gold,
+                  borderWidth: 1,
+                },
+              ]}
+            >
+              <Text style={[styles.numberText, { color: theme.goldDark || theme.gold }]}>
+                {item.number}
+              </Text>
             </View>
 
             {/* English & Subtitle Details */}
@@ -111,7 +130,7 @@ export default function QuranScreen({ navigation }) {
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                 <Text style={[styles.surahEnglish, { color: theme.text }]}>{item.englishName}</Text>
                 {cachedNumbers.includes(item.number) && (
-                  <Ionicons name="cloud-done" size={14} color={theme.primary} />
+                  <Ionicons name="cloud-done" size={14} color={theme.gold} />
                 )}
               </View>
               <Text style={[styles.surahTranslation, { color: theme.textSecondary }]}>
@@ -167,26 +186,26 @@ const styles = StyleSheet.create({
     color: Colors.text,
     fontSize: 14.5,
   },
-  filterRow: {
-    flexDirection: 'row',
-    gap: 8,
+  filterScrollView: {
     marginTop: 12,
+  },
+  filterScroll: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingRight: 10,
   },
   filterChip: {
     backgroundColor: Colors.glassSurface,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: 15,
+    paddingVertical: 7,
     borderRadius: 20,
     borderWidth: 1,
     borderColor: Colors.glassBorderSubtle,
   },
-  filterChipActive: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
-  },
   filterChipText: {
     color: Colors.textSecondary,
-    fontSize: 12.5,
+    fontSize: 12,
     fontWeight: '600',
   },
   filterChipTextActive: {
@@ -216,11 +235,11 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(26, 77, 46, 0.15)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 15,
+    marginRight: 14,
   },
   numberText: {
     color: Colors.primary,
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '800',
   },
   surahInfo: {

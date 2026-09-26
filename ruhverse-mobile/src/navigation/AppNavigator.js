@@ -15,6 +15,7 @@ import PrayerTimesScreen from '../screens/PrayerTimesScreen';
 import QiblaScreen from '../screens/QiblaScreen';
 import AuthScreen from '../screens/AuthScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import BookmarksScreen from '../screens/BookmarksScreen';
 import TermsAgreementScreen, { TERMS_AGREED_KEY } from '../screens/TermsAgreementScreen';
 
 const Tab = createBottomTabNavigator();
@@ -212,7 +213,12 @@ export default function AppNavigator() {
       <Stack.Screen
         name="Profile"
         component={ProfileScreen}
-        options={{ title: 'Account & Bookmarks' }}
+        options={{ title: 'Account & Settings' }}
+      />
+      <Stack.Screen
+        name="Bookmarks"
+        component={BookmarksScreen}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="TermsReview"

@@ -1,8 +1,7 @@
 import { Platform } from 'react-native';
 
 const DEFAULT_BACKEND_URL =
-  process.env.EXPO_PUBLIC_DJANGO_API_URL ||
-  (Platform.OS === 'android' ? 'http://10.0.2.2:8000/api' : 'http://localhost:8000/api');
+  process.env.EXPO_PUBLIC_DJANGO_API_URL || 'https://ruhverse-mkw1.onrender.com/api';
 
 const FETCH_TIMEOUT_MS = 3500;
 

@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  Image,
   TouchableOpacity,
   Share,
   useWindowDimensions,
@@ -15,10 +14,25 @@ import { Colors } from '../constants/colors';
 import { useTheme } from '../context/ThemeContext';
 import { useBookmarks } from '../context/BookmarkContext';
 import { getArticleBySlug } from '../services/cacheService';
+import { getReadingTime } from '../components/ArticleCard';
 import SupportModal from '../components/SupportModal';
 import TransparencyAlertModal from '../components/TransparencyAlertModal';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+function cleanArticleHtml(html) {
+  if (!html) return '';
+  return html
+    .replace(/<section[^>]*class=["'][^"']*premium-check[^"']*["'][^>]*>[\s\S]*?<\/section>/gi, '')
+    .replace(/<div[^>]*class=["'][^"']*premium-grid[^"']*["'][^>]*>[\s\S]*?<\/div>/gi, '')
+    .replace(/<h[1-6][^>]*>\s*You Might Also Check\s*<\/h[1-6]>[\s\S]*?(?=<h[1-2]|$|<\/article>)/gi, '')
+    .replace(/<ins[^>]*class=["'][^"']*adsbygoogle[^"']*["'][^>]*>[\s\S]*?<\/ins>/gi, '')
+    .replace(/<figure[^>]*>[\s\S]*?<\/figure>/gi, '')
+    .replace(/<img[^>]*>/gi, '')
+    .trim();
+}
 
 export default function ArticleDetailScreen({ route, navigation }) {
+  const insets = useSafeAreaInsets();
   const { theme } = useTheme();
   const { article: initialArticle } = route.params || {};
   const [article, setArticle] = useState(initialArticle);
@@ -95,9 +109,9 @@ export default function ArticleDetailScreen({ route, navigation }) {
       marginBottom: 6,
     },
     blockquote: {
-      backgroundColor: theme.primaryTint,
+      backgroundColor: theme.goldSoft,
       borderLeftColor: theme.gold,
-      borderLeftWidth: 4,
+      borderLeftWidth: 3.5,
       paddingHorizontal: 16,
       paddingVertical: 14,
       marginVertical: 16,
@@ -134,8 +148,8 @@ export default function ArticleDetailScreen({ route, navigation }) {
       fontWeight: '600',
     },
     hr: {
-      backgroundColor: theme.surfaceBorder,
-      height: 1,
+      backgroundColor: theme.goldSoft,
+      height: 1.5,
       marginVertical: 20,
       borderWidth: 0,
     },
@@ -165,24 +179,28 @@ export default function ArticleDetailScreen({ route, navigation }) {
       padding: 16,
       borderRadius: 14,
       marginVertical: 16,
+      borderLeftWidth: 3.5,
+      borderLeftColor: theme.gold,
       borderWidth: 1,
-      borderColor: theme.primary,
+      borderColor: theme.goldSoft,
     },
     'hadith-box': {
       backgroundColor: theme.goldSoft,
       padding: 16,
       borderRadius: 14,
       marginVertical: 16,
-      borderLeftWidth: 4,
+      borderLeftWidth: 3.5,
       borderLeftColor: theme.gold,
+      borderWidth: 1,
+      borderColor: theme.goldSoft,
     },
     'verse-box': {
       backgroundColor: theme.surface,
       padding: 16,
       borderRadius: 14,
       marginVertical: 16,
-      borderWidth: 1,
-      borderColor: theme.surfaceBorder,
+      borderWidth: 1.5,
+      borderColor: theme.goldSoft,
     },
   };
 
@@ -197,7 +215,16 @@ export default function ArticleDetailScreen({ route, navigation }) {
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       {/* Top Floating Action Bar */}
-      <View style={[styles.topBar, { backgroundColor: theme.background, borderBottomColor: theme.surfaceBorder }]}>
+      <View
+        style={[
+          styles.topBar,
+          {
+            backgroundColor: theme.background,
+            borderBottomColor: theme.surfaceBorder,
+            paddingTop: Math.max(insets.top, 12),
+          },
+        ]}
+      >
         <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color={theme.text} />
         </TouchableOpacity>
@@ -226,64 +253,106 @@ export default function ArticleDetailScreen({ route, navigation }) {
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        {/* Cover Image */}
-        {article.cover_image_url && (
-          <Image source={{ uri: article.cover_image_url }} style={styles.heroImage} resizeMode="cover" />
-        )}
-
         <View style={styles.mainContent}>
-          {/* Category & Date */}
+          {/* Category Badge with Gold Trim */}
           <View style={styles.categoryRow}>
-            <View style={[styles.categoryBadge, { backgroundColor: theme.primaryTint }]}>
-              <Text style={[styles.categoryText, { color: theme.primary }]}>{article.category || 'Spiritual'}</Text>
+            <View
+              style={[
+                styles.categoryBadge,
+                {
+                  backgroundColor: theme.primaryTint,
+                  borderColor: theme.goldSoft,
+                  borderWidth: 1,
+                },
+              ]}
+            >
+              <Ionicons name="sparkles" size={11} color={theme.gold} style={{ marginRight: 5 }} />
+              <Text style={[styles.categoryText, { color: theme.primary }]}>
+                {article.category || 'Spiritual Reflection'}
+              </Text>
             </View>
-            <Text style={[styles.dateText, { color: theme.textSecondary }]}>
-              {new Date(article.created_at || Date.now()).toLocaleDateString(undefined, {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-              })}
-            </Text>
           </View>
 
           {/* Title */}
           <Text style={[styles.title, { color: theme.text }]}>{article.title}</Text>
 
+          {/* Gold Islamic Star Divider */}
+          <View style={styles.titleDividerRow}>
+            <View style={[styles.goldLine, { backgroundColor: theme.gold }]} />
+            <Text style={[styles.goldStar, { color: theme.gold }]}>✦</Text>
+            <View style={[styles.goldLine, { backgroundColor: theme.gold }]} />
+          </View>
+
+          {/* Reading Time & Date Metadata Bar */}
+          <View style={[styles.metaRow, { borderBottomColor: theme.surfaceBorder }]}>
+            <View style={styles.metaItem}>
+              <Ionicons name="time-outline" size={14} color={theme.gold} />
+              <Text style={[styles.metaText, { color: theme.textSecondary }]}>
+                {getReadingTime(article)}
+              </Text>
+            </View>
+            <Text style={[styles.metaDivider, { color: theme.gold }]}>✦</Text>
+            <View style={styles.metaItem}>
+              <Ionicons name="calendar-outline" size={14} color={theme.gold} />
+              <Text style={[styles.metaText, { color: theme.textSecondary }]}>
+                {new Date(article.created_at || Date.now()).toLocaleDateString(undefined, {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                })}
+              </Text>
+            </View>
+          </View>
+
           {/* HTML Rendered Content */}
           <View style={styles.htmlWrapper}>
             <RenderHtml
-              contentWidth={width - 40}
-              source={{ html: article.content || `<p>${article.excerpt || ''}</p>` }}
+              contentWidth={width - 44}
+              source={{ html: cleanArticleHtml(article.content) || `<p>${article.excerpt || ''}</p>` }}
               tagsStyles={tagsStyles}
               classesStyles={classesStyles}
-              ignoredDomTags={['button', 'ins', 'script', 'style', 'nav', 'svg', 'path']}
+              ignoredDomTags={['button', 'ins', 'script', 'style', 'nav', 'svg', 'path', 'section', 'img', 'figure', 'picture']}
             />
           </View>
 
           {/* Share Article Action Button */}
           <TouchableOpacity
-            style={[styles.shareArticleBtn, { backgroundColor: theme.primary }]}
+            style={[
+              styles.shareArticleBtn,
+              {
+                backgroundColor: theme.primary,
+                borderColor: theme.gold,
+                borderWidth: 1,
+              },
+            ]}
             onPress={handleShare}
             activeOpacity={0.88}
           >
-            <Ionicons name="share-social" size={18} color="#FFFFFF" />
+            <Ionicons name="share-social" size={18} color={theme.goldLight || '#FFFFFF'} />
             <Text style={styles.shareArticleBtnText}>Share Reflection with Friends & Family</Text>
           </TouchableOpacity>
 
           {/* Sincere Support Callout Banner */}
           <TouchableOpacity
-            style={[styles.supportBanner, { backgroundColor: theme.glassSurface, borderColor: theme.glassBorderSubtle }]}
+            style={[
+              styles.supportBanner,
+              {
+                backgroundColor: theme.surface,
+                borderColor: theme.goldSoft,
+                borderWidth: 1.2,
+              },
+            ]}
             onPress={() => setTransparencyAlertVisible(true)}
             activeOpacity={0.85}
           >
-            <View style={styles.supportIconWrap}>
+            <View style={[styles.supportIconWrap, { borderColor: theme.goldSoft, borderWidth: 1 }]}>
               <Ionicons name="heart" size={20} color="#F87171" />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.supportTitle, { color: theme.text }]}>Enjoying our ad-free reflections?</Text>
               <Text style={[styles.supportSub, { color: theme.textSecondary }]}>Help us keep RuhVerse 100% ad-free with a small contribution.</Text>
             </View>
-            <Ionicons name="chevron-forward" size={18} color={theme.textSecondary} />
+            <Ionicons name="chevron-forward" size={18} color={theme.gold} />
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -343,28 +412,21 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 40,
   },
-  heroImage: {
-    width: '100%',
-    height: 250,
-    backgroundColor: '#EAE8E1',
-    borderBottomLeftRadius: 28,
-    borderBottomRightRadius: 28,
-  },
   mainContent: {
-    paddingHorizontal: 22,
-    paddingTop: 22,
+    paddingHorizontal: 20,
+    paddingTop: 18,
   },
   categoryRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   categoryBadge: {
     backgroundColor: Colors.primaryTint,
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 10,
+    alignSelf: 'flex-start',
   },
   categoryText: {
     color: Colors.primary,
@@ -373,17 +435,51 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
-  dateText: {
-    color: Colors.textSecondary,
-    fontSize: 12,
-  },
   title: {
     color: Colors.text,
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: '800',
-    lineHeight: 34,
-    marginBottom: 18,
+    lineHeight: 33,
+    marginBottom: 8,
     letterSpacing: -0.3,
+  },
+  titleDividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 14,
+    gap: 8,
+  },
+  goldLine: {
+    height: 1.5,
+    width: 28,
+    borderRadius: 1,
+  },
+  goldStar: {
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 8,
+    paddingBottom: 14,
+    marginBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.surfaceBorder,
+  },
+  metaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  metaText: {
+    fontSize: 12.5,
+    fontWeight: '500',
+  },
+  metaDivider: {
+    fontSize: 12,
+    fontWeight: '400',
   },
   htmlWrapper: {
     marginTop: 8,

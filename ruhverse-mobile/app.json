@@ -31,7 +31,11 @@
         "ACCESS_FINE_LOCATION",
         "POST_NOTIFICATIONS",
         "RECEIVE_BOOT_COMPLETED",
-        "SCHEDULE_EXACT_ALARM"
+        "SCHEDULE_EXACT_ALARM",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
       ]
     },
     "web": {
@@ -40,7 +44,14 @@
     "plugins": [
       "expo-asset",
       "expo-font",
-      "expo-status-bar"
-    ]
+      "expo-status-bar",
+      "expo-audio"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "929ce63d-83c5-463b-9109-fdca25c2047f"
+      }
+    },
+    "owner": "essenziatdigital"
   }
 }

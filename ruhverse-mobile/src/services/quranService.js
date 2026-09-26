@@ -1,46 +1,71 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import surahsData from '../../assets/quran/surahs.json';
 
 const QURAN_CACHE_PREFIX = '@ruhverse_quran_surah_';
 const CACHED_LIST_KEY = '@ruhverse_cached_surahs_list';
 
+// Precomputed surah offsets for instant global ayah calculations
+const surahOffsets = (() => {
+  const offsets = {};
+  let total = 0;
+  surahsData.forEach((s) => {
+    offsets[s.number] = total;
+    total += s.numberOfAyahs;
+  });
+  return offsets;
+})();
+
+export function getGlobalAyahNumber(surahNumber, ayahNumberInSurah) {
+  const offset = surahOffsets[Number(surahNumber)] ?? 0;
+  return offset + Number(ayahNumberInSurah);
+}
+
+export function getAyahAudioUrl(surahNumber, ayahNumberInSurah, ayahObj = {}) {
+  if (ayahObj && typeof ayahObj.audio === 'string' && ayahObj.audio.startsWith('http')) {
+    return ayahObj.audio;
+  }
+  const globalNum = ayahObj?.numberInQuran || getGlobalAyahNumber(surahNumber, ayahNumberInSurah);
+  return `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${globalNum}.mp3`;
+}
+
 // Essential offline fallback for key surahs if initial load happens offline
 const FALLBACK_SURAHS = {
   1: [
-    { number: 1, arabic: 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ', translation: 'In the name of Allah, the Entirely Merciful, the Especially Merciful.', transliteration: 'Bismillaahir Rahmaanir Raheem' },
-    { number: 2, arabic: 'الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ', translation: '[All] praise is [due] to Allah, Lord of the worlds -', transliteration: "Alhamdu lillaahi Rabbil 'aalameen" },
-    { number: 3, arabic: 'الرَّحْمَٰنِ الرَّحِيمِ', translation: 'The Entirely Merciful, the Especially Merciful,', transliteration: 'Ar-Rahmaanir-Raheem' },
-    { number: 4, arabic: 'مَالِكِ يَوْمِ الدِّينِ', translation: 'Sovereign of the Day of Recompense.', transliteration: 'Maaliki Yawmid-Deen' },
-    { number: 5, arabic: 'إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ', translation: 'It is You we worship and You we ask for help.', transliteration: "Iyyaaka na'budu wa lyyaaka nasta'een" },
-    { number: 6, arabic: 'اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ', translation: 'Guide us to the straight path -', transliteration: 'Ihdinas-Siraatal-Mustaqeem' },
-    { number: 7, arabic: 'صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ', translation: 'The path of those upon whom You have bestowed favor, not of those who have evoked [Your] anger or of those who are astray.', transliteration: "Siraatal-lazeena an'amta 'alaihim ghayril-maghdoobi 'alaihim wa lad-daaalleen" },
+    { number: 1, numberInQuran: 1, audio: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/1.mp3', arabic: 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ', translation: 'In the name of Allah, the Entirely Merciful, the Especially Merciful.', transliteration: 'Bismillaahir Rahmaanir Raheem' },
+    { number: 2, numberInQuran: 2, audio: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/2.mp3', arabic: 'الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ', translation: '[All] praise is [due] to Allah, Lord of the worlds -', transliteration: "Alhamdu lillaahi Rabbil 'aalameen" },
+    { number: 3, numberInQuran: 3, audio: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/3.mp3', arabic: 'الرَّحْمَٰنِ الرَّحِيمِ', translation: 'The Entirely Merciful, the Especially Merciful,', transliteration: 'Ar-Rahmaanir-Raheem' },
+    { number: 4, numberInQuran: 4, audio: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/4.mp3', arabic: 'مَالِكِ يَوْمِ الدِّينِ', translation: 'Sovereign of the Day of Recompense.', transliteration: 'Maaliki Yawmid-Deen' },
+    { number: 5, numberInQuran: 5, audio: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/5.mp3', arabic: 'إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ', translation: 'It is You we worship and You we ask for help.', transliteration: "Iyyaaka na'budu wa lyyaaka nasta'een" },
+    { number: 6, numberInQuran: 6, audio: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/6.mp3', arabic: 'اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ', translation: 'Guide us to the straight path -', transliteration: 'Ihdinas-Siraatal-Mustaqeem' },
+    { number: 7, numberInQuran: 7, audio: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/7.mp3', arabic: 'صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ', translation: 'The path of those upon whom You have bestowed favor, not of those who have evoked [Your] anger or of those who are astray.', transliteration: "Siraatal-lazeena an'amta 'alaihim ghayril-maghdoobi 'alaihim wa lad-daaalleen" },
   ],
   112: [
-    { number: 1, arabic: 'قُلْ هُوَ اللَّهُ أَحَدٌ', translation: 'Say, "He is Allah, [who is] One,', transliteration: 'Qul Huwallahu Ahad' },
-    { number: 2, arabic: 'اللَّهُ الصَّمَدُ', translation: 'Allah, the Eternal Refuge.', transliteration: 'Allahus-Samad' },
-    { number: 3, arabic: 'لَمْ يَلِدْ وَلَمْ يُولَدْ', translation: 'He neither begets nor is born,', transliteration: 'Lam yalid wa lam yoolad' },
-    { number: 4, arabic: 'وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ', translation: 'Nor is there to Him any equivalent."', transliteration: 'Wa lam yakul-lahu kufuwan ahad' },
+    { number: 1, numberInQuran: 6222, audio: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/6222.mp3', arabic: 'قُلْ هُوَ اللَّهُ أَحَدٌ', translation: 'Say, "He is Allah, [who is] One,', transliteration: 'Qul Huwallahu Ahad' },
+    { number: 2, numberInQuran: 6223, audio: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/6223.mp3', arabic: 'اللَّهُ الصَّمَدُ', translation: 'Allah, the Eternal Refuge.', transliteration: 'Allahus-Samad' },
+    { number: 3, numberInQuran: 6224, audio: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/6224.mp3', arabic: 'لَمْ يَلِدْ وَلَمْ يُولَدْ', translation: 'He neither begets nor is born,', transliteration: 'Lam yalid wa lam yoolad' },
+    { number: 4, numberInQuran: 6225, audio: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/6225.mp3', arabic: 'وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ', translation: 'Nor is there to Him any equivalent."', transliteration: 'Wa lam yakul-lahu kufuwan ahad' },
   ],
   113: [
-    { number: 1, arabic: 'قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ', translation: 'Say, "I seek refuge in the Lord of daybreak', transliteration: "Qul a'oozu bi rabbil-falaq" },
-    { number: 2, arabic: 'مِن شَرِّ مَا خَلَقَ', translation: 'From the evil of that which He created', transliteration: 'Min sharri maa khalaq' },
-    { number: 3, arabic: 'وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ', translation: 'And from the evil of darkness when it settles', transliteration: 'Wa min sharri ghaasiqin izaa waqab' },
-    { number: 4, arabic: 'وَمِن شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ', translation: 'And from the evil of the blowers in knots', transliteration: "Wa min sharrin-naffaasaati fil 'uqad" },
-    { number: 5, arabic: 'وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ', translation: 'And from the evil of an envier when he envies."', transliteration: 'Wa min sharri haasidin izaa hasad' },
+    { number: 1, numberInQuran: 6226, audio: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/6226.mp3', arabic: 'قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ', translation: 'Say, "I seek refuge in the Lord of daybreak', transliteration: "Qul a'oozu bi rabbil-falaq" },
+    { number: 2, numberInQuran: 6227, audio: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/6227.mp3', arabic: 'مِن شَرِّ مَا خَلَقَ', translation: 'From the evil of that which He created', transliteration: 'Min sharri maa khalaq' },
+    { number: 3, numberInQuran: 6228, audio: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/6228.mp3', arabic: 'وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ', translation: 'And from the evil of darkness when it settles', transliteration: 'Wa min sharri ghaasiqin izaa waqab' },
+    { number: 4, numberInQuran: 6229, audio: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/6229.mp3', arabic: 'وَمِن شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ', translation: 'And from the evil of the blowers in knots', transliteration: "Wa min sharrin-naffaasaati fil 'uqad" },
+    { number: 5, numberInQuran: 6230, audio: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/6230.mp3', arabic: 'وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ', translation: 'And from the evil of an envier when he envies."', transliteration: 'Wa min sharri haasidin izaa hasad' },
   ],
   114: [
-    { number: 1, arabic: 'قُلْ أَعُوذُ بِرَبِّ النَّاسِ', translation: 'Say, "I seek refuge in the Lord of mankind,', transliteration: "Qul a'oozu bi rabbin-naas" },
-    { number: 2, arabic: 'مَلِكِ النَّاسِ', translation: 'The Sovereign of mankind,', transliteration: 'Malikin-naas' },
-    { number: 3, arabic: 'إِلَٰهِ النَّاسِ', translation: 'The God of mankind,', transliteration: 'Ilaahin-naas' },
-    { number: 4, arabic: 'مِن شَرِّ الْوَسْوَاسِ الْخَنَّاسِ', translation: 'From the evil of the retreating whisperer -', transliteration: 'Min sharril-waswaasil khannaas' },
-    { number: 5, arabic: 'الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ', translation: 'Who whispers [evil] into the breasts of mankind -', transliteration: 'Allazee yuwaswisu fee sudoorin naas' },
-    { number: 6, arabic: 'مِنَ الْجِنَّةِ وَالنَّاسِ', translation: 'From among the jinn and mankind."', transliteration: 'Minal jinnati wannaas' },
+    { number: 1, numberInQuran: 6231, audio: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/6231.mp3', arabic: 'قُلْ أَعُوذُ بِرَبِّ النَّاسِ', translation: 'Say, "I seek refuge in the Lord of mankind,', transliteration: "Qul a'oozu bi rabbin-naas" },
+    { number: 2, numberInQuran: 6232, audio: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/6232.mp3', arabic: 'مَلِكِ النَّاسِ', translation: 'The Sovereign of mankind,', transliteration: 'Malikin-naas' },
+    { number: 3, numberInQuran: 6233, audio: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/6233.mp3', arabic: 'إِلَٰهِ النَّاسِ', translation: 'The God of mankind,', transliteration: 'Ilaahin-naas' },
+    { number: 4, numberInQuran: 6234, audio: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/6234.mp3', arabic: 'مِن شَرِّ الْوَسْوَاسِ الْخَنَّاسِ', translation: 'From the evil of the retreating whisperer -', transliteration: 'Min sharril-waswaasil khannaas' },
+    { number: 5, numberInQuran: 6235, audio: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/6235.mp3', arabic: 'الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ', translation: 'Who whispers [evil] into the breasts of mankind -', transliteration: 'Allazee yuwaswisu fee sudoorin naas' },
+    { number: 6, numberInQuran: 6236, audio: 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/6236.mp3', arabic: 'مِنَ الْجِنَّةِ وَالنَّاسِ', translation: 'From among the jinn and mankind."', transliteration: 'Minal jinnati wannaas' },
   ],
 };
 
 const BISMILLAH_PREFIX_REGEX = /^[\s\uFEFF\u200B]*بِسْمِ\s+ٱللَّهِ\s+ٱلرَّحْمَٰنِ\s+ٱلرَّحِيمِ\s*/;
 
 /**
- * Fetch a complete Surah (all Ayahs with Arabic, translation, and transliteration).
+ * Fetch a complete Surah (all Ayahs with Arabic, translation, transliteration, and audio).
  * Checks AsyncStorage first. If cached, returns instantly. If online, fetches and caches for offline use.
  */
 export async function fetchSurahAyahs(surahNumber) {
@@ -65,7 +90,7 @@ export async function fetchSurahAyahs(surahNumber) {
 
   // 2. Fetch from live API
   try {
-    const url = `https://api.alquran.cloud/v1/surah/${surahNumber}/editions/quran-uthmani,en.sahih,en.transliteration`;
+    const url = `https://api.alquran.cloud/v1/surah/${surahNumber}/editions/quran-uthmani,en.sahih,en.transliteration,ar.alafasy`;
     const response = await fetch(url);
     const result = await response.json();
 
@@ -73,6 +98,7 @@ export async function fetchSurahAyahs(surahNumber) {
       const arabicEd = result.data[0];
       const translationEd = result.data[1];
       const transliterationEd = result.data[2];
+      const audioEd = result.data[3];
 
       const ayahs = arabicEd.ayahs.map((ayahObj, idx) => {
         let arabicText = ayahObj.text ? ayahObj.text.trim() : '';
@@ -82,9 +108,13 @@ export async function fetchSurahAyahs(surahNumber) {
           arabicText = arabicText.replace(BISMILLAH_PREFIX_REGEX, '').trim();
         }
 
+        const globalNum = ayahObj.number || getGlobalAyahNumber(surahNumber, idx + 1);
+        const audioUrl = audioEd?.ayahs?.[idx]?.audio || `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${globalNum}.mp3`;
+
         return {
           number: idx + 1,
-          numberInQuran: ayahObj.number,
+          numberInQuran: globalNum,
+          audio: audioUrl,
           arabic: arabicText,
           translation: translationEd?.ayahs?.[idx]?.text || '',
           transliteration: transliterationEd?.ayahs?.[idx]?.text || '',

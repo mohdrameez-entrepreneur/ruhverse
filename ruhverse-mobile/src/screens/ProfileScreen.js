@@ -5,22 +5,19 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  FlatList,
+  Switch,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../constants/colors';
 import { useAuth } from '../context/AuthContext';
 import { useBookmarks } from '../context/BookmarkContext';
-import ArticleCard from '../components/ArticleCard';
 import SupportModal from '../components/SupportModal';
 import TransparencyAlertModal from '../components/TransparencyAlertModal';
-
-import { Switch } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 
-export default function ProfileScreen({ navigation }) {
+export default function ProfileScreen({ route, navigation }) {
   const { user, userProfile, userProgress, signOut } = useAuth();
-  const { bookmarks, quranBookmarks } = useBookmarks();
+  const { quranBookmarks } = useBookmarks();
   const { isDarkMode, toggleTheme, theme } = useTheme();
   const [supportVisible, setSupportVisible] = useState(false);
   const [transparencyAlertVisible, setTransparencyAlertVisible] = useState(false);
@@ -123,27 +120,6 @@ export default function ProfileScreen({ navigation }) {
           </View>
           <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
         </TouchableOpacity>
-
-        {/* Offline Bookmarks Section */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Saved Offline Articles ({bookmarks.length})</Text>
-        </View>
-
-        {bookmarks.length === 0 ? (
-          <View style={styles.emptyBookmarks}>
-            <Ionicons name="bookmarks-outline" size={36} color={Colors.textTertiary} />
-            <Text style={styles.emptyText}>No saved articles yet.</Text>
-            <Text style={styles.emptySub}>Tap the bookmark icon on any reflection to read offline anytime.</Text>
-          </View>
-        ) : (
-          bookmarks.map((item) => (
-            <ArticleCard
-              key={item.id}
-              article={item}
-              onPress={(art) => navigation.navigate('ArticleDetail', { article: art })}
-            />
-          ))
-        )}
 
         {/* Terms & Privacy Policy Review Card */}
         <TouchableOpacity
@@ -331,36 +307,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 2,
     lineHeight: 16,
-  },
-  sectionHeader: {
-    marginBottom: 12,
-  },
-  sectionTitle: {
-    color: Colors.text,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  emptyBookmarks: {
-    backgroundColor: Colors.surface,
-    borderRadius: 16,
-    padding: 24,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Colors.surfaceBorder,
-    marginBottom: 20,
-  },
-  emptyText: {
-    color: Colors.text,
-    fontSize: 14,
-    fontWeight: '600',
-    marginTop: 8,
-  },
-  emptySub: {
-    color: Colors.textSecondary,
-    fontSize: 12,
-    textAlign: 'center',
-    marginTop: 4,
-    paddingHorizontal: 16,
   },
   aboutCard: {
     alignItems: 'center',

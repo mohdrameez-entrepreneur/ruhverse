@@ -123,7 +123,9 @@ export default function ArticlesScreen({ navigation }) {
                 <Text
                   style={[
                     styles.pillText,
-                    { color: active ? '#FFFFFF' : theme.textSecondary },
+                    {
+                      color: active ? '#FFFFFF' : theme.textSecondary,
+                    },
                     active && styles.pillTextActive,
                   ]}
                 >
@@ -167,11 +169,15 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 20,
     paddingTop: 14,
     paddingBottom: 10,
+    gap: 10,
   },
   searchBox: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: Colors.glassSurface,

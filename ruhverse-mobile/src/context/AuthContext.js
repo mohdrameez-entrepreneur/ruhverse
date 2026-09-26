@@ -1,8 +1,13 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { Platform } from 'react-native';
 import * as Linking from 'expo-linking';
-import { supabase, fetchUserProfile, fetchUserProgress } from '../services/supabase';
-import { verifySessionWithBackend } from '../services/djangoApi';
+import {
+  supabase,
+  fetchUserProfile,
+  fetchUserProgress,
+  initSupabaseFromBackend,
+} from '../services/supabase';
+import { verifySessionWithBackend, fetchGoogleAuthUrl } from '../services/djangoApi';
 
 const AuthContext = createContext({
   user: null,
@@ -47,37 +52,57 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    // 1. Check current active session on app boot
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user?.id) {
-        loadUserData(session.user.id);
-      }
-      setIsLoading(false);
-    });
+    let isMounted = true;
+    let authSubscription = null;
 
-    // 2. Listen for auth state changes (login, logout, refresh token)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user?.id) {
-        loadUserData(session.user.id);
-      } else {
-        setUserProfile(null);
-        setUserProgress(null);
+    const setupAuth = async () => {
+      try {
+        await initSupabaseFromBackend();
+
+        // 1. Check current active session on app boot
+        const { data: sessionData } = await supabase.auth.getSession();
+        const initialSession = sessionData?.session ?? null;
+
+        if (isMounted) {
+          setSession(initialSession);
+          setUser(initialSession?.user ?? null);
+          if (initialSession?.user?.id) {
+            loadUserData(initialSession.user.id);
+          }
+          setIsLoading(false);
+        }
+
+        // 2. Listen for auth state changes (login, logout, refresh token)
+        const { data: listenerData } = supabase.auth.onAuthStateChange((_event, newSession) => {
+          if (!isMounted) return;
+          setSession(newSession);
+          setUser(newSession?.user ?? null);
+          if (newSession?.user?.id) {
+            loadUserData(newSession.user.id);
+          } else {
+            setUserProfile(null);
+            setUserProgress(null);
+          }
+          setIsLoading(false);
+          if (newSession?.access_token) {
+            verifySessionWithBackend(newSession.access_token).catch(() => {});
+          }
+        });
+        authSubscription = listenerData?.subscription;
+      } catch (err) {
+        if (isMounted) setIsLoading(false);
       }
-      setIsLoading(false);
-      if (session?.access_token) {
-        verifySessionWithBackend(session.access_token).catch(() => {});
-      }
-    });
+    };
+
+    setupAuth();
 
     // 3. Listen for OAuth deep link redirects (Google Login)
     const handleDeepLink = async ({ url }) => {
       if (!url) return;
 
       try {
+        await initSupabaseFromBackend();
+
         if (url.includes('access_token=') || url.includes('#access_token=')) {
           const fragment = url.includes('#') ? url.split('#')[1] : url.split('?')[1];
           const params = new URLSearchParams(fragment);
@@ -132,13 +157,15 @@ export const AuthProvider = ({ children }) => {
     });
 
     return () => {
-      subscription?.unsubscribe();
+      isMounted = false;
+      authSubscription?.unsubscribe();
       linkSub?.remove();
     };
   }, []);
 
   const signInWithEmail = async (email, password) => {
     try {
+      await initSupabaseFromBackend();
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -152,6 +179,7 @@ export const AuthProvider = ({ children }) => {
 
   const signUpWithEmail = async (email, password, fullName) => {
     try {
+      await initSupabaseFromBackend();
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -167,9 +195,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   /**
-   * Google OAuth Login using Supabase
-   * - Web: Returns cleanly to the web origin (canonical https://ruhverse.online/ or current origin)
-   * - Mobile App: Returns to the mobile app via deep link (ruhverse://auth/callback)
+   * Google OAuth Login
+   * - Native mobile: Obtains authorized URL from Render Django backend and opens system browser.
+   * - Deep link (ruhverse://auth/callback) returns directly to app.
    */
   const signInWithGoogle = async () => {
     try {
@@ -180,6 +208,26 @@ export const AuthProvider = ({ children }) => {
             : 'https://ruhverse.online/')
         : 'ruhverse://auth/callback';
 
+      // 1. Try secure server-side Google OAuth URL generation from backend
+      const backendAuth = await fetchGoogleAuthUrl(redirectUrl);
+      if (backendAuth.success && backendAuth.authUrl) {
+        await initSupabaseFromBackend();
+
+        if (isWeb && typeof window !== 'undefined') {
+          window.location.href = backendAuth.authUrl;
+        } else {
+          const canOpen = await Linking.canOpenURL(backendAuth.authUrl);
+          if (canOpen) {
+            await Linking.openURL(backendAuth.authUrl);
+          } else {
+            return { success: false, error: 'Cannot open browser for Google authentication.' };
+          }
+        }
+        return { success: true };
+      }
+
+      // 2. Fallback to client Supabase SDK
+      await initSupabaseFromBackend();
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {

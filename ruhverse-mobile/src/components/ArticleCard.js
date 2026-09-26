@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../constants/colors';
 import { useBookmarks } from '../context/BookmarkContext';
@@ -7,14 +7,45 @@ import { useBookmarks } from '../context/BookmarkContext';
 import { Share } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 
+export function getReadingTime(article) {
+  if (!article) return '5 min read';
+
+  // 1. Check if backend / dataset provides reading_time or readingTime
+  const raw = article.reading_time || article.readingTime;
+  if (raw) {
+    if (typeof raw === 'string') {
+      const trimmed = raw.trim();
+      if (/min/i.test(trimmed)) {
+        return trimmed;
+      }
+      const num = parseInt(trimmed, 10);
+      if (!isNaN(num) && num > 0) {
+        return `${num} min read`;
+      }
+    } else if (typeof raw === 'number' && raw > 0) {
+      return `${raw} min read`;
+    }
+  }
+
+  // 2. If article has full content, calculate based on word count
+  const fullText = (article.content || '').replace(/<[^>]*>?/gm, '').trim();
+  if (fullText) {
+    const words = fullText.split(/\s+/).filter(Boolean).length;
+    if (words > 100) {
+      const calculatedMins = Math.max(1, Math.ceil(words / 200));
+      return `${calculatedMins} min read`;
+    }
+  }
+
+  // 3. Fallback based on typical spiritual article depth
+  return '5 min read';
+}
+
 export default function ArticleCard({ article, onPress }) {
   const { theme } = useTheme();
   const { isBookmarked, toggleBookmark } = useBookmarks();
   const bookmarked = isBookmarked(article.id);
-
-  // Estimate reading time based on word count
-  const wordCount = (article.content || article.excerpt || '').replace(/<[^>]*>?/gm, '').split(/\s+/).length;
-  const readMins = Math.max(1, Math.ceil(wordCount / 200));
+  const readTimeLabel = getReadingTime(article);
 
   const handleShare = async (e) => {
     e?.stopPropagation?.();
@@ -30,33 +61,51 @@ export default function ArticleCard({ article, onPress }) {
 
   return (
     <TouchableOpacity
-      style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.glassBorderSubtle }]}
+      style={[
+        styles.card,
+        {
+          backgroundColor: theme.surface,
+          borderColor: bookmarked ? theme.gold : theme.goldSoft,
+          shadowColor: theme.shadowColor,
+        },
+      ]}
       activeOpacity={0.88}
       onPress={() => onPress(article)}
     >
-      {article.cover_image_url ? (
-        <Image source={{ uri: article.cover_image_url }} style={styles.coverImage} resizeMode="cover" />
-      ) : (
-        <View style={[styles.placeholderImage, { backgroundColor: theme.primaryTint }]}>
-          <Ionicons name="book-outline" size={32} color={theme.primary} />
-        </View>
-      )}
+      {/* Decorative Gold Header Trim */}
+      <View style={[styles.cardGoldTrim, { backgroundColor: theme.gold }]} />
 
       <View style={styles.content}>
         <View style={styles.metaRow}>
-          <View style={[styles.categoryBadge, { backgroundColor: theme.primaryTint }]}>
-            <Text style={[styles.categoryText, { color: theme.primary }]}>{article.category || 'Islamic Reflection'}</Text>
+          <View
+            style={[
+              styles.categoryBadge,
+              {
+                backgroundColor: theme.primaryTint,
+                borderColor: theme.goldSoft,
+                borderWidth: 1,
+              },
+            ]}
+          >
+            <Text style={[styles.categoryText, { color: theme.primary }]}>
+              {article.category || 'Islamic Reflection'}
+            </Text>
           </View>
+
           <View style={styles.actionRow}>
             <TouchableOpacity
               style={styles.actionBtn}
               onPress={handleShare}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
-              <Ionicons name="share-social-outline" size={19} color={theme.textSecondary} />
+              <Ionicons name="share-social-outline" size={18} color={theme.textSecondary} />
             </TouchableOpacity>
+
             <TouchableOpacity
-              style={styles.actionBtn}
+              style={[
+                styles.actionBtn,
+                bookmarked && { backgroundColor: theme.goldSoft, borderRadius: 8 },
+              ]}
               onPress={(e) => {
                 e.stopPropagation();
                 toggleBookmark(article);
@@ -65,7 +114,7 @@ export default function ArticleCard({ article, onPress }) {
             >
               <Ionicons
                 name={bookmarked ? 'bookmark' : 'bookmark-outline'}
-                size={20}
+                size={19}
                 color={bookmarked ? theme.gold : theme.textSecondary}
               />
             </TouchableOpacity>
@@ -83,10 +132,23 @@ export default function ArticleCard({ article, onPress }) {
         )}
 
         <View style={[styles.footerRow, { borderTopColor: theme.surfaceBorder }]}>
-          <Text style={[styles.readTime, { color: theme.textTertiary }]}>⏱️ {readMins} min read</Text>
-          <View style={styles.readMoreRow}>
+          <View style={styles.readTimeWrap}>
+            <Ionicons name="time-outline" size={13} color={theme.gold} style={{ marginRight: 5 }} />
+            <Text style={[styles.readTime, { color: theme.textSecondary }]}>{readTimeLabel}</Text>
+          </View>
+
+          <View
+            style={[
+              styles.readMoreRow,
+              {
+                backgroundColor: theme.primaryTint,
+                borderColor: theme.goldSoft,
+                borderWidth: 1,
+              },
+            ]}
+          >
             <Text style={[styles.readMoreText, { color: theme.primary }]}>Read</Text>
-            <Ionicons name="arrow-forward" size={14} color={theme.primary} />
+            <Ionicons name="arrow-forward" size={12} color={theme.primary} />
           </View>
         </View>
       </View>
@@ -108,18 +170,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 14,
     elevation: 3,
-  },
-  coverImage: {
-    width: '100%',
-    height: 180,
-    backgroundColor: '#EAE8E1',
-  },
-  placeholderImage: {
-    width: '100%',
-    height: 130,
-    backgroundColor: Colors.primaryTint,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   content: {
     padding: 18,
@@ -173,6 +223,14 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: Colors.surfaceBorder,
   },
+  cardGoldTrim: {
+    height: 3,
+    width: '100%',
+  },
+  readTimeWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   readTime: {
     color: Colors.textTertiary,
     fontSize: 12,
@@ -182,10 +240,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+    paddingHorizontal: 9,
+    paddingVertical: 3.5,
+    borderRadius: 8,
   },
   readMoreText: {
     color: Colors.primary,
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '700',
   },
 });

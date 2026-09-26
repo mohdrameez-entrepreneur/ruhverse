@@ -111,7 +111,7 @@ export default function Header({
           </TouchableOpacity>
         )}
 
-        {/* 3. Support Icon (placed after login and darkmode) */}
+        {/* 3. Support Icon */}
         {onSupportPress && (
           <TouchableOpacity
             style={[
@@ -144,34 +144,36 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingTop: 14,
     paddingBottom: 10,
     zIndex: 10,
   },
   titleWrap: {
     flex: 1,
-    paddingRight: 8,
+    paddingRight: 6,
+    minWidth: 0,
   },
   brandRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 9,
+    gap: 7,
   },
   logo: {
-    width: 32,
-    height: 32,
+    width: 30,
+    height: 30,
     borderRadius: 8,
   },
   brandTextCol: {
     justifyContent: 'center',
+    flexShrink: 1,
   },
   title: {
-    fontSize: 19,
+    fontSize: 18,
     fontWeight: '800',
     color: Colors.primaryDark,
     letterSpacing: -0.3,
-    lineHeight: 22,
+    lineHeight: 21,
   },
   locationRow: {
     flexDirection: 'row',
@@ -180,12 +182,12 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   locationText: {
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: '600',
     letterSpacing: 0.1,
   },
   subtitle: {
-    fontSize: 10.5,
+    fontSize: 10,
     color: Colors.textSecondary,
     marginTop: 2,
     letterSpacing: 0.1,
@@ -194,14 +196,34 @@ const styles = StyleSheet.create({
   actions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 9,
+    gap: 6,
+    flexShrink: 0,
   },
   actionBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     alignItems: 'center',
     justifyContent: 'center',
+    position: 'relative',
+  },
+  badge: {
+    position: 'absolute',
+    top: -3,
+    right: -3,
+    minWidth: 15,
+    height: 15,
+    borderRadius: 7.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 2,
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
+  },
+  badgeText: {
+    color: '#FFFFFF',
+    fontSize: 8.5,
+    fontWeight: '800',
   },
 });
 

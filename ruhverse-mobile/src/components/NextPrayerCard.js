@@ -54,16 +54,8 @@ export default function NextPrayerCard({
 
   return (
     <View style={styles.container}>
-      {/* 1. TOP HEADER: Date Badge (or optional location) */}
-      <View style={[styles.topRow, !showLocation && { justifyContent: 'flex-end' }]}>
-        {showLocation && locationName && (
-          <View style={styles.locationPill}>
-            <Ionicons name="location-sharp" size={11} color={Colors.goldLight} />
-            <Text style={styles.locationText} numberOfLines={1}>
-              {locationName}
-            </Text>
-          </View>
-        )}
+      {/* 1. TOP HEADER: Date Badge on the Left */}
+      <View style={[styles.topRow, { justifyContent: showLocation && locationName ? 'space-between' : 'flex-start' }]}>
         <View style={styles.datePill}>
           <Ionicons name="calendar-outline" size={11} color="rgba(255, 255, 255, 0.75)" style={{ marginRight: 4 }} />
           <Text style={styles.dateText} numberOfLines={1}>
@@ -74,6 +66,14 @@ export default function NextPrayerCard({
             })}
           </Text>
         </View>
+        {showLocation && locationName && (
+          <View style={styles.locationPill}>
+            <Ionicons name="location-sharp" size={11} color={Colors.goldLight} />
+            <Text style={styles.locationText} numberOfLines={1}>
+              {locationName}
+            </Text>
+          </View>
+        )}
       </View>
 
       {/* 2. SERENE SUN & MOON CELESTIAL SKY ARC */}

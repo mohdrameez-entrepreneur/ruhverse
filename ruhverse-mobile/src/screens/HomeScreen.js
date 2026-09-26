@@ -290,26 +290,26 @@ export default function HomeScreen({ navigation }) {
                 borderColor: isDarkMode ? 'rgba(212, 175, 55, 0.28)' : 'rgba(212, 175, 55, 0.35)',
               },
             ]}
-            onPress={handleSupportPress}
+            onPress={() => navigation.navigate('Bookmarks')}
             activeOpacity={0.8}
           >
             <View
               style={[
                 styles.iconCircle,
                 {
-                  backgroundColor: isDarkMode ? 'rgba(212, 175, 55, 0.16)' : 'rgba(26, 77, 46, 0.08)',
-                  borderColor: isDarkMode ? 'rgba(212, 175, 55, 0.32)' : 'rgba(26, 77, 46, 0.15)',
+                  backgroundColor: isDarkMode ? 'rgba(212, 175, 55, 0.16)' : 'rgba(212, 175, 55, 0.12)',
+                  borderColor: isDarkMode ? 'rgba(212, 175, 55, 0.32)' : 'rgba(212, 175, 55, 0.25)',
                 },
               ]}
             >
-              <Ionicons name="heart" size={21} color="#F87171" />
+              <Ionicons name="bookmark" size={21} color={isDarkMode ? Colors.goldLight : Colors.goldDark} />
             </View>
             <Text
               style={[styles.quickTitle, { color: isDarkMode ? '#FFFFFF' : theme.text }]}
               numberOfLines={1}
               adjustsFontSizeToFit
             >
-              Support
+              Saved
             </Text>
           </TouchableOpacity>
         </View>

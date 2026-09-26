@@ -1,31 +1,87 @@
 import { createClient } from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { fetchAuthConfig } from './djangoApi';
 
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
-const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key';
+const STORAGE_KEY_URL = 'ruhverse_supabase_url';
+const STORAGE_KEY_KEY = 'ruhverse_supabase_anon_key';
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    storage: AsyncStorage,
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: false,
+let activeSupabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || '';
+let activeSupabaseKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
+
+function createSupabaseClient(url, key) {
+  const safeUrl = url && !url.includes('placeholder') ? url : 'https://placeholder.supabase.co';
+  const safeKey = key && key !== 'placeholder-anon-key' ? key : 'placeholder-anon-key';
+  return createClient(safeUrl, safeKey, {
+    auth: {
+      storage: AsyncStorage,
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: false,
+    },
+  });
+}
+
+let clientInstance = createSupabaseClient(activeSupabaseUrl, activeSupabaseKey);
+
+export const supabase = new Proxy({}, {
+  get(_target, prop) {
+    return clientInstance[prop];
   },
 });
 
-const isConfigured = Boolean(
-  supabaseUrl &&
-  !supabaseUrl.includes('placeholder') &&
-  !supabaseUrl.includes('your-project-id') &&
-  supabaseAnonKey &&
-  supabaseAnonKey !== 'placeholder-anon-key'
-);
+export function isConfigured() {
+  return Boolean(
+    activeSupabaseUrl &&
+    !activeSupabaseUrl.includes('placeholder') &&
+    !activeSupabaseUrl.includes('your-project-id') &&
+    activeSupabaseKey &&
+    activeSupabaseKey !== 'placeholder-anon-key'
+  );
+}
+
+export async function initSupabaseFromBackend() {
+  if (isConfigured()) return true;
+
+  // 1. Try restoring from AsyncStorage cache
+  try {
+    const cachedUrl = await AsyncStorage.getItem(STORAGE_KEY_URL);
+    const cachedKey = await AsyncStorage.getItem(STORAGE_KEY_KEY);
+    if (cachedUrl && cachedKey && !cachedUrl.includes('placeholder')) {
+      activeSupabaseUrl = cachedUrl;
+      activeSupabaseKey = cachedKey;
+      clientInstance = createSupabaseClient(activeSupabaseUrl, activeSupabaseKey);
+      return true;
+    }
+  } catch (_) {}
+
+  // 2. Fetch fresh config from Render Django backend
+  try {
+    const res = await fetchAuthConfig();
+    if (res.success && res.data?.supabase_url && res.data?.supabase_anon_key) {
+      activeSupabaseUrl = res.data.supabase_url;
+      activeSupabaseKey = res.data.supabase_anon_key;
+      clientInstance = createSupabaseClient(activeSupabaseUrl, activeSupabaseKey);
+
+      AsyncStorage.setItem(STORAGE_KEY_URL, activeSupabaseUrl).catch(() => {});
+      AsyncStorage.setItem(STORAGE_KEY_KEY, activeSupabaseKey).catch(() => {});
+      return true;
+    }
+  } catch (err) {
+    console.warn('initSupabaseFromBackend error:', err);
+  }
+  return false;
+}
+
+async function ensureConfigured() {
+  if (isConfigured()) return true;
+  return await initSupabaseFromBackend();
+}
 
 /**
  * Fetch published articles from Supabase ordered by latest creation date
  */
 export async function fetchLiveArticles(limit = 20) {
-  if (!isConfigured) {
+  if (!(await ensureConfigured())) {
     return { success: false, error: 'Supabase not configured', data: null };
   }
   try {
@@ -49,7 +105,7 @@ export async function fetchLiveArticles(limit = 20) {
  * Fetch a single article by its unique slug
  */
 export async function fetchLiveArticleBySlug(slug) {
-  if (!isConfigured) {
+  if (!(await ensureConfigured())) {
     return { success: false, error: 'Supabase not configured', data: null };
   }
   try {
@@ -73,7 +129,7 @@ export async function fetchLiveArticleBySlug(slug) {
  * Sync user bookmarks with Supabase (if logged in)
  */
 export async function syncUserBookmark(userId, articleId, shouldBookmark) {
-  if (!userId || !isConfigured) return { success: false, error: 'User not logged in or Supabase unconfigured' };
+  if (!userId || !(await ensureConfigured())) return { success: false, error: 'User not logged in or Supabase unconfigured' };
   try {
     if (shouldBookmark) {
       const { error } = await supabase
@@ -97,7 +153,7 @@ export async function syncUserBookmark(userId, articleId, shouldBookmark) {
  * Fetch user profile from web database 'profiles' table
  */
 export async function fetchUserProfile(userId) {
-  if (!userId || !isConfigured) return { success: false, data: null };
+  if (!userId || !(await ensureConfigured())) return { success: false, data: null };
   try {
     const { data, error } = await supabase
       .from('profiles')
@@ -115,7 +171,7 @@ export async function fetchUserProfile(userId) {
  * Update user profile in web database 'profiles' table
  */
 export async function updateUserProfile(userId, updates) {
-  if (!userId || !isConfigured) return { success: false, error: 'User not logged in' };
+  if (!userId || !(await ensureConfigured())) return { success: false, error: 'User not logged in' };
   try {
     const { data, error } = await supabase
       .from('profiles')
@@ -134,7 +190,7 @@ export async function updateUserProfile(userId, updates) {
  * Fetch user Quran bookmarks from web database 'bookmarks' table
  */
 export async function fetchUserBookmarks(userId) {
-  if (!userId || !isConfigured) return { success: false, data: [] };
+  if (!userId || !(await ensureConfigured())) return { success: false, data: [] };
   try {
     const { data, error } = await supabase
       .from('bookmarks')
@@ -152,7 +208,7 @@ export async function fetchUserBookmarks(userId) {
  * Save / Upsert Quran bookmark to web database 'bookmarks' table
  */
 export async function saveUserBookmark(userId, surahNumber, ayahNumber, note = '') {
-  if (!userId || !isConfigured) return { success: false, error: 'User not logged in' };
+  if (!userId || !(await ensureConfigured())) return { success: false, error: 'User not logged in' };
   try {
     const { data, error } = await supabase
       .from('bookmarks')
@@ -175,7 +231,7 @@ export async function saveUserBookmark(userId, surahNumber, ayahNumber, note = '
  * Delete Quran bookmark from web database 'bookmarks' table
  */
 export async function deleteUserBookmark(userId, surahNumber, ayahNumber) {
-  if (!userId || !isConfigured) return { success: false, error: 'User not logged in' };
+  if (!userId || !(await ensureConfigured())) return { success: false, error: 'User not logged in' };
   try {
     const { error } = await supabase
       .from('bookmarks')
@@ -194,7 +250,7 @@ export async function deleteUserBookmark(userId, surahNumber, ayahNumber) {
  * Fetch Quran reading progress from web database 'user_progress' table
  */
 export async function fetchUserProgress(userId) {
-  if (!userId || !isConfigured) return { success: false, data: null };
+  if (!userId || !(await ensureConfigured())) return { success: false, data: null };
   try {
     const { data, error } = await supabase
       .from('user_progress')
@@ -212,7 +268,7 @@ export async function fetchUserProgress(userId) {
  * Save Quran reading progress to web database 'user_progress' table
  */
 export async function saveUserProgress(userId, surahNumber, ayahNumber) {
-  if (!userId || !isConfigured) return { success: false, error: 'User not logged in' };
+  if (!userId || !(await ensureConfigured())) return { success: false, error: 'User not logged in' };
   try {
     const { data, error } = await supabase
       .from('user_progress')
